@@ -14,12 +14,13 @@ let TOK = 0; /* 每次换页面加一，旧页面里的定时器看到号码变�
 
 /* ---------- 存档：只存在这台设备的浏览器里 ---------- */
 const STORE = 'reverb2036-progress-v3', GSTORE = 'reverb2036-gallery';
-const blank = () => ({ stage: 0, ideal: null, g: null, l1save: null, l1: null, l2: null, l3save: null, l3: null, l4: null, portrait: null, tags: {}, log: [], skills: {} });
+const blank = () => ({ stage: 0, ideal: null, g: null, l1save: null, l1: null, l2: null, l3save: null, l3: null, l4: null, portrait: null, share: null, dom: {}, tags: {}, log: [], skills: {} });
 let PROG = blank(), GALLERY = [];
 try { const r = localStorage.getItem(STORE); if (r) PROG = Object.assign(blank(), JSON.parse(r)); const g = localStorage.getItem(GSTORE); if (g) GALLERY = JSON.parse(g) || [] } catch (e) { }
 function save() { try { localStorage.setItem(STORE, JSON.stringify(PROG)); localStorage.setItem(GSTORE, JSON.stringify(GALLERY)) } catch (e) { } }
 function addTags(k, target = PROG.tags) { (k || '').split(/\s+/).filter(Boolean).forEach(t => target[t] = (target[t] || 0) + 1) }
 function mergeTags(src) { for (const k in src) PROG.tags[k] = (PROG.tags[k] || 0) + src[k] }
+function addDom(k, n = 1) { if (k) PROG.dom[k] = (PROG.dom[k] || 0) + n }
 function skill(name, v) { (PROG.skills[name] = PROG.skills[name] || []).push(v) }
 
 /* 卡牌编号 */
@@ -34,7 +35,7 @@ function avatar(who) { let h = 0; for (const ch of who) h = (h * 31 + ch.charCod
 /* =========================================================
    页面切换
    ========================================================= */
-const TITLES = { ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 制作人的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
+const TITLES = { ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
 function show(id) {
   TOK++; if (E.ctx) E.stopClip();
   $$('.screen').forEach(s => s.hidden = s.id !== id);
@@ -54,8 +55,8 @@ function goHub() {
 const LEVELS = [
   { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 5 个选择、1 个音乐关卡。数值到极限会遇到人生岔路，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
   { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '大提琴持续音加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
-  { no: '3', id: 'l3', name: '2036 · 制作人的一天', desc: '从早上 8 点到凌晨 2 点，七个人提七个要求。AI 每次给你三个版本，你得用耳朵挑对。每个要求背后，还藏着一个选择。', bgmName: '合成器浪潮', bgm: 'Synthwave 风格，时间越晚节奏越快。', style: 'synth' },
-  { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后三个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
+  { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，接七个要求。AI 每次给你三个版本，你得用耳朵挑对，每个要求背后还藏着一个选择。', bgmName: '合成器浪潮', bgm: 'Synthwave 风格，时间越晚节奏越快。', style: 'synth' },
+  { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
 ];
 let previewing = null, previewTimer = null, confirmReset = false;
 function levelSummary(i) {
@@ -105,7 +106,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
-  if (id === 'l1') { if (PROG.l1save) resumeL1(); else if (!PROG.ideal) showIdeal(); else show('intro') }
+  if (id === 'l1') { if (PROG.l1save) resumeL1(); else if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') }
   else if (id === 'l2') startL2();
   else if (id === 'l3') startL3();
   else startL4();
@@ -119,7 +120,15 @@ function showIdeal() {
     <p class="lead">先别管现实。如果可以随便选，你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
     <div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div>`;
   show('ideal');
-  $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); show('intro') });
+  $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); showShare() });
+}
+function showShare() {
+  $('#ideal').innerHTML = `<span class="eyebrow">开始之前 · 第二问</span><h2 class="big-title">音乐在你生活里，你希望它占几成？</h2>
+    <p class="lead">十年后，也许没有人只做一件事。一个人可以会写歌、会教课、会剪视频、会做生意。“音乐人”可能是你的全部身份，也可能只是你很多能力里的一种。</p>
+    <p class="lead">你希望十年后，音乐在你的生活里占多少？</p>
+    <div class="ideals">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div>`;
+  show('ideal'); $('#ideal').scrollTo(0, 0);
+  $$('[data-share]').forEach(b => b.onclick = () => { PROG.share = MUSIC_SHARE[+b.dataset.share].v; save(); show('intro') });
 }
 
 /* =========================================================
@@ -268,7 +277,7 @@ function finishL1(id, survived) {
   if (!GALLERY.includes(id)) GALLERY.push(id); save();
   const n = PROG.log.filter(x => x.lv === 1).length;
   $('#endKind').textContent = survived ? '撑过了十年 · 2036' : `第 ${G.year} 年 · 人生岔路`;
-  $('#endTitle').textContent = en.t; $('#endText').textContent = en.x;
+  $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;
   G = null; KEYH = null; show('end');

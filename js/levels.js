@@ -277,14 +277,15 @@ const TASKS = [
     why: '只有一版是<b>完全终止</b>：G 和弦走到 C 和弦，旋律落在 1（Do）。有一版停在 G 上，叫<b>半终止</b>，像逗号。最会骗人的那版，旋律也落在 Do，但和弦换成了 Am，叫<b>假终止</b>，耳朵会觉得“还没完”。'
   }
 ];
-const L3 = { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], phase: 'task' };
-function saveL3() { PROG.l3save = JSON.parse(JSON.stringify({ i: L3.i, right: L3.right, own: L3.own, ai: L3.ai, tags: L3.tags, picks: L3.picks })); save() }
+const L3 = { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null };
+function saveL3() { PROG.l3save = JSON.parse(JSON.stringify({ i: L3.i, right: L3.right, own: L3.own, ai: L3.ai, tags: L3.tags, picks: L3.picks, fav: L3.fav })); save() }
 function startL3() {
   if (PROG.l3save) { Object.assign(L3, PROG.l3save); E.resetMood(); E.duck(1); E.play('synth', ['pad']); return l3Task() }
-  Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [] });
+  Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null });
   E.resetMood(); E.duck(1); STYLES.synth.bpm = 100; E.play('synth', ['pad']); KEYH = null;
-  $('#l3').innerHTML = `<span class="eyebrow">第三关 · 2036 年的一天</span><h2 class="big-title">制作人的一天</h2>
-    <p class="lead">2036 年，你是一名音乐制作人，左手是 AI 作曲助手“小谱”。从早上 8 点到凌晨 2 点，七个人会向你提七个要求，每次小谱都生成三个版本。</p>
+  $('#l3').innerHTML = `<span class="eyebrow">第三关 · 2036 年的一天</span><h2 class="big-title">身兼数职的一天</h2>
+    <p class="lead">2036 年，几乎没有人只做一件事。今天，你要从早上 8 点忙到凌晨 2 点，换七个身份：${L3_ROLES.slice(0, 6).join('、')}，最后才轮到做回你自己。</p>
+    <p class="lead">每个身份都会遇到一个要求，你的左手是 AI 助手“小谱”，它每次生成三个版本。不管换成哪个身份，你靠的都是同一样东西：耳朵。</p>
     <p class="lead">这一次三个版本会<b>很接近</b>，要仔细听。你可以自己挑，也可以点<b>“交给小谱挑”</b>，但小谱是随便挑的。每个要求之后，还会有一个小插曲需要你表态。</p>
     <p class="mnote">点一个版本的播放按钮，正在播的那段会立刻停下。</p>
     <button class="btn" id="l3go" style="align-self:flex-start">开始这一天</button>`;
@@ -297,6 +298,7 @@ function l3Task() {
   ['pad', 'sbass', 'sdrums', 'sarp'].forEach((n, k) => E.setLayer(n, L3.i >= [0, 1, 2, 4][k]));
   const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
   $('#l3').innerHTML = `<div class="row" style="justify-content:space-between"><span class="clock">${T.time}</span><span class="tally">第 ${L3.i + 1}/7 个 · 挑对 ${L3.right} · 交给小谱 ${L3.ai}</span></div>
+    <span class="eyebrow" style="color:var(--brass)">此刻的身份：${L3_ROLES[L3.i]}</span>
     <div class="brief"><span class="who">${T.who}</span>${T.brief}</div>
     <div class="clips">${order.map((k, j) => `<div class="clip" data-o="${k}"><b>${letters[j]}</b><div class="wave">${'<i></i>'.repeat(9)}</div><button class="btn ghost sm" data-p="${k}">播放 ${letters[j]}</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" id="l3ai">交给小谱挑</button><button class="btn ghost sm" id="l3stop">停止播放</button></div>
@@ -328,6 +330,14 @@ function l3Task() {
 }
 function l3End() {
   show('l3'); E.duck(1);
+  if (L3.fav == null) {
+    $('#l3').innerHTML = `<span class="eyebrow">第三关 · 凌晨 2 点 47 分</span><h2 class="big-title">今天你换了七个身份</h2>
+      <p class="lead">${L3_ROLES.map((r, i) => `${TASKS[i].time} ${r}`).join('，')}。</p>
+      <div class="speech"><p>躺下之前，你问自己：今天这七个身份里，<b>哪一个让你最像自己？</b></p></div>
+      <div class="choices-col">${L3_ROLES.map((r, i) => `<button class="btn ghost" data-fav="${i}">${r}</button>`).join('')}</div>`;
+    $$('[data-fav]').forEach(b => b.onclick = () => { L3.fav = +b.dataset.fav; PROG.log.push({ lv: 3, who: '你自己', say: '七个身份里，哪一个最像自己？', pick: L3_ROLES[L3.fav], k: '' }); saveL3(); l3End() });
+    return;
+  }
   const share = Math.round(L3.own / 7 * 100);
   let t, x;
   if (L3.own >= 6 && L3.right >= 5) { t = '这是你的歌'; x = '凌晨 2 点 47 分，歌发布了。署名栏只有你的名字。小谱给你发了一条消息：“你今天几乎没用我。”' }
@@ -337,11 +347,12 @@ function l3End() {
   skill('l3', L3.right);
   STYLES.synth.bpm = 148;
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 02:47</span><h2 class="big-title">${t}</h2><p class="lead">${x}</p>
+    <p class="lead">你说今天最像你自己的身份，是<b>「${L3_ROLES[L3.fav]}」</b>。${L3_ROLE_DOMAIN[L3.fav] === 'music' ? '还是做音乐的时候。' : '有意思，不是“做音乐”的那一个。也许你的才华，本来就不止一种用法。'}</p>
     <div class="final"><div><b>${L3.own}</b><span>自己挑</span></div><div><b>${L3.right}</b><span>挑对</span></div><div><b>${L3.ai}</b><span>交给小谱</span></div><div><b>${share}%</b><span>你的署名</span></div></div>
     <p class="mnote">这一关考的是做音乐最基本的耳朵：调式、拍子、律动、音准、和弦、音色、终止式。2036 年 AI 能替你生成，但挑哪一版，还得靠人。</p>
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
   $('#l3done').onclick = () => {
-    mergeTags(L3.tags); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
+    mergeTags(L3.tags); addDom(L3_ROLE_DOMAIN[L3.fav], 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: L3_ROLES[L3.fav] }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
   };
 }
 
@@ -351,21 +362,21 @@ function l3End() {
 const MAJ = [60, 62, 64, 65, 67, 69, 71, 72], MIN = [60, 62, 63, 65, 67, 68, 70, 72];
 const CH_MAJ = [[48, 60, 64, 67], [43, 59, 62, 67], [48, 60, 64, 67], [41, 60, 65, 69], [48, 60, 64, 67], [41, 60, 65, 69], [43, 59, 62, 67], [48, 60, 64, 67]];
 const CH_MIN = [[48, 60, 63, 67], [43, 59, 62, 67], [48, 60, 63, 67], [41, 60, 65, 68], [48, 60, 63, 67], [44, 60, 63, 68], [46, 58, 62, 65], [48, 60, 63, 67]];
-const L4 = { notes: [], tags: {}, ans: {} };
+const L4 = { notes: [], tags: {}, ans: {}, dom: {} };
 function countTags(...ks) { return PROG.log.filter(x => x.lv === 1 && ks.some(k => (x.k || '').split(' ').includes(k))).length }
 function startL4() {
-  Object.assign(L4, { notes: [], tags: {}, ans: {} });
+  Object.assign(L4, { notes: [], tags: {}, ans: {}, dom: {} });
   E.resetMood(); E.duck(1); E.play('orch', ['vln', 'cello', 'harpo']); KEYH = null;
   const P = PROG, mem = [];
   const l1 = P.log.filter(x => x.lv === 1 && x.key);
   shuffle(l1).slice(0, 6).sort((a, b) => a.y - b.y).forEach(x => mem.push(`<li><i>${2026 + x.y} · 第 ${x.y} 年</i>${x.who}：“${x.say.replace(/<[^>]+>/g, '').slice(0, 40)}${x.say.length > 40 ? '……' : ''}”<br>你选了<b>「${x.pick}」</b>。</li>`));
   if (P.l1) mem.push(`<li><i>${2026 + P.l1.year} · 第一关的结局</i>你的活法是<b>「${ENDINGS[P.l1.id].t}」</b>。${ENDINGS[P.l1.id].x}</li>`);
   if (P.l2) mem.push(`<li><i>2036 年 12 月 · 回声铺</i>调音婆婆给你的签是<b>「${P.l2.title}」</b>。</li>`);
-  if (P.l3) mem.push(`<li><i>2036 · 制作人的一天</i>你自己挑了 ${P.l3.own} 次，挑对 ${P.l3.right} 次，交给小谱 ${P.l3.ai} 次。那首歌最后是<b>「${P.l3.title}」</b>。</li>`);
+  if (P.l3) mem.push(`<li><i>2036 · 身兼数职的一天</i>${P.l3.fav ? `七个身份里，你最像自己的是「${P.l3.fav}」。` : ''}你自己挑了 ${P.l3.own} 次，挑对 ${P.l3.right} 次，交给小谱 ${P.l3.ai} 次。那首歌最后是<b>「${P.l3.title}」</b>。</li>`);
   $('#l4').innerHTML = `<span class="eyebrow">第四关 · 2036 年 12 月 31 日</span><h2 class="big-title">十年回响</h2>
     <p class="lead">十年的最后一个晚上，你坐在钢琴前，回头看这十年。</p>
     <ul class="memories">${mem.join('')}</ul>
-    <button class="btn" id="l4go" style="align-self:flex-start">回答最后三个问题</button>`;
+    <button class="btn" id="l4go" style="align-self:flex-start">回答最后四个问题</button>`;
   show('l4'); $('#l4go').onclick = () => l4Ask(0);
 }
 function l4Questions() {
@@ -374,6 +385,7 @@ function l4Questions() {
   return [
     { q: `开始之前，你说你最想成为<b>「${id.t}」</b>。这十年里，你有 <b>${nSafe}</b> 次选了钱或者稳定，<b>${nSelf}</b> 次选了坚持自己，<b>${nSeen}</b> 次选了被更多人看见。<br>现在有人给你一个机会：用一整年零收入，换一张完全属于你的专辑。你换吗？`, a: [['换', 'ideal auth risk'], ['不换', 'secure money'], ['我不知道', 'avoid']], key: 'trade' },
     { q: '2036 年，AI 已经可以完美模仿你的声音和风格。你觉得你身上，哪一样东西是它<b>永远学不走</b>的？', a: [['我的经历和故事', 'auth'], ['我和听众之间的关系', 'bond'], ['我在现场的那一刻', 'risk'], ['说实话，我不确定', 'ai avoid']], key: 'core' },
+    { q: '2036 年的一个饭局上，有人问你：<b>“你是做什么的？”</b>你会怎么回答？', a: SELF_INTRO.map(x => [x[0], x[2], x[1]]), key: 'intro' },
     { q: '如果 2046 年的你回头看今天，最希望你从明天开始做的一件事是什么？', a: SELF_ADVICE.map((t, i) => [t, ['auth', 'secure', 'ai', 'bond'][i]]), key: 'self' }
   ];
 }
@@ -381,10 +393,10 @@ function l4Ask(i) {
   const Q = l4Questions();
   if (i >= Q.length) return l4Compose();
   const q = Q[i];
-  $('#l4').innerHTML = `<span class="eyebrow">第四关 · 最后的问题 ${i + 1} / 3</span><h2 class="big-title">问自己</h2>
+  $('#l4').innerHTML = `<span class="eyebrow">第四关 · 最后的问题 ${i + 1} / ${Q.length}</span><h2 class="big-title">问自己</h2>
     <div class="speech"><p>${q.q}</p></div><p class="mnote">没有标准答案，只有真话和假话。</p>
     <div class="choices-col">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
-  $$('[data-a]').forEach(b => b.onclick = () => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) });
+  $$('[data-a]').forEach(b => b.onclick = () => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) });
 }
 function l4Compose() {
   L4.notes = []; E.play('orch', ['vln']); E.duck(.3);
@@ -442,7 +454,7 @@ function l4Finale() {
 }
 function l4End(B) {
   if (PROG.stage >= 4 && PROG.portrait) return showPortrait();
-  mergeTags(L4.tags);
+  mergeTags(L4.tags); for (const k in L4.dom) addDom(k, L4.dom[k]);
   PROG.l4 = { notes: L4.notes, mode: B, ans: L4.ans };
   PROG.portrait = buildPortrait(); PROG.stage = 4; save();
   showPortrait(true);
@@ -459,12 +471,20 @@ function buildPortrait() {
   for (const a in IDEALS) { let s = 0; for (const t in IDEALS[a].w) s += IDEALS[a].w[t] * share(t); if (s > bs) { bs = s; best = a } }
   const top = keys.filter(k => T[k]).slice(0, 3);
   const asks = top.map(k => { const pool = PROG.log.filter(x => x.lv === 1 && (x.k || '').split(' ').includes(k)); const x = pool.length ? pick(pool) : null; return { k, y: x ? x.y : null, who: x ? x.who : '', pick: x ? x.pick : '' } });
+  const dom = {}; for (const k in DOMAINS) dom[k] = PROG.dom[k] || 0;
+  for (const t in TRAIT_DOMAIN) for (const d in TRAIT_DOMAIN[t]) dom[d] += (T[t] || 0) * TRAIT_DOMAIN[t][d];
+  const dsum = Object.values(dom).reduce((a, b) => a + b, 0) || 1;
+  const spec = Object.keys(DOMAINS).map(k => [k, Math.round(dom[k] / dsum * 100)]).sort((a, b) => b[1] - a[1]);
+  const endMs = PROG.l1 && ENDINGS[PROG.l1.id].ms != null ? ENDINGS[PROG.l1.id].ms : 5;
+  const musicNow = Math.max(1, Math.min(10, Math.round((dom.music / dsum * 10 * 1.6 + endMs) / 2)));
+  const ident = spec[0][0] === spec[1][0] ? DOMAIN_NOUN[spec[0][0]] : DOMAIN_ADJ[spec[1][0]] + DOMAIN_NOUN[spec[0][0]];
   const sk = PROG.skills, avg = a => a && a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
   return {
     arch: best, archT: IDEALS[best].t, ideal: PROG.ideal, top, bars: keys.filter(k => T[k]).slice(0, 7).map(k => [k, T[k] || 0]),
     asks, ending: PROG.l1 ? PROG.l1.id : null, fortune: PROG.l2 ? PROG.l2.title : null,
     skills: { rhythm: avg(sk.rhythm), tune: avg(sk.tune), memory: sk.memory ? sk.memory.reduce((a, b) => a + b, 0) : null, memN: sk.memory ? sk.memory.length * 3 : 0, tempo: avg(sk.tempo), ai: sk.ai ? sk.ai.reduce((a, b) => a + b, 0) : null, aiN: sk.ai ? sk.ai.length : 0, l3: PROG.l3 ? PROG.l3.right : null },
-    ans: PROG.l4 ? PROG.l4.ans : {}, notes: PROG.l4 ? PROG.l4.notes : []
+    ans: PROG.l4 ? PROG.l4.ans : {}, notes: PROG.l4 ? PROG.l4.notes : [],
+    spec, ident, musicNow, share0: PROG.share, endWho: PROG.l1 ? ENDINGS[PROG.l1.id].who : null, fav: PROG.l3 ? PROG.l3.fav : null
   };
 }
 function showPortrait(fresh) {
@@ -488,9 +508,11 @@ function showPortrait(fresh) {
   const trade = p.ans.trade ? `<p class="mnote">最后，当被问到“用一年零收入换一张完全属于你的专辑”时，你选了「${p.ans.trade}」。</p>` : '';
   $('#portrait').innerHTML = `<span class="eyebrow">${fresh ? '第四关完成 · ' : ''}音乐人格画像</span>
     <article class="pt-head"><span class="eyebrow">十年的选择，指向的是</span><h3>${p.archT}</h3>
+      ${p.ident ? `<p>如果一定要用一句话介绍你：你是一个<b>「${p.ident}」</b>。</p>` : ''}
       <p>${TRAITS[p.top[0]] ? `你身上最强的三种倾向是「${p.top.map(k => TRAITS[k].n).join('」「')}」。` : ''}${p.ending ? `你在第一关活成了「${ENDINGS[p.ending].t}」，` : ''}${p.fortune ? `调音婆婆说你是「${p.fortune}」。` : ''}</p>
       ${id ? `<div class="vs"><div><span>开局时的理想</span><b>${id.t}</b></div><span>→</span><div><span>十年后的你</span><b>${p.archT}</b></div></div><p>${verdict}</p>` : ''}
     </article>
+    ${p.spec ? identSection(p) : ''}
     <section class="pt-sec"><h4>你的选择倾向</h4>${p.bars.map(([k, v]) => `<div class="tbar">${TRAITS[k].n}<div><i style="width:${Math.round(v / maxv * 100)}%"></i></div><span>${Math.round(v)}</span></div>`).join('')}<p class="mnote">数字是这种倾向在你所有选择里出现的次数（抽到的牌和弹的旋律也算在内）。</p></section>
     <section class="pt-sec"><h4>你底层的优点</h4><ul>${p.top.map(k => `<li><b>${TRAITS[k].n}。</b>${TRAITS[k].s}</li>`).join('')}</ul></section>
     <section class="pt-sec"><h4>可能的盲点</h4><ul>${p.top.map(k => `<li><b>${TRAITS[k].n}的另一面。</b>${TRAITS[k].w}</li>`).join('')}</ul></section>
@@ -501,6 +523,21 @@ function showPortrait(fresh) {
     <p class="mnote">这份画像来自你在游戏里做的选择，它是一面镜子，不是心理诊断。选择的时候越诚实，它照出来的你就越真实。</p>
     <div class="row"><button class="btn" data-hub>回到主页</button><button class="btn ghost" data-reset>重新开始十年</button></div>`;
   show('portrait');
+}
+
+function identSection(p) {
+  const diff = p.share0 == null ? null : p.musicNow - p.share0;
+  const cmp = diff == null ? '' : Math.abs(diff) <= 1 ? `你开局时希望音乐占 ${p.share0} 成，十年后它大约占 ${p.musicNow} 成，几乎一致。你很清楚音乐在你生活里的位置。`
+    : diff < 0 ? `你开局时希望音乐占 ${p.share0} 成，按你十年的选择算，它大约只占 ${p.musicNow} 成。是生活把它挤走了，还是你在别的地方找到了同样的热爱？这两种答案，意味着完全不同的下一步。`
+      : `你开局时以为音乐只占 ${p.share0} 成，按你十年的选择算，它大约占了 ${p.musicNow} 成。也许你低估了自己有多需要它。`;
+  const lines = [];
+  if (p.endWho) lines.push(`第一关结束时，别人这样介绍你：「${p.endWho}」。`);
+  if (p.fav) lines.push(`2036 年身兼数职的那一天，你觉得最像自己的身份是「${p.fav}」。`);
+  if (p.ans && p.ans.intro) lines.push(`饭局上被问到“你是做什么的”，你回答：${p.ans.intro}`);
+  return `<section class="pt-sec"><h4>身份光谱：十年后，你不只是一种人</h4>
+    ${p.spec.map(([k, v]) => `<div class="tbar">${DOMAINS[k].slice(0, 2)}<div><i style="width:${v}%"></i></div><span>${v}%</span></div>`).join('')}
+    <p class="mnote">由你所有选择背后的倾向，加上你在第三、第四关的回答推算。五块分别是：${Object.values(DOMAINS).join('、')}。</p>
+    <ul>${lines.map(l => `<li>${l}</li>`).join('')}<li>${cmp}</li><li>${/音乐人$/.test(p.ident) ? `音乐仍然是你的主线，但你不只是“音乐人”：你是一个<b>${p.ident}</b>。另一种能力，正是你在 AI 时代和别人拉开差距的地方。` : `“音乐人”这三个字不必框住你。会开车不等于你是司机，会写歌也不等于你只能是“音乐人”。你是一个<b>${p.ident}</b>，音乐是你的能力之一，而不是你唯一的名字。`}</li></ul></section>`;
 }
 
 /* =========================================================
