@@ -12,51 +12,64 @@
 <body>
 <div id="app">
 
-<!-- ========== HUB ========== -->
+<!-- 除了主页，每个页面顶部都只有一个“返回主页”。进度会自动保存 -->
+<header class="topbar" id="topbar" hidden>
+  <button class="home" data-hub>← 返回主页</button>
+  <span class="eyebrow" id="topTitle"></span>
+</header>
+
+<!-- ========== 主页 ========== -->
 <section class="screen scroll" id="hub">
   <div class="hero">
     <span class="eyebrow">选题 1 音乐游戏 × 选题 8 十年后的音乐人</span>
     <h1>十年<span>回响</span></h1>
     <div class="staff" aria-hidden="true"></div>
-    <p>2027 到 2036，你有十年时间活成一个音乐人。四个关卡，每关一种音乐。第四关会把前三关的选择串起来。</p>
+    <p>2027 到 2036，你有十年时间活成一个音乐人。四个关卡必须按顺序走完，没有回头路。走完以后，你会得到一份自己的音乐人格画像。</p>
   </div>
+  <div id="journey"></div>
   <div class="levels" id="levels"></div>
   <details class="panel">
     <summary id="gallerySum">结局图鉴</summary>
-    <p class="mnote" style="margin-top:8px">第一关一共有 19 种活法。每个人玩出来的都不一样，组里可以比一比谁解锁得多。</p>
+    <p class="mnote" style="margin-top:8px">第一关一共有 19 种活法。重新开始十年可以解锁更多，组里可以比一比谁解锁得多。</p>
     <div class="gallery" id="gallery"></div>
   </details>
   <details class="panel">
     <summary>这个游戏里，音乐是怎么用的</summary>
     <ol>
       <li><b>每关一种曲风。</b>点“试听”就能听出区别：Lo-fi 爵士、神秘竖琴、合成器浪潮、管弦乐。</li>
-      <li><b>越往后音乐越丰富。</b>第一关第 1 年只有钢琴，之后每隔一两年加一条音轨（贝斯、鼓、分解和弦、主旋律），速度也一年比一年快。第三关的时间越晚，节奏越快。</li>
-      <li><b>音乐跟着你的状态变。</b>数值接近极限时会出现心跳声，声音变闷。热爱太低，钢琴走音。原创太低，主旋律变成机器音色。</li>
-      <li><b>音乐本身就是玩法。</b>跟节拍演出、听音模仿、人机辨听、用耳朵帮甲方挑版本、用自己弹的旋律算命，最后写一段四个音的旋律，由管弦乐把它变成你的“十年回响”。</li>
+      <li><b>越往后音乐越丰富。</b>第一关每过一年就多一种乐器：钢琴、贝斯、鼓、沙锤、弦乐、吉他、长笛、颤音琴、小号、人声合唱。</li>
+      <li><b>音乐跟着你的状态变。</b>数值接近极限时会出现心跳声，声音变闷。热爱太低，钢琴走音。原创太低，长笛变成机器音色。</li>
+      <li><b>音乐本身就是玩法。</b>跟节拍演出、凭耳朵调弦、听音模仿、心里稳住拍子、人机辨听、帮甲方挑版本、用自己弹的旋律算命，最后写一段旋律，由管弦乐奏成你的“十年回响”。</li>
       <li><b>全部是原创。</b>所有音乐都由浏览器实时合成，没有用任何现成歌曲。</li>
     </ol>
   </details>
 </section>
 
-<!-- ========== L1 INTRO ========== -->
+<!-- ========== 开局：理想的音乐人 ========== -->
+<section class="screen scroll" id="ideal" hidden></section>
+
+<!-- ========== 第一关说明 ========== -->
 <section class="screen intro scroll" id="intro" hidden>
   <span class="eyebrow">第一关</span>
   <h2 class="big-title">饿死之前</h2>
+  <div class="notice">
+    <b>开始之前</b>
+    <p>接下来的每一个选择，请按照你<b>现在真实的情况</b>来选：你真的会怎么做，而不是你觉得应该怎么做。</p>
+    <p>忠于自己，不要骗自己。最后的音乐人格画像，只有在你诚实的时候才有意义。</p>
+  </div>
   <div class="rules">
     <p>每张卡片是一个人对你说的一句话。<b>往左滑或往右滑</b>做决定，也可以点卡片下面的按钮，或按键盘 ← →。</p>
-    <p>你有四个数值：<b>钱、名气、热爱、原创</b>。犹豫的时候，数值上方的圆点会提示这个选择影响哪几项。</p>
-    <p>数值掉到 0 或涨满 100 时，游戏不会直接结束，而是会遇到一张红框的<b>「人生岔路」</b>卡。比如钱花光了，妈妈劝你回家考公：去，就走向那条路的结局；不去，就付出一些代价，继续撑下去。</p>
-    <p>撑过十年，会根据你最后的四个数值，得到属于你的活法。一共 19 种。</p>
-    <p>路上有三种<b>音乐关卡</b>：上台演出、听音模仿、人机辨听。</p>
+    <p>你有四个数值：<b>钱、名气、热爱、原创</b>。犹豫时，数值上方的圆点会提示这个选择影响哪几项。</p>
+    <p>数值掉到 0 或涨满 100，会遇到红框的<b>「人生岔路」</b>：去，就走向那条路的结局；不去，就付出代价继续撑。</p>
+    <p>每一年有 5 个选择和 1 个音乐关卡，一共十年。中途离开也没关系，下次回来会接着玩。</p>
   </div>
   <div class="who-pick">
-    <button class="btn" data-g="he">以「他」开始<small>标准难度</small></button>
-    <button class="btn ghost" data-g="she">以「她」开始<small>行业现实模式：起步资金更少，会多遇到一些男乐手不会遇到的事</small></button>
+    <button class="btn" data-g="he">以「他」开始</button>
+    <button class="btn" data-g="she">以「她」开始</button>
   </div>
-  <button class="btn ghost sm" data-hub style="align-self:flex-start">返回关卡</button>
 </section>
 
-<!-- ========== YEAR BREAK ========== -->
+<!-- ========== 每年开头 ========== -->
 <section class="screen yb" id="yearbreak" hidden>
   <span class="cal" id="ybCal">2027</span>
   <div class="big" id="ybBig">第 1 年</div>
@@ -64,7 +77,7 @@
   <button class="btn" id="ybGo" style="align-self:flex-start">开始这一年</button>
 </section>
 
-<!-- ========== L1 PLAY ========== -->
+<!-- ========== 第一关卡牌 ========== -->
 <section class="screen" id="play" hidden>
   <header class="hud">
     <div class="yr"><b id="yrNum">第 1 年</b><span id="yrCal">2027 · 饿死之前</span></div>
@@ -88,29 +101,32 @@
   </footer>
 </section>
 
-<!-- ========== L1 MINI ========== -->
+<!-- ========== 第一关音乐关卡 ========== -->
 <section class="screen scroll" id="mini" hidden>
   <div class="mini-head"><span class="eyebrow" id="miniEye">音乐关卡</span><h2 id="miniTitle"></h2><p id="miniDesc"></p></div>
   <div id="miniBody"></div>
 </section>
 
-<!-- ========== L1 END ========== -->
+<!-- ========== 第一关结局 ========== -->
 <section class="screen end scroll" id="end" hidden>
   <span class="kind" id="endKind"></span>
   <h2 id="endTitle"></h2>
   <p id="endText"></p>
   <div class="final" id="final"></div>
   <p class="mnote" id="endMusic"></p>
-  <div class="row"><button class="btn" id="again">再来一局</button><button class="btn ghost" data-go="l2">去第二关</button><button class="btn ghost" data-hub>返回关卡</button></div>
+  <div class="row"><button class="btn" data-go="l2">进入第二关</button></div>
 </section>
 
-<!-- ========== L2 / L3 / L4 ========== -->
+<!-- ========== 第二、三、四关和人格画像（内容由 game.js 生成） ========== -->
 <section class="screen scroll" id="l2" hidden></section>
 <section class="screen scroll" id="l3" hidden></section>
 <section class="screen scroll" id="l4" hidden></section>
+<section class="screen scroll" id="portrait" hidden></section>
 
 </div>
-
-<script src="game.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+<script src="js/levels.js"></script>
 </body>
 </html>
