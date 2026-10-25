@@ -51,6 +51,7 @@ E.stopClip = function () {
 /* fn(bus) 负责排好音符并返回时长（秒）；duckTo 是播放时背景音乐压到多低，0 表示完全停 */
 E.playClip = function (fn, duckTo = .08, onEnd) {
   this.init(); this.stopClip();
+  if (this.muted) this.setMute(false); /* 点了播放就是想听：自动打开声音 */
   const c = this.ctx, g = c.createGain(); g.gain.value = 1; g.connect(this.comp);
   const s = c.createGain(); s.gain.value = .3; g.connect(s); s.connect(this.verb);
   this.clipBus = g;
@@ -94,7 +95,10 @@ E.sched = function (step, t) {
 };
 E.nextBarTime = function () { const d = this.d16(); return this.nextTime + ((16 - (this.step % 16)) % 16) * d };
 E.duck = function (v) { if (this.ctx) this.duckG.gain.setTargetAtTime(v, now(), .12) };
-E.setMute = function (m) { this.muted = m; if (this.ctx) this.out.gain.setTargetAtTime(m ? 0 : .85, now(), .05) };
+E.setMute = function (m) {
+  this.muted = m; if (this.ctx) this.out.gain.setTargetAtTime(m ? 0 : .85, now(), .05);
+  this.onMute && this.onMute(m);
+};
 E.resetMood = function () { this.mood = { danger: 0, love: 1, orig: 1 }; this.tempoMul = 1; if (this.lp) this.lp.frequency.setTargetAtTime(18000, now(), .1) };
 
 /* =========================================================
@@ -166,6 +170,14 @@ function flute(out, t, midi, dur, g = .08) {
   o.connect(a); a.connect(out); o.start(t); lfo.start(t); o.stop(t + dur + .6); lfo.stop(t + dur + .6);
   nhit(out, t, { g: g * .25, type: 'bandpass', f: mtof(midi) * 2, d: .08, q: 3 });
 }
+/* 合成器拨奏：温暖的锯齿波，滤波器快速合上，带一点合唱感，听起来活泼 */
+function synthPluck(out, t, midi, g = .04) {
+  const c = E.ctx, f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 3;
+  f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(500, t + .28);
+  const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .006); a.gain.setTargetAtTime(0, t + .05, .12);
+  f.connect(a); a.connect(out);
+  [-7, 7].forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + .8) });
+}
 /* 颤音琴：带颤动的金属感 */
 function vibes(out, t, midi, g = .05) {
   const c = E.ctx, a = c.createGain(), trem = c.createOscillator(), tg = c.createGain();
@@ -179,6 +191,18 @@ function choir(out, t, midi, dur, g = .03) {
   const c = E.ctx, a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .6); a.gain.setTargetAtTime(0, t + dur, .3); a.connect(out);
   [[750, 5], [1150, 6]].forEach(([f, q]) => { const b = c.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; b.connect(a);
     [-7, 6].forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(b); o.start(t); o.stop(t + dur + 1.5) }) });
+}
+/* 心跳：“扑—通”，第一声低而闷，第二声稍高稍轻，间隔约 0.17 秒，像隔着胸腔听到的 */
+function heartbeat(out, t, g = .6) {
+  const c = E.ctx;
+  const thump = (tt, f0, f1, gg, d) => {
+    const o = c.createOscillator(), a = c.createGain(), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 140;
+    o.frequency.setValueAtTime(f0, tt); o.frequency.exponentialRampToValueAtTime(f1, tt + d);
+    a.gain.setValueAtTime(0, tt); a.gain.linearRampToValueAtTime(gg, tt + .012); a.gain.exponentialRampToValueAtTime(.001, tt + d);
+    o.connect(lp); lp.connect(a); a.connect(out); o.start(tt); o.stop(tt + d + .05);
+    nhit(out, tt, { g: gg * .35, type: 'lowpass', f: 180, d: d * .6 });
+  };
+  thump(t, 58, 36, g, .2); thump(t + .17, 70, 44, g * .65, .15);
 }
 function bell(out, t, midi, g = .05) { tone(out, t, midi, .02, { type: 'sine', gain: g, att: .002, rel: 2.4 }); tone(out, t, midi + 19, .02, { type: 'sine', gain: g * .2, att: .002, rel: 1.2 }) }
 
@@ -200,10 +224,10 @@ const STYLES = {
       { name: 'strings', label: '弦乐', play(st, bar, t, out, s, E) { if (st) return; const c = chordAt(s, bar); c.v.slice(0, 3).forEach(m => strings(out, t, m + 12, E.d16() * 15, .012, { att: .9, cut: 1800 })) } },
       { name: 'guitar', label: '吉他', play(st, bar, t, out, s) { if (st % 2) return; const c = chordAt(s, bar); guitar(out, t, c.v[(st / 2) % 4] + (st > 7 ? 12 : 0), .055) } },
       { name: 'flute', label: '长笛', play(st, bar, t, out, s, E) { const m = LEAD[bar % 4][st]; if (m == null) return; if (E.mood.orig < .35) tone(out, t, m + 12, E.d16() * 1.5, { type: 'square', gain: .03, att: .002, rel: .05, cut: 2400 }); else flute(out, t, m + 12, E.d16() * 1.6, .06) } },
-      { name: 'vibes', label: '颤音琴', play(st, bar, t, out, s) { if (st !== 4 && st !== 12) return; const c = chordAt(s, bar); vibes(out, t, c.v[st === 4 ? 2 : 3] + 12, .035) } },
+      { name: 'synth', label: '合成器', play(st, bar, t, out, s) { const pat = [0, 3, 6, 8, 11, 14]; const k = pat.indexOf(st); if (k < 0) return; const c = chordAt(s, bar); synthPluck(out, t, c.v[[0, 2, 1, 3, 2, 1][k]] + 12 + (k === 3 ? 12 : 0), .028) } },
       { name: 'trumpet', label: '小号', play(st, bar, t, out, s, E) { if (bar % 2 !== 1 || (st !== 6 && st !== 14)) return; const c = chordAt(s, bar); c.v.slice(1).forEach(m => trumpet(out, t, m + 12, E.d16() * 1.2, .022)) } },
       { name: 'choir', label: '人声合唱', play(st, bar, t, out, s, E) { if (st || bar % 2) return; const c = chordAt(s, bar); [c.r + 24, c.v[1] + 12, c.v[2] + 12].forEach(m => choir(out, t, m, E.d16() * 30, .018)) } },
-      { name: 'heart', label: '心跳', hot: true, play(st, bar, t, out, s, E) { if (st === 0 || st === 3 || st === 8 || st === 11) kick(out, t, .25 + .5 * E.mood.danger, 70, 38, .25) } }
+      { name: 'heart', label: '心跳', hot: true, play(st, bar, t, out, s, E) { if (st % 4 || (E.mood.danger < .5 && st % 8)) return; heartbeat(out, t, .35 + .55 * E.mood.danger) } }
     ]
   },
   /* 第二关：神秘的竖琴和大提琴持续音 */
@@ -239,7 +263,7 @@ const STYLES = {
   }
 };
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
-const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'vibes', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'] };
+const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'] };
 
 /* 界面音效 */
 function sfxSwipe() { if (!E.ctx) return; nhit(E.sfx, now(), { g: .12, type: 'bandpass', f: 1200, d: .18, q: 1.2 }) }

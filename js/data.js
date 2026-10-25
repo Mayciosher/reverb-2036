@@ -203,7 +203,7 @@ function finalEnding(s) {
 }
 
 /* ---------- 第一关：每年新加入的乐器 ---------- */
-const UNLOCK = { 1: 'keys', 2: 'bass', 3: 'drums', 4: 'shaker', 5: 'strings', 6: 'guitar', 7: 'flute', 8: 'vibes', 9: 'trumpet', 10: 'choir' };
+const UNLOCK = { 1: 'keys', 2: 'bass', 3: 'drums', 4: 'shaker', 5: 'strings', 6: 'guitar', 7: 'flute', 8: 'synth', 9: 'trumpet', 10: 'choir' };
 
 /* ---------- 音乐人格画像 ---------- */
 const TRAITS = {

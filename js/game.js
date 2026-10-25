@@ -117,7 +117,7 @@ function startLevel(id) {
    ========================================================= */
 function showIdeal() {
   $('#ideal').innerHTML = `<span class="eyebrow">开始之前</span><h2 class="big-title">你心里理想的音乐人</h2>
-    <p class="lead">先别管现实。如果可以随便选，你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
+    <p class="lead">请基于你现在的真实情况想一想：你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
     <div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div>`;
   show('ideal');
   $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); showShare() });
@@ -152,7 +152,7 @@ function yearBreak() {
   if (UNLOCK[G.year]) items.push(['新乐器', `${STYLES.lofi.layers.find(L => L.name === UNLOCK[G.year]).label}加入了背景音乐`]);
   items.push(['速度', `每分钟 ${80 + G.year - 1} 拍`]);
   items.push(['今年', '5 个选择，1 个音乐关卡']);
-  if (G.year === 6) items.push(['提醒', '从这一年起，你会遇到一些现在还没发生的事']);
+  if (G.year === 6) items.push(['提醒', '从这一年起，你会遇到一些现在还没发生的事。不用猜未来的你，按今天的你来选']);
   if (G.year === 10) items.push(['最后一年', '撑过今年，你会得到属于自己的活法']);
   G.yb = items; buildQueue(); checkCrisis(); G.cur = null; saveL1();
   renderYB(); show('yearbreak'); applyYearMusic();
@@ -179,21 +179,39 @@ function resumeL1() {
 function nextCard() {
   if (!G) return;
   if (!G.queue.length) { if (G.year >= 10) return finishL1(finalEnding(G.s), true); return yearBreak() }
-  G.cur = G.queue.shift(); if (!G.cur.x) G.idx++; G.lock = false; saveL1(); renderCard();
+  G.cur = G.queue.shift(); if (!G.cur.x) G.idx++; G.lock = false; G.snapPrev = G.snapCur || null; G.snapCur = snapshot(); saveL1(); renderCard();
+}
+/* 撤回上一步：保存“做上一个选择之前”的完整状态。每局 3 次 */
+function snapshot() {
+  const g = JSON.parse(JSON.stringify(Object.assign({}, G, { snapCur: null, snapPrev: null })));
+  return { g, tags: JSON.parse(JSON.stringify(PROG.tags)), logLen: PROG.log.length, skills: JSON.parse(JSON.stringify(PROG.skills)) };
+}
+function undo() {
+  if (!G || G.lock || !G.snapPrev || (G.regrets ?? 3) <= 0) return;
+  const r = G.snapPrev, left = (G.regrets ?? 3) - 1;
+  G = JSON.parse(JSON.stringify(r.g)); G.regrets = left; G.snapCur = r; G.snapPrev = null; G.lock = false;
+  PROG.tags = JSON.parse(JSON.stringify(r.tags)); PROG.log.length = r.logLen; PROG.skills = JSON.parse(JSON.stringify(r.skills));
+  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe();
+}
+$('#undo').onclick = undo;
+function renderUndo() {
+  const left = G.regrets ?? 3, b = $('#undo');
+  b.disabled = !G.snapPrev || left <= 0;
+  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗` : '后悔药用完了';
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
   const card = $('#card'); card.className = 'card enter' + (c.crisis ? ' crisis' : ''); card.style.transform = ''; card.style.opacity = '';
   $('#av').textContent = ch; $('#av').style.background = col;
   $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`;
-  const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
+  const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : (c.w && c.w[0] >= 6) ? '<span class="badge fut">未来的事 · 按今天的你回答</span>' : '';
   $('#say').innerHTML = badge + c.say;
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
   $('#yrNum').textContent = `第 ${G.year} 年`; $('#yrCal').textContent = `${2026 + G.year} · 饿死之前`;
-  renderMeters();
+  renderMeters(); renderUndo();
   requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
 }
 function preview(side) {
@@ -266,7 +284,9 @@ function renderChans() {
   box.innerHTML = STYLES.lofi.layers.map(L => `<span class="ch ${L.hot ? 'hot' : ''} ${E.styleKey === 'lofi' && E.layers[L.name] ? 'on' : ''}">${L.label}</span>`).join('');
 }
 E.onLayers = renderChans;
-$('#mute').onclick = () => { E.setMute(!E.muted); $('#mute').textContent = E.muted ? '打开声音' : '静音' };
+/* 声音开关：每个页面右上角都有，状态全局同步 */
+E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
+document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); E.setMute(!E.muted) } });
 $$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); newGame(b.dataset.g) });
 
 function finishL1(id, survived) {

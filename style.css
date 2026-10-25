@@ -44,6 +44,9 @@ p{margin:0;line-height:1.65}
 .mnote{font-size:12px;color:var(--mute);line-height:1.6}
 .notice{background:var(--paper);color:var(--paper-ink);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .notice b{font-weight:700}
+.notice .honest{font-size:19px;font-weight:700;line-height:1.5;color:#8f2f3f;border-left:4px solid #c0464f;padding-left:10px;margin:4px 0}
+.say .badge.fut{background:#3d6b8f}
+#undo:disabled{opacity:.35;cursor:default}
 
 /* 顶部栏 */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}

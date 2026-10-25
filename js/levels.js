@@ -9,7 +9,7 @@ function rankTraits(extra = {}) {
   return { T, keys };
 }
 const FLAWY = ['avoid', 'burn', 'approval', 'money', 'ai', 'secure', 'fight', 'auth', 'ideal', 'risk', 'bond'];
-const LUCKY_INST = ['钢琴', '大提琴', '长笛', '吉他', '小号', '竖琴', '颤音琴', '人声'];
+const LUCKY_INST = ['钢琴', '大提琴', '长笛', '吉他', '小号', '竖琴', '合成器', '人声'];
 const VERSE = {
   ideal: '你会穷，会累，但会一直唱。真正的坎，是有一天你发现自己在等别人允许你理想。',
   money: '账本和乐谱，你都会写得很好。别让账本替乐谱做决定。',
@@ -520,7 +520,7 @@ function showPortrait(fresh) {
     ${cells.length ? `<section class="pt-sec"><h4>你的耳朵和手</h4><div class="skill">${cells.map(c => `<div><b>${c[0]}</b><span>${c[1]}</span></div>`).join('')}</div></section>` : ''}
     <section class="pt-sec"><h4>给你在 AI 时代的建议</h4><ul>${adv.map(a => `<li>${a}</li>`).join('')}</ul>${trade}</section>
     ${p.notes && p.notes.length ? `<p class="mnote">你留给十年前自己的旋律：<b style="color:var(--brass);font-family:var(--f-mono)">${jp(p.notes)}</b></p>` : ''}
-    <p class="mnote">这份画像来自你在游戏里做的选择，它是一面镜子，不是心理诊断。选择的时候越诚实，它照出来的你就越真实。</p>
+    <p class="mnote">这份画像来自你在游戏里做的选择，它照出的是你今天的价值观，是一面镜子，不是心理诊断，也不是预言。选择的时候越诚实，它照出来的你就越真实。</p>
     <div class="row"><button class="btn" data-hub>回到主页</button><button class="btn ghost" data-reset>重新开始十年</button></div>`;
   show('portrait');
 }
