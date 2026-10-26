@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>十年回响</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#16131d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="十年回响">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,6 +32,11 @@
     <p>2027 到 2036，十年。十年后也许没有人只是“音乐人”，你可能会写歌、会教课、会用 AI、会做生意。这个游戏不替你回答你是谁，只问一个问题：十年后，音乐在你的生活里占几成？四个关卡按顺序走完，没有回头路，最后你会得到自己的音乐人格画像和身份光谱。</p>
   </div>
   <div id="journey"></div>
+  <div class="row tools">
+    <button class="home" data-install>安装到手机或电脑</button>
+    <button class="home" data-recal>重新校准耳机延迟</button>
+  </div>
+  <p class="mnote" id="installTip" hidden>安卓手机和电脑（Chrome、Edge）：点浏览器地址栏右侧或菜单里的「安装」。iPhone、iPad：用 Safari 打开，点底部的分享按钮，选「添加到主屏幕」。Mac 上的 Safari：菜单「文件」→「添加到程序坞」。安装后可以像 App 一样从桌面打开，没有网络也能玩。<br>如果是 iPhone，请记得关闭侧边的静音键，否则网页可能没有声音。</p>
   <div class="levels" id="levels"></div>
   <details class="panel">
     <summary id="gallerySum">结局图鉴</summary>
@@ -61,7 +70,9 @@
   </div>
   <div class="rules">
     <p>每张卡片是一个人对你说的一句话。<b>往左滑或往右滑</b>做决定，也可以点卡片下面的按钮，或按键盘 ← →。</p>
-    <p>你有四个数值：<b>钱、名气、热爱、原创</b>。犹豫时，数值上方的圆点会提示这个选择影响哪几项。</p>
+    <p>你有四个数值：<b>钱、名气、热爱、原创</b>。这一版<b>不显示具体数字</b>，只能看柱子的高低；快到极限时会提示“危险”或“过高”。犹豫时，数值上方的圆点会提示这个选择影响哪几项。</p>
+    <p>每过一年，<b>生活成本会上涨</b>，名气会自然消退，热爱也会被生活磨掉一点。你还会遇到<b>意外</b>，以及几年前某个选择的<b>回响</b>。</p>
+    <p>标着<b>「真实故事改编」</b>的卡片，原型都来自公开报道过的真实事件，卡片下方会写出原型。</p>
     <p>数值掉到 0 或涨满 100，会遇到红框的<b>「人生岔路」</b>：去，就走向那条路的结局；不去，就付出代价继续撑。</p>
     <p>从第 6 年起，你会遇到一些<b>现在还没发生的事</b>。你不需要预测十年后的自己会怎么选，按<b>今天的你</b>会怎么选来回答就好。这个游戏照出的是你现在的价值观，不是预言。</p>
     <p>手滑选错了，可以点<b>「撤回上一步」</b>。不过现实里没有后悔药，所以每局只给你 3 颗。</p>
@@ -92,6 +103,7 @@
       <div class="lean l" id="leanL"></div><div class="lean r" id="leanR"></div>
       <div class="whois"><div class="av" id="av"></div><div><b id="who"></b><small id="when"></small></div></div>
       <p class="say" id="say"></p>
+      <p class="src" id="src" hidden></p>
       <span class="prog" id="prog"></span>
     </div>
   </div>

@@ -521,8 +521,9 @@ function showPortrait(fresh) {
     <section class="pt-sec"><h4>给你在 AI 时代的建议</h4><ul>${adv.map(a => `<li>${a}</li>`).join('')}</ul>${trade}</section>
     ${p.notes && p.notes.length ? `<p class="mnote">你留给十年前自己的旋律：<b style="color:var(--brass);font-family:var(--f-mono)">${jp(p.notes)}</b></p>` : ''}
     <p class="mnote">这份画像来自你在游戏里做的选择，它照出的是你今天的价值观，是一面镜子，不是心理诊断，也不是预言。选择的时候越诚实，它照出来的你就越真实。</p>
-    <div class="row"><button class="btn" data-hub>回到主页</button><button class="btn ghost" data-reset>重新开始十年</button></div>`;
+    <div class="row"><button class="btn" id="poster">生成分享海报</button><button class="btn ghost" data-hub>回到主页</button><button class="btn ghost" data-reset>重新开始十年</button></div>`;
   show('portrait');
+  $('#poster').onclick = () => makePoster(p);
 }
 
 function identSection(p) {
@@ -550,3 +551,58 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('click', e => { if (e.target.closest('[data-reset]') && !$('#portrait').hidden) { goHub(); confirmReset = true; renderHub() } }, true);
 renderHub(); renderMeters();
+
+/* 安装成 App（手机、电脑都可以）：只在正式网址（https）上生效 */
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__installEvt = e });
+
+/* =========================================================
+   分享海报：把画像画成一张 1080×1920 的竖版图片
+   ========================================================= */
+async function makePoster(p) {
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  const disp = '"ZCOOL QingKe HuangYou","Noto Sans SC",sans-serif', body = '"Noto Sans SC","PingFang SC",sans-serif', mono = '"IBM Plex Mono",monospace';
+  try { await Promise.all([document.fonts.load(`120px ${disp}`, p.ident + p.archT + '我的音乐人格画像十年回响'), document.fonts.load(`700 40px ${body}`, '音乐教育技术商业生活'), document.fonts.load(`40px ${mono}`, 'REVERB 2036')]) } catch (e) { }
+  const C = { ink: '#16131d', stage: '#221d2e', line: '#3b3450', brass: '#e3a93c', fg: '#f2ecf7', soft: '#d6cee2', mute: '#9d94b0', paper: '#efe5cf', pink: '#c0464f' };
+  const g = x.createRadialGradient(W / 2, -200, 100, W / 2, 200, 1400); g.addColorStop(0, '#2c2440'); g.addColorStop(1, C.ink);
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const wrap = (t, x0, y0, maxW, lh, font, color) => { x.font = font; x.fillStyle = color; let line = '', y = y0; for (const ch of t) { if (x.measureText(line + ch).width > maxW && line) { x.fillText(line, x0, y); line = ch; y += lh } else line += ch } if (line) x.fillText(line, x0, y); return y + lh };
+  const M = 90;
+  x.font = `30px ${mono}`; x.fillStyle = C.mute; x.fillText('十年回响 · REVERB 2036', M, 130);
+  x.strokeStyle = C.line; x.lineWidth = 2; for (let i = 0; i < 5; i++) { x.beginPath(); x.moveTo(M, 170 + i * 9); x.lineTo(W - M, 170 + i * 9); x.stroke() }
+  x.font = `52px ${disp}`; x.fillStyle = C.soft; x.fillText('我的音乐人格画像', M, 310);
+  let y = wrap(p.ident || p.archT, M, 450, W - M * 2, 140, `128px ${disp}`, C.brass);
+  y = wrap(`十年的选择，指向的是「${p.archT}」`, M, y + 10, W - M * 2, 56, `500 40px ${body}`, C.fg);
+  /* 理想 vs 现实 */
+  const id = IDEALS[p.ideal];
+  if (id) {
+    y += 30; x.fillStyle = C.stage; x.fillRect(M, y, W - M * 2, 170);
+    x.font = `28px ${body}`; x.fillStyle = C.mute; x.fillText('开局时的理想', M + 40, y + 55); x.fillText('十年后的我', W / 2 + 40, y + 55);
+    x.font = `700 44px ${body}`; x.fillStyle = C.fg; x.fillText(id.t, M + 40, y + 120); x.fillText(p.archT, W / 2 + 40, y + 120);
+    x.fillStyle = C.brass; x.font = `44px ${body}`; x.fillText('→', W / 2 - 30, y + 105); y += 230;
+  }
+  if (p.musicNow != null) y = wrap(`音乐占我生活的 ${p.musicNow} 成${p.share0 != null ? `（开局时希望是 ${p.share0} 成）` : ''}`, M, y + 20, W - M * 2, 56, `700 40px ${body}`, C.fg);
+  /* 身份光谱 */
+  if (p.spec) {
+    y += 30; x.font = `700 34px ${body}`; x.fillStyle = C.brass; x.fillText('身份光谱', M, y); y += 40;
+    p.spec.forEach(([k, v]) => {
+      x.font = `32px ${body}`; x.fillStyle = C.soft; x.fillText(DOMAINS[k].slice(0, 2), M, y + 30);
+      x.fillStyle = '#0f0d14'; x.fillRect(M + 120, y + 8, W - M * 2 - 240, 26); x.fillStyle = C.brass; x.fillRect(M + 120, y + 8, (W - M * 2 - 240) * v / 100, 26);
+      x.font = `30px ${mono}`; x.fillStyle = C.mute; x.fillText(v + '%', W - M - 90, y + 32); y += 62;
+    });
+  }
+  /* 三种倾向 */
+  y += 30; x.font = `700 34px ${body}`; x.fillStyle = C.brass; x.fillText('最强的三种倾向', M, y); y += 30;
+  let cx = M; p.top.forEach(k => { const t = TRAITS[k].n; x.font = `36px ${body}`; const w = x.measureText(t).width + 60; x.strokeStyle = C.brass; x.lineWidth = 3; x.beginPath(); x.roundRect ? x.roundRect(cx, y, w, 70, 35) : x.rect(cx, y, w, 70); x.stroke(); x.fillStyle = C.fg; x.fillText(t, cx + 30, y + 48); cx += w + 20 });
+  y += 130;
+  if (p.top[0]) y = wrap('“' + TRAITS[p.top[0]].q + '”', M, y, W - M * 2, 54, `36px ${body}`, C.soft);
+  /* 底部 */
+  x.fillStyle = C.paper; x.fillRect(0, H - 220, W, 220);
+  x.font = `52px ${disp}`; x.fillStyle = C.ink; x.fillText('你是哪一种音乐人？', M, H - 130);
+  x.font = `30px ${mono}`; x.fillStyle = '#7a6d78'; x.fillText('mayciosher.github.io/reverb-2036', M, H - 70);
+  const url = cv.toDataURL('image/png');
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<img alt="我的音乐人格画像分享海报" src="${url}"><p>手机：长按图片保存或直接分享。电脑：点下面的按钮保存。</p><div class="row" style="justify-content:center"><a class="btn" download="十年回响-我的音乐人格画像.png" href="${url}">保存图片</a><button class="btn ghost" id="pclose">关闭</button></div>`;
+  document.body.appendChild(m); m.querySelector('#pclose').onclick = () => m.remove(); m.onclick = e => { if (e.target === m) m.remove() };
+}

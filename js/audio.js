@@ -12,8 +12,14 @@ const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147
 const E = {
   ctx: null, bus: {}, layers: {}, style: null, styleKey: null, step: 0, nextTime: 0, timer: null,
   tempoMul: 1, mood: { danger: 0, love: 1, orig: 1 }, muted: false, stopTok: 0,
-  clipBus: null, clipTimers: [], clipDuck: false, onLayers: null
+  clipBus: null, clipTimers: [], clipDuck: false, onLayers: null,
+  /* 流畅模式：设备比较弱或检测到卡顿时打开，每个音少用几个振荡器 */
+  lite: (navigator.hardwareConcurrency || 8) <= 4 && /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent), lateHits: [], onLite: null
 };
+/* 切到微信再回来时，浏览器可能把音频暂停了，回到前台自动恢复 */
+document.addEventListener('visibilitychange', () => { if (!document.hidden && E.ctx && E.ctx.state !== 'running') E.ctx.resume() });
+window.addEventListener('pageshow', () => { if (E.ctx && E.ctx.state !== 'running') E.ctx.resume() });
+E.setLite = function (on) { if (this.lite === on) return; this.lite = on; this.onLite && this.onLite(on) };
 function makeIR(c, sec) {
   const len = c.sampleRate * sec, b = c.createBuffer(2, len, c.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6) }
@@ -87,7 +93,11 @@ E.stop = function (fade = .6) {
   const tok = ++this.stopTok;
   setTimeout(() => { if (tok === this.stopTok) { clearInterval(this.timer); this.timer = null; this.layers = {}; this.styleKey = null; this.onLayers && this.onLayers() } }, fade * 1000 + 200);
 };
-E.tick = function () { while (this.nextTime < now() + .12) { this.sched(this.step, this.nextTime); this.nextTime += this.d16(); this.step++ } };
+E.tick = function () {
+  /* 如果排音符已经落后于播放时间，说明设备忙不过来：10 秒内出现 3 次就切到流畅模式 */
+  const lag = now() - this.nextTime;
+  if (lag > .03) { const t = now(); this.lateHits = this.lateHits.filter(x => t - x < 10); this.lateHits.push(t); if (this.lateHits.length >= 3 && !this.lite) this.setLite(true); if (lag > .5) this.nextTime = t + .05 }
+  while (this.nextTime < now() + .12) { this.sched(this.step, this.nextTime); this.nextTime += this.d16(); this.step++ } };
 E.sched = function (step, t) {
   const s = this.style, bar = Math.floor(step / 16), st = step % 16;
   const sw = (st % 2 === 1) ? s.swing * this.d16() * (this.mood.orig < .35 ? 0 : 1) : 0;
@@ -134,8 +144,8 @@ function strings(out, t, midi, dur, g = .03, o = {}) {
   a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + att); a.gain.setTargetAtTime(0, t + hold, rel / 4);
   f.connect(a); a.connect(out);
   const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 5 + Math.random() * .6; lg.gain.value = mtof(midi) * .0045; lfo.connect(lg);
-  lfo.start(t); lfo.stop(t + hold + rel * 1.5 + .1);
-  [-9, 0, 8].forEach(d => { const o2 = c.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = mtof(midi); o2.detune.value = d; lg.connect(o2.frequency); o2.connect(f); o2.start(t); o2.stop(t + hold + rel * 1.5 + .1) });
+  if (!E.lite) { lfo.start(t); lfo.stop(t + hold + rel * 1.5 + .1) }
+  (E.lite ? [0] : [-9, 0, 8]).forEach(d => { const o2 = c.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = mtof(midi); o2.detune.value = d; lg.connect(o2.frequency); o2.connect(f); o2.start(t); o2.stop(t + hold + rel * 1.5 + .1) });
 }
 /* 圆号：慢起音，暗一点 */
 function horn(out, t, midi, dur, g = .08) {
@@ -143,7 +153,7 @@ function horn(out, t, midi, dur, g = .08) {
   f.frequency.setValueAtTime(500, t); f.frequency.linearRampToValueAtTime(1300, t + .15);
   const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .12); a.gain.setTargetAtTime(0, t + dur, .12);
   f.connect(a); a.connect(out);
-  [-4, 4].forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + dur + .8) });
+  (E.lite ? [0] : [-4, 4]).forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + dur + .8) });
 }
 /* 小号：起音时滤波快速打开，有“嘟”的感觉 */
 function trumpet(out, t, midi, dur, g = .05) {
@@ -176,7 +186,7 @@ function synthPluck(out, t, midi, g = .04) {
   f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(500, t + .28);
   const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .006); a.gain.setTargetAtTime(0, t + .05, .12);
   f.connect(a); a.connect(out);
-  [-7, 7].forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + .8) });
+  (E.lite ? [0] : [-7, 7]).forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + .8) });
 }
 /* 颤音琴：带颤动的金属感 */
 function vibes(out, t, midi, g = .05) {
@@ -189,8 +199,8 @@ function vibes(out, t, midi, g = .05) {
 /* 人声合唱“啊”：锯齿波经过两个共振峰 */
 function choir(out, t, midi, dur, g = .03) {
   const c = E.ctx, a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .6); a.gain.setTargetAtTime(0, t + dur, .3); a.connect(out);
-  [[750, 5], [1150, 6]].forEach(([f, q]) => { const b = c.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; b.connect(a);
-    [-7, 6].forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(b); o.start(t); o.stop(t + dur + 1.5) }) });
+  (E.lite ? [[800, 4]] : [[750, 5], [1150, 6]]).forEach(([f, q]) => { const b = c.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; b.connect(a);
+    (E.lite ? [0] : [-7, 6]).forEach(d => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.detune.value = d; o.connect(b); o.start(t); o.stop(t + dur + 1.5) }) });
 }
 /* 心跳：“扑—通”，第一声低而闷，第二声稍高稍轻，间隔约 0.17 秒，像隔着胸腔听到的 */
 function heartbeat(out, t, g = .6) {

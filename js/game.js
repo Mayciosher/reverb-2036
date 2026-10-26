@@ -15,19 +15,28 @@ let TOK = 0; /* 每次换页面加一，旧页面里的定时器看到号码变�
 /* ---------- 存档：只存在这台设备的浏览器里 ---------- */
 const STORE = 'reverb2036-progress-v3', GSTORE = 'reverb2036-gallery';
 const blank = () => ({ stage: 0, ideal: null, g: null, l1save: null, l1: null, l2: null, l3save: null, l3: null, l4: null, portrait: null, share: null, dom: {}, tags: {}, log: [], skills: {} });
-let PROG = blank(), GALLERY = [];
-try { const r = localStorage.getItem(STORE); if (r) PROG = Object.assign(blank(), JSON.parse(r)); const g = localStorage.getItem(GSTORE); if (g) GALLERY = JSON.parse(g) || [] } catch (e) { }
-function save() { try { localStorage.setItem(STORE, JSON.stringify(PROG)); localStorage.setItem(GSTORE, JSON.stringify(GALLERY)) } catch (e) { } }
+/* 存档版本号：游戏结构有大改动时加 1，旧存档会被提示重新开始 */
+const SAVE_VERSION = 4;
+let PROG = blank(), GALLERY = [], OUTDATED = false;
+try {
+  const r = localStorage.getItem(STORE);
+  if (r) { const old = JSON.parse(r); if (old.v === SAVE_VERSION) PROG = Object.assign(blank(), old); else OUTDATED = true }
+  const g = localStorage.getItem(GSTORE); if (g) GALLERY = JSON.parse(g) || [];
+} catch (e) { }
+function save() { PROG.v = SAVE_VERSION; try { localStorage.setItem(STORE, JSON.stringify(PROG)); localStorage.setItem(GSTORE, JSON.stringify(GALLERY)) } catch (e) { } }
 function addTags(k, target = PROG.tags) { (k || '').split(/\s+/).filter(Boolean).forEach(t => target[t] = (target[t] || 0) + 1) }
 function mergeTags(src) { for (const k in src) PROG.tags[k] = (PROG.tags[k] || 0) + src[k] }
 function addDom(k, n = 1) { if (k) PROG.dom[k] = (PROG.dom[k] || 0) + n }
 function skill(name, v) { (PROG.skills[name] = PROG.skills[name] || []).push(v) }
 
 /* 卡牌编号 */
-CARDS.forEach((c, i) => c.id = 'c' + i);
-GCARDS.she.forEach((c, i) => c.id = 's' + i);
-GCARDS.he.forEach((c, i) => c.id = 'h' + i);
-const BYID = {}; [...CARDS, ...GCARDS.she, ...GCARDS.he].forEach(c => BYID[c.id] = c);
+/* 每张卡在 data.js 里都有固定的 id，增删、调整顺序都不会打乱存档 */
+const BYID = {};
+[...CARDS, ...GCARDS.she, ...GCARDS.he, ...SURPRISES].forEach((c, i) => {
+  if (!c.id) { c.id = 'auto' + i; console.warn('这张卡没有 id，请在 data.js 里补上：', c.say) }
+  if (BYID[c.id]) console.warn('卡片 id 重复了：', c.id);
+  BYID[c.id] = c;
+});
 const AVATAR = { '推推': '推', '小谱': '谱', '你的 AI 分身': '影', 'AI 评委': '评', 'AI 选角系统': '选', 'AI 推荐系统': '推', 'A&R': 'A', 'Livehouse老板': 'L' };
 const PALETTE = ['#c0646f', '#5a7fd6', '#d08a3a', '#7a6d78', '#3aa58c', '#b5813a', '#6d5aa8', '#c9577f', '#e07b5b', '#44506e', '#2f8a9c', '#a54f8a', '#8a5a36', '#3f8f6a', '#a8473f'];
 function avatar(who) { let h = 0; for (const ch of who) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return [AVATAR[who] || who.replace(/\s/g, '')[0], PALETTE[h % PALETTE.length]] }
@@ -83,6 +92,7 @@ function renderHub() {
   if (st >= 4) j = `<div class="journey"><span class="eyebrow">十年已经走完</span><h3>你的音乐人格：${PROG.portrait ? PROG.portrait.archT : ''}</h3><div class="row"><button class="btn" data-portrait>查看我的音乐人格画像</button><button class="btn ghost" data-reset>重新开始十年</button></div></div>`;
   else if (st > 0 || PROG.l1save) j = `<p class="mnote">进度会自动保存。关卡只能按顺序玩，没有回头路。<button class="home" data-reset style="margin-left:6px">清空进度，重新开始</button></p>`;
   if (confirmReset) j += `<div class="confirm"><b>确定要清空这十年的全部进度吗？</b><span>理想、选择、命运签和人格画像都会被清空，结局图鉴会保留。</span><div class="row"><button class="btn danger sm" data-reset-yes>清空并重新开始</button><button class="btn ghost sm" data-reset-no>取消</button></div></div>`;
+  if (OUTDATED) j = `<div class="confirm"><b>游戏已更新</b><span>你之前的进度和新版本不兼容，需要从头开始。结局图鉴会保留。</span><div class="row"><button class="btn sm" data-outdated-ok>知道了</button></div></div>` + j;
   $('#journey').innerHTML = j;
   const got = new Set(GALLERY);
   $('#gallerySum').textContent = `结局图鉴 · 已解锁 ${[...got].filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}`;
@@ -103,6 +113,9 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(); showPortrait(); return }
   if (e.target.closest('[data-reset]')) { confirmReset = true; renderHub(); return }
   if (e.target.closest('[data-reset-no]')) { confirmReset = false; renderHub(); return }
+  if (e.target.closest('[data-outdated-ok]')) { OUTDATED = false; PROG = blank(); save(); renderHub(); return }
+  if (e.target.closest('[data-recal]')) { E.init(); stopPreview(); calibrate(() => { renderHub(); show('hub') }); return }
+  if (e.target.closest('[data-install]')) { if (window.__installEvt) { window.__installEvt.prompt(); window.__installEvt = null } else { const t = $('#installTip'); if (t) t.hidden = !t.hidden } return }
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
@@ -148,7 +161,12 @@ function applyYearMusic() { STYLES.lofi.bpm = 80 + (G.year - 1); E.play('lofi', 
 function yearBreak() {
   G.year++;
   const items = [];
-  if (G.year > 1) { G.s.m = Math.max(0, G.s.m - 6); items.push(['房租水电', '钱 −6']) }
+  if (G.year > 1) {
+    const rent = 6 + Math.floor((G.year - 2) / 3) * 2;
+    G.s.m = Math.max(0, G.s.m - rent); G.s.f = Math.max(0, G.s.f - 3); G.s.l = Math.max(0, G.s.l - 2);
+    items.push(['生活成本', `钱 −${rent}${G.year === 5 || G.year === 8 ? '（物价又涨了）' : ''}`]);
+    items.push(['时间', '名气 −3（没人会一直记得你），热爱 −2（生活会磨掉一点）']);
+  }
   if (UNLOCK[G.year]) items.push(['新乐器', `${STYLES.lofi.layers.find(L => L.name === UNLOCK[G.year]).label}加入了背景音乐`]);
   items.push(['速度', `每分钟 ${80 + G.year - 1} 拍`]);
   items.push(['今年', '5 个选择，1 个音乐关卡']);
@@ -165,14 +183,24 @@ function buildQueue() {
   const y = G.year;
   const pool = shuffle(CARDS.filter(c => !G.used.includes(c.id) && c.w[0] <= y && y <= c.w[1] && (!c.need || G.flags[c.need]))).sort((a, b) => a.w[1] - b.w[1]);
   const gender = y <= 8 && G.gLeft.length;
-  let q = pool.slice(0, gender ? 4 : 5).map(c => ({ c: c.id }));
+  let need = gender ? 4 : 5;
+  /* 每年尽量放一张“真实故事改编” */
+  const real = pool.find(c => c.real); const picked = [];
+  if (real) { picked.push(real); need-- }
+  picked.push(...pool.filter(c => c !== real).slice(0, need));
+  let q = picked.map(c => ({ c: c.id }));
   if (gender) q.push({ c: G.gLeft.shift() });
+  /* 意外：从第 2 年起，每年约四成概率替换掉一张普通卡 */
+  const sLeft = SURPRISES.filter(c => !G.used.includes(c.id));
+  if (y >= 2 && sLeft.length && Math.random() < .4) { const k = q.findIndex(r => !BYID[r.c].real && !/^(she|he)/.test(r.c)); if (k >= 0) q[k] = { c: pick(sLeft).id } }
   q = shuffle(q); q.splice(2, 0, { m: y });
   G.queue = q; G.idx = 0; G.total = q.length;
 }
 $('#ybGo').onclick = () => { if ($('#yearbreak').hidden || !G) return; show('play'); nextCard() };
 function resumeL1() {
   G = JSON.parse(JSON.stringify(PROG.l1save)); G.lock = false;
+  const refs = [G.cur, ...G.queue].filter(Boolean);
+  if (refs.some(r => !resolveCard(r))) { PROG.l1save = null; G = null; save(); OUTDATED = true; renderHub(); show('hub'); return }
   renderMeters(); applyYearMusic();
   if (G.cur) { show('play'); renderCard() } else { renderYB(); show('yearbreak') }
 }
@@ -205,7 +233,9 @@ function renderCard() {
   $('#av').textContent = ch; $('#av').style.background = col;
   $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`;
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : (c.w && c.w[0] >= 6) ? '<span class="badge fut">未来的事 · 按今天的你回答</span>' : '';
-  $('#say').innerHTML = badge + c.say;
+  const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
+  $('#say').innerHTML = badge + badge2 + c.say;
+  $('#src').textContent = c.real ? '原型：' + c.real : ''; $('#src').hidden = !c.real;
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
@@ -264,7 +294,7 @@ function checkCrisis() {
 function renderMeters() {
   if (!$('#meters').children.length) $('#meters').innerHTML = KEYS.map(k => `<div class="meter" data-k="${k}"><i class="dot"></i><div class="track"><div class="fill"></div></div><span class="mlab">${STAT[k]}</span><span class="mval"></span></div>`).join('');
   if (!G) return;
-  KEYS.forEach(k => { const m = document.querySelector(`.meter[data-k="${k}"]`), v = G.s[k]; m.querySelector('.fill').style.height = v + '%'; m.querySelector('.mval').textContent = v; m.classList.toggle('warn', v <= 20 || v >= 80) });
+  KEYS.forEach(k => { const m = document.querySelector(`.meter[data-k="${k}"]`), v = G.s[k]; m.querySelector('.fill').style.height = v + '%'; m.querySelector('.mval').textContent = v <= 20 ? '危险' : v >= 80 ? '过高' : ''; m.setAttribute('aria-label', `${STAT[k]} ${v}`); m.classList.toggle('warn', v <= 20 || v >= 80) });
 }
 function updateMood() {
   if (!G) return; const s = G.s;
@@ -284,10 +314,45 @@ function renderChans() {
   box.innerHTML = STYLES.lofi.layers.map(L => `<span class="ch ${L.hot ? 'hot' : ''} ${E.styleKey === 'lofi' && E.layers[L.name] ? 'on' : ''}">${L.label}</span>`).join('');
 }
 E.onLayers = renderChans;
+function toast(msg, ms = 3200) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), ms) }
+E.onLite = on => { if (on) toast('检测到设备有点卡，已自动切换到流畅模式') };
 /* 声音开关：每个页面右上角都有，状态全局同步 */
 E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
 document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); E.setMute(!E.muted) } });
-$$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); newGame(b.dataset.g) });
+$$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); const g = b.dataset.g; calibrate(() => newGame(g)) });
+
+/* =========================================================
+   耳机延迟校准：听到“嗒”就点一下，自动算出延迟
+   蓝牙耳机通常有 100～300 毫秒延迟，节奏和稳拍关卡会扣掉它
+   ========================================================= */
+function calibrate(done) {
+  const tok = TOK + 1;
+  $('#ideal').innerHTML = `<span class="eyebrow">开始之前 · 10 秒校准</span><h2 class="big-title">听到声音，就点一下</h2>
+    <p class="lead">如果你戴的是<b>蓝牙耳机</b>，声音会比画面晚一点，节奏关卡会判不准。接下来会响 8 下“嗒”，每听到一下，就点一下下面的圆圈（或按空格键）。游戏会自动算出你的设备延迟。</p>
+    <p class="mnote">用手机外放或有线耳机的话，也可以直接跳过。iPhone 用户请先关闭侧边的静音键，否则网页可能没有声音。</p>
+    <div class="tapzone"><div class="beats" id="cbeats">${'<i></i>'.repeat(8)}</div><p class="status" id="cst">准备好了就点「开始校准」</p><button class="tap" id="ctap" disabled>点</button></div>
+    <div class="row"><button class="btn" id="cgo">开始校准</button><button class="btn ghost" id="cskip">跳过</button></div>`;
+  show('ideal');
+  const beat = .6; let t0 = 0, taps = [], live = false;
+  const dots = $$('#cbeats i');
+  const finish = ms => { PROG.latency = ms; save(); KEYH = null; done() };
+  $('#cskip').onclick = () => finish(PROG.latency || 0);
+  $('#cgo').onclick = () => {
+    $('#cgo').disabled = true; taps = []; t0 = now() + .8; live = true; $('#ctap').disabled = false; $('#cst').textContent = '听……';
+    E.playClip(bus => { for (let i = 0; i < 8; i++) { tone(bus, t0 + i * beat, 84, .05, { type: 'triangle', gain: .3, att: .001, rel: .06 }); E.later(() => dots[i] && dots[i].classList.add('on'), (t0 + i * beat - now()) * 1000) } return 8 * beat + 1.2 }, .05, () => {
+      if (TOK !== tok) return; live = false;
+      const offs = taps.map(t => { const k = Math.round((t - t0) / beat); return (t - (t0 + k * beat)) * 1000 }).filter(o => o > -150 && o < 450).sort((a, b) => a - b);
+      if (offs.length < 4) { $('#cst').textContent = '点的次数太少，再试一次吧'; $('#cgo').disabled = false; $$('#cbeats i').forEach(d => d.classList.remove('on')); return }
+      const med = Math.max(0, Math.round(offs[Math.floor(offs.length / 2)]));
+      $('#cst').textContent = `你的设备延迟约 ${med} 毫秒，节奏关卡会自动扣掉它。`;
+      $('#cgo').hidden = true; $('#cskip').textContent = '继续'; $('#cskip').classList.remove('ghost'); $('#cskip').onclick = () => finish(med);
+    });
+  };
+  const tap = () => { if (!live) return; taps.push(now()); const el = $('#ctap'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 80) };
+  $('#ctap').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
+  KEYH = e => { if (e.key === ' ') { tap(); return true } };
+}
+const LAT = () => (PROG.latency || 0) / 1000;
 
 function finishL1(id, survived) {
   const en = ENDINGS[id];
@@ -337,9 +402,9 @@ function rhythm(hard) {
   const judgeEl = $('#judge'); let jt;
   const judge = (txt, cls) => { judgeEl.textContent = txt; judgeEl.className = 'judge show ' + cls; clearTimeout(jt); jt = setTimeout(() => judgeEl.className = 'judge', 260) };
   const hit = i => {
-    if (!live) return; const n0 = now(); lanes[i].classList.add('press'); setTimeout(() => lanes[i].classList.remove('press'), 90);
+    if (!live) return; const n0 = now() - LAT(); lanes[i].classList.add('press'); setTimeout(() => lanes[i].classList.remove('press'), 90);
     let best = null, bd = 9; for (const n of notes) { if (n.done || n.lane !== i) continue; const d = Math.abs(n.t - n0); if (d < bd) { bd = d; best = n } }
-    if (best && bd < .14) { best.done = true; const p = bd < .065 ? 2 : 1; score += p; hits++; keys(E.sfx, n0, best.pitch, .5, .13); best.el && best.el.classList.add('ok'); judge(p === 2 ? '完美' : '不错', 'good') }
+    if (best && bd < .12) { best.done = true; const p = bd < .055 ? 2 : 1; score += p; hits++; keys(E.sfx, now(), best.pitch, .5, .13); best.el && best.el.classList.add('ok'); judge(p === 2 ? '完美' : '不错', 'good') }
     else nhit(E.sfx, n0, { g: .05, type: 'bandpass', f: 400, d: .06 });
     $('#score').textContent = `命中 ${hits} / ${notes.length}`;
   };
@@ -350,10 +415,10 @@ function rhythm(hard) {
     const n0 = now(), H = lanes[0].clientHeight * .84;
     const left = t0 - n0; $('#count').textContent = left > 0 ? (left > beat * 3 ? '准备' : Math.ceil(left / beat)) : '';
     for (const n of notes) {
-      const p = 1 - (n.t - n0) / travel; if (p < 0) continue;
+      const p = 1 - (n.t + LAT() - n0) / travel; if (p < 0) continue;
       if (!n.el) { n.el = document.createElement('i'); n.el.className = 'nt'; lanes[n.lane].appendChild(n.el) }
       if (!n.done) n.el.style.transform = `translateY(${p * H}px)`;
-      if (!n.done && n0 > n.t + .16) { n.done = true; n.el.classList.add('miss'); judge('错过', 'bad') }
+      if (!n.done && n0 - LAT() > n.t + .16) { n.done = true; n.el.classList.add('miss'); judge('错过', 'bad') }
     }
     if (n0 > notes[notes.length - 1].t + .9) {
       live = false; const r = score / (notes.length * 2); skill('rhythm', r);
@@ -483,7 +548,7 @@ function tempoGame(hard) {
     E.later(() => { if (tok === TOK && live) $('#tst').textContent = `节拍器停了。从第 5 拍开始，自己拍 ${N} 下` }, (t0 + 3.5 * beat - now()) * 1000);
   };
   const tap = () => {
-    if (!live) return; const t = now(); if (t < t0 + 3.5 * beat) return;
+    if (!live) return; const t = now() - LAT(); if (t < t0 + 3.5 * beat) return;
     taps.push(t); const el = $('#tap'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 80);
     tone(E.sfx, t, 79, .04, { type: 'triangle', gain: .12, att: .001, rel: .05 });
     if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on');

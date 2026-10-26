@@ -46,6 +46,13 @@ p{margin:0;line-height:1.65}
 .notice b{font-weight:700}
 .notice .honest{font-size:19px;font-weight:700;line-height:1.5;color:#8f2f3f;border-left:4px solid #c0464f;padding-left:10px;margin:4px 0}
 .say .badge.fut{background:#3d6b8f}
+.say .badge.real{background:#8a5a36}
+.src{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--paper-mute);border-top:1px dashed rgba(43,35,51,.2);padding-top:6px}
+.tools{gap:8px}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--paper);color:var(--paper-ink);padding:10px 16px;border-radius:999px;font-size:13px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.modal{position:fixed;inset:0;background:rgba(10,8,14,.88);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px))}
+.modal img{max-height:72vh;max-width:100%;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.modal p{color:var(--soft);font-size:13px;text-align:center}
 #undo:disabled{opacity:.35;cursor:default}
 
 /* 顶部栏 */
