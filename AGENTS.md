@@ -9,7 +9,7 @@
 | 第一关的卡片、题目、选项、数值变化 | `js/data.js` 里的 `CARDS`（写法见 `docs/卡片写作规范.md`） |
 | 标着“真实故事改编”的卡 | `CARDS` 里带 `real` 字段的卡；出处列在 `docs/真实案例来源.md` |
 | 第一关的“意外” | `js/data.js` 里的 `SURPRISES` |
-| 每年的生活成本、名气和热爱的自然下降 | `js/game.js` 的 `yearBreak` |
+| 每年的生活开销（跟住处走）、名气的自然下降 | `js/game.js` 的 `yearBreak` 和 `livingCost`；搬家、合租的卡片在 `CARDS` 里（`k62`、`k63`） |
 | 耳机延迟校准 | `js/game.js` 的 `calibrate` |
 | 选“他”或“她”时出现的题目 | `js/data.js` 里的 `GCARDS.he` / `GCARDS.she` |
 | 每年的音乐关卡（演出、调弦、听音、稳拍、人机辨听）的开场对话 | `js/data.js` 里的 `MINIS` |
@@ -19,7 +19,7 @@
 | 开局选的理想音乐人、音乐占几成 | `js/data.js` 里的 `IDEALS`、`MUSIC_SHARE` |
 | 第二关：调音婆婆、塔罗牌、三个问题、签文 | `js/data.js` 里的 `TAROT`、`SOUL_Q`、`HURDLES`、`NOUN`、`ADJ`；流程在 `js/levels.js` 的 `startL2` 到 `l2Fortune` |
 | 第二关的命运旋律 | `js/levels.js` 的 `fateMelody` |
-| 第三关：七个身份、七个要求、三个版本的音乐 | `js/data.js` 的 `L3_ROLES`、`L3_EVENTS`；音乐片段和题目在 `js/levels.js` 的 `TASKS` |
+| 第三关：身份池、每个身份的小插曲、按“音乐占几成”分配身份 | `js/data.js` 的 `L3_ROLES`、`l3MusicCount`；题目和音乐片段在 `js/levels.js` 的 `TASKS`；每个身份的背景音乐在 `js/audio.js` 的 `STYLES`（`jazz`、`bossa` 等） |
 | 第四关：回望、四个问题、写 4 个音、管弦乐 | `js/levels.js` 的 `startL4`、`l4Questions`、`orchFinale` |
 | 画像的分享海报 | `js/levels.js` 的 `makePoster` |
 | 最后的音乐人格画像、身份光谱、建议 | 文字在 `js/data.js` 的 `TRAITS`、`ADVICE`、`DOMAINS`；排版在 `js/levels.js` 的 `buildPortrait`、`showPortrait`、`identSection` |
@@ -27,6 +27,7 @@
 | 主页和开局几页的开场音乐（轻快 chill） | `js/audio.js` 的 `STYLES.chill`；什么时候播放在 `js/game.js` 的 `homeMusic` |
 | 主页、关卡说明、开始前的提醒 | `index.html` |
 | 颜色、字体、大小、排版 | `style.css` |
+| 背景里的 3D 场景（出租屋、回声铺、街道、音乐厅） | `js/scene.js`；用到的 3D 库是 `js/vendor/three.min.js`，不要改它 |
 
 ## 修改规矩（每次都要遵守）
 
@@ -47,6 +48,7 @@
 
 - 纯静态网页，没有构建步骤，没有依赖。直接双击 `index.html` 就能运行。
 - 所有声音由 Web Audio 实时合成，没有音频文件。
+- 背景的 3D 场景由 Three.js（`js/vendor/three.min.js`，r128，MIT 许可）实时渲染，已下载到本地，不依赖外网。
 - 进度存在浏览器的 localStorage 里（键名 `reverb2036-progress-v3`，里面的 `v` 是存档版本）。
 - 字体在 `fonts/` 和 `fonts.css`，已经下载到本地，只保留了游戏里用到的字，不依赖 Google Fonts。
 - `manifest.json` 和 `sw.js` 让游戏可以“安装到桌面”，并且离线可玩。

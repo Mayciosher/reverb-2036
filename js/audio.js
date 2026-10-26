@@ -250,7 +250,7 @@ const STYLES = {
       { name: 'tom', label: '手鼓', play(st, bar, t, out) { if (st === 0) kick(out, t, .5, 120, 70, .4); if (st === 6 || st === 10) kick(out, t, .3, 180, 110, .25) } }
     ]
   },
-  /* 第三关：2036 年的制作人，合成器浪潮 */
+  /* 第三关“AI 训练师”：合成器浪潮 */
   synth: {
     bpm: 100, swing: 0, chords: [{ r: 45, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 36, v: [55, 60, 64] }, { r: 43, v: [55, 59, 62] }],
     layers: [
@@ -285,8 +285,74 @@ STYLES.chill = {
     { name: 'vinyl', label: '唱片底噪', play(st, bar, t, out) { if (Math.random() < .35) nhit(out, t + Math.random() * .05, { g: .012 + Math.random() * .02, f: 3000 + Math.random() * 4000, d: .008 }) } }
   ]
 };
+/* =========================================================
+   第三关：每个身份一段自己的背景音乐（速度固定，不再越来越快）
+   ========================================================= */
+const CH_POP = [{ r: 36, v: [60, 64, 67] }, { r: 43, v: [59, 62, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }];
+const CH_JAZZ = [{ r: 38, v: [53, 57, 60, 64] }, { r: 43, v: [53, 57, 59, 64] }, { r: 36, v: [52, 55, 59, 62] }, { r: 45, v: [55, 58, 61, 64] }];
+const CH_SOFT = [{ r: 41, v: [57, 60, 64, 67] }, { r: 43, v: [59, 62, 65, 69] }, { r: 40, v: [55, 59, 62, 67] }, { r: 45, v: [55, 60, 64, 67] }];
+Object.assign(STYLES, {
+  /* 广告配乐人：轻快的流行电子 */
+  pop: { bpm: 112, swing: 0, chords: CH_POP, layers: [
+    { name: 'ppl', play(st, bar, t, out, s) { if (st % 2) return; const c = chordAt(s, bar); synthPluck(out, t, c.v[(st / 2) % 3] + 12, .03) } },
+    { name: 'pbs', play(st, bar, t, out, s, E) { if (st % 4 !== 2) return; tone(out, t, chordAt(s, bar).r, E.d16() * 1.6, { type: 'triangle', gain: .32, rel: .08, cut: 800 }) } },
+    { name: 'pdr', play(st, bar, t, out) { if (st % 4 === 0) kick(out, t, .55); if (st === 4 || st === 12) snare(out, t, .14); if (st % 2) hat(out, t, .03) } } ] },
+  /* 婚礼音乐顾问：弦乐加竖琴 */
+  wed: { bpm: 72, swing: 0, chords: CH_POP, layers: [
+    { name: 'wst', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => strings(out, t, m, E.d16() * 16, .014, { att: .8 })) } },
+    { name: 'whp', play(st, bar, t, out, s) { if (st % 2) return; const c = chordAt(s, bar); harp(out, t, [c.r + 12, ...c.v, c.v[0] + 12][(st / 2) % 5] + 12, .04) } },
+    { name: 'wcl', play(st, bar, t, out, s, E) { if (st % 8) return; strings(out, t, chordAt(s, bar).r, E.d16() * 8, .03, { att: .4, cut: 800 }) } } ] },
+  /* 人声制作人：慢速 R&B */
+  rnb: { bpm: 70, swing: .18, chords: CH_JAZZ, layers: [
+    { name: 'rky', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 10) return; chordAt(s, bar).v.forEach((m, i) => keys(out, t + i * .02, m + 12, E.d16() * (st ? 5 : 9), .03)) } },
+    { name: 'rbs', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 7 && st !== 10) return; tone(out, t, chordAt(s, bar).r, E.d16() * 2.5, { type: 'sine', gain: .4, rel: .2 }) } },
+    { name: 'rdr', play(st, bar, t, out) { if (st === 0 || st === 7 || st === 10) kick(out, t, .5, 110, 45, .3); if (st === 4 || st === 12) nhit(out, t, { g: .12, type: 'bandpass', f: 1600, d: .12 }); if (st % 2 === 0) hat(out, t, .022) } } ] },
+  /* 纪录片作曲：钢琴加大提琴 */
+  docu: { bpm: 60, swing: 0, chords: CH_SOFT, layers: [
+    { name: 'dpn', play(st, bar, t, out, s, E) { if (st % 4) return; const c = chordAt(s, bar); keys(out, t, c.v[[0, 2, 1, 3][st / 4]] + 12, E.d16() * 6, .04) } },
+    { name: 'dce', play(st, bar, t, out, s, E) { if (st) return; strings(out, t, chordAt(s, bar).r, E.d16() * 16, .035, { att: 1, cut: 700 }) } } ] },
+  /* 酒吧驻唱：爵士三重奏（钢琴、低音提琴、刷子鼓） */
+  jazz: { bpm: 118, swing: .33, chords: CH_JAZZ, layers: [
+    { name: 'jbs', play(st, bar, t, out, s, E) { if (st % 4) return; const c = chordAt(s, bar), n = chordAt(s, bar + 1); const walk = [c.r, c.r + 4, c.r + 7, n.r - 1][st / 4]; tone(out, t, walk, E.d16() * 3.4, { type: 'triangle', gain: .38, rel: .1, cut: 700 }) } },
+    { name: 'jpn', play(st, bar, t, out, s) { if (st !== 6 && st !== 14 && !(st === 3 && bar % 2)) return; chordAt(s, bar).v.forEach((m, i) => keys(out, t + i * .01, m, .25, .035)) } },
+    { name: 'jdr', play(st, bar, t, out) { if (st % 4 === 0 || st % 4 === 3) hat(out, t, st % 4 === 3 ? .035 : .05, .12); if (st === 4 || st === 12) nhit(out, t, { g: .05, type: 'bandpass', f: 2200, d: .2 }) } } ] },
+  /* 音乐老师：明亮的钢琴加木琴 */
+  class: { bpm: 100, swing: 0, chords: CH_POP, layers: [
+    { name: 'cpn', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 8) return; chordAt(s, bar).v.forEach(m => keys(out, t, m, E.d16() * 7, .035)) } },
+    { name: 'cxy', play(st, bar, t, out, s) { const pat = [0, 3, 6, 8, 12, 14]; const k = pat.indexOf(st); if (k < 0) return; const pent = [72, 74, 76, 79, 81, 84]; bell(out, t, pent[(k * 2 + bar * 3) % 6], .05) } },
+    { name: 'cbs', play(st, bar, t, out, s, E) { if (st % 8) return; tone(out, t, chordAt(s, bar).r + 12, E.d16() * 6, { type: 'sine', gain: .3, rel: .2 }) } } ] },
+  /* 康复治疗师：温暖的钢琴，每一拍都很稳 */
+  rehab: { bpm: 88, swing: 0, chords: CH_SOFT, layers: [
+    { name: 'hpn', play(st, bar, t, out, s, E) { if (st % 4) return; chordAt(s, bar).v.slice(0, 3).forEach(m => keys(out, t, m, E.d16() * 3, .03)) } },
+    { name: 'hpd', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => strings(out, t, m - 12, E.d16() * 16, .008, { att: 1.2, cut: 1200 })) } },
+    { name: 'hbt', play(st, bar, t, out) { if (st % 4 === 0) kick(out, t, .3, 100, 50, .2) } } ] },
+  /* 健身教练：house 舞曲 */
+  house: { bpm: 124, swing: 0, chords: [{ r: 33, v: [57, 60, 64] }, { r: 33, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 43, v: [55, 59, 62] }], layers: [
+    { name: 'hkk', play(st, bar, t, out) { if (st % 4 === 0) kick(out, t, .8); if (st % 4 === 2) hat(out, t, .06, .08); if (st === 4 || st === 12) nhit(out, t, { g: .14, type: 'bandpass', f: 1300, d: .1 }) } },
+    { name: 'hbs', play(st, bar, t, out, s, E) { if (st % 4 !== 2) return; tone(out, t, chordAt(s, bar).r + 12, E.d16() * 1.5, { type: 'sawtooth', gain: .1, rel: .05, cut: 500, q: 3 }) } },
+    { name: 'hst', play(st, bar, t, out, s, E) { if (st !== 3 && st !== 10) return; chordAt(s, bar).v.forEach(m => tone(out, t, m + 12, E.d16(), { type: 'square', gain: .018, rel: .1, cut: 2200 })) } } ] },
+  /* 咖啡馆店主：尼龙弦吉他的 bossa nova */
+  bossa: { bpm: 70, swing: 0, chords: [{ r: 40, v: [55, 59, 62, 66] }, { r: 45, v: [55, 60, 64, 67] }, { r: 38, v: [53, 57, 60, 64] }, { r: 43, v: [53, 57, 59, 64] }], layers: [
+    { name: 'bgt', play(st, bar, t, out, s) { if (![0, 3, 6, 10, 13].includes(st)) return; chordAt(s, bar).v.forEach((m, i) => guitar(out, t + i * .012, m, .035)) } },
+    { name: 'bbs', play(st, bar, t, out, s, E) { const c = chordAt(s, bar); if (st === 0) tone(out, t, c.r, E.d16() * 5, { type: 'sine', gain: .35, rel: .15 }); if (st === 6) tone(out, t, c.r + 7, E.d16() * 2, { type: 'sine', gain: .28, rel: .12 }); if (st === 8) tone(out, t, c.r + 7, E.d16() * 5, { type: 'sine', gain: .3, rel: .15 }) } },
+    { name: 'bsh', play(st, bar, t, out) { shaker(out, t, st % 4 === 2 ? .03 : .015) } } ] },
+  /* 乐器修复师：安静的木吉他分解和弦 */
+  acoustic: { bpm: 76, swing: 0, chords: CH_SOFT, layers: [
+    { name: 'agt', play(st, bar, t, out, s) { if (st % 2) return; const c = chordAt(s, bar); guitar(out, t, [c.r + 12, c.v[0], c.v[1], c.v[2], c.v[3], c.v[2], c.v[1], c.v[0]][st / 2], .045) } } ] },
+  /* 音乐节摄影师：电子舞曲 */
+  fest: { bpm: 128, swing: 0, chords: [{ r: 33, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 36, v: [55, 60, 64] }, { r: 43, v: [55, 59, 62] }], layers: [
+    { name: 'fpd', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => { tone(out, t, m, E.d16() * 15, { type: 'sawtooth', gain: .016, att: .2, rel: .3, cut: 1800, detune: -12 }); tone(out, t, m, E.d16() * 15, { type: 'sawtooth', gain: .016, att: .2, rel: .3, cut: 1800, detune: 12 }) }) } },
+    { name: 'fkk', play(st, bar, t, out) { if (st % 4 === 0) kick(out, t, .85); if (st === 4 || st === 12) snare(out, t, .2); if (st % 2) hat(out, t, .045) } },
+    { name: 'fbs', play(st, bar, t, out, s, E) { if (st % 2 === 0) return; tone(out, t, chordAt(s, bar).r + 12, E.d16() * .9, { type: 'sawtooth', gain: .09, rel: .04, cut: 600, q: 4 }) } } ] },
+  /* 你自己：用第二关弹给调音婆婆的 8 个音 */
+  self: { bpm: 76, swing: 0, chords: CH_POP, mel: [0, 2, 4, 5, 4, 2, 1, 0], layers: [
+    { name: 'smel', play(st, bar, t, out, s, E) { if (st % 4) return; const i = (bar % 2) * 4 + st / 4; keys(out, t, SCALE[s.mel[i % s.mel.length]] + 12, E.d16() * 3.6, .06) } },
+    { name: 'spd', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => strings(out, t, m - 12, E.d16() * 16, .01, { att: 1, cut: 1300 })) } },
+    { name: 'sbs', play(st, bar, t, out, s, E) { if (st % 8) return; tone(out, t, chordAt(s, bar).r, E.d16() * 7, { type: 'sine', gain: .3, rel: .2 }) } } ] }
+});
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
 const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'], chill: ['ep', 'cbass', 'brush', 'pluck', 'vinyl'] };
+for (const k of ['pop', 'wed', 'rnb', 'docu', 'jazz', 'class', 'rehab', 'house', 'bossa', 'acoustic', 'fest', 'self']) ALL[k] = STYLES[k].layers.map(L => L.name);
 
 /* 界面音效 */
 function sfxSwipe() { if (!E.ctx) return; nhit(E.sfx, now(), { g: .12, type: 'bandpass', f: 1200, d: .18, q: 1.2 }) }
