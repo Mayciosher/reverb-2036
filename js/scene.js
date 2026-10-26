@@ -103,6 +103,29 @@ const SCENE = (() => {
     { const g = new THREE.Group(); g.position.set(3.4, 1.01, -3.5); g.add(cyl(.14, .06, .3, 8, M('#e6b34f', { metalness: .6, roughness: .3 }), 0, .3, 0)); g.add(box(.18, .12, .18, '#3a2416', 0, .06, 0)); add(6, g) }
     { const g = new THREE.Group(); g.position.set(.9, 0, 1.2); const r = rnd(5); for (let i = 0; i < 6; i++) { const p = box(.42, .01, .3, i % 2 ? '#f3efe6' : '#e6dccb', (r() - .5) * .8, .02 + i * .012, (r() - .5) * .6); p.rotation.y = r() * 3; g.add(p) } add(8, g) }
     { const g = new THREE.Group(); g.position.set(-1.5, 0, -.6); g.add(box(.04, 1.6, .04, '#2a2a2a', 0, .8, 0)); g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(.1, 1), M('#9a9a9a', { metalness: .7, roughness: .3 }))); g.children[1].position.y = 1.65; g.add(box(.5, .03, .5, '#2a2a2a', 0, .015, 0)); add(10, g) }
+    /* 右墙上的四张关卡海报（主页用来选关） */
+    const posters = [], POS_COL = ['#e3a93c', '#7a5ad6', '#2bb0a8', '#c0464f'];
+    function posterTex(i, L, state) {
+      const c = document.createElement('canvas'); c.width = 360; c.height = 500; const g = c.getContext('2d');
+      const col = POS_COL[i];
+      g.fillStyle = state === 'locked' ? '#2a2536' : col; g.fillRect(0, 0, 360, 500);
+      g.fillStyle = 'rgba(0,0,0,.18)'; for (let k = 0; k < 9; k++) g.fillRect(0, 60 + k * 44, 360, 2);
+      g.fillStyle = state === 'locked' ? '#6d6680' : '#1d1626';
+      g.font = '400 210px "ZCOOL QingKe HuangYou","Noto Sans SC",sans-serif'; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillText(L.no, 28, 230);
+      g.font = '700 40px "Noto Sans SC","PingFang SC",sans-serif';
+      const name = L.name.replace('2036 · ', ''); const lines = name.length > 6 ? [name.slice(0, 5), name.slice(5)] : [name];
+      lines.forEach((ln, k) => g.fillText(ln, 30, 320 + k * 50));
+      g.font = '500 24px "Noto Sans SC",sans-serif'; g.fillStyle = state === 'locked' ? '#8a8399' : 'rgba(29,22,38,.78)';
+      g.fillText(state === 'done' ? '已完成' : state === 'now' ? '下一关 · 点我' : '完成上一关后解锁', 30, 460);
+      if (state === 'done') { g.save(); g.translate(250, 120); g.rotate(-.3); g.strokeStyle = '#1d1626'; g.lineWidth = 6; g.strokeRect(-70, -28, 140, 56); g.font = '700 30px "Noto Sans SC",sans-serif'; g.fillStyle = '#1d1626'; g.textAlign = 'center'; g.fillText('走过了', 0, 11); g.restore() }
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+    }
+    [-2.5, -1.25, 0, 1.25].forEach((z, i) => {
+      const fr = box(.06, 1.52, 1.12, '#1d1626', 4.02, 2.1, z); room.add(fr);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1.4), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .7, emissive: '#ffffff', emissiveIntensity: 0 }));
+      m.position.set(3.98, 2.1, z); m.rotation.y = -Math.PI / 2; m.userData.poster = i; room.add(m); posters.push(m) });
+    let posterState = [], hoverPoster = -1;
+    function setPosters(list) { posterState = list.map(x => x.state); list.forEach((L, i) => { const m = posters[i].material; if (m.map) m.map.dispose(); m.map = posterTex(i, L, L.state); m.emissiveMap = m.map; m.needsUpdate = true }) }
     S.add(new THREE.HemisphereLight('#a79fe0', '#3a2630', .62));
     const moonL = new THREE.DirectionalLight('#9fb2ff', .55); moonL.position.set(3, 8, -14); moonL.castShadow = true; moonL.shadow.mapSize.set(1024, 1024);
     Object.assign(moonL.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 }); S.add(moonL);
@@ -111,8 +134,9 @@ const SCENE = (() => {
     function setYear(y) { year = y; extra.forEach(o => o.visible = y >= o.userData.y); buildCity(y) }
     setYear(0);
     return {
-      S, setYear, setDanger(d) { danger = d },
+      S, setYear, setDanger(d) { danger = d }, setPosters, pick: posters, hover(i) { hoverPoster = i },
       cam: { pos: [.7, 1.5, 3.3], look: [.5, .15, -4], fov: 56, k: [2.4, .7] },
+      views: { hub: { pos: [-1.6, 1.65, 3.1], look: [4, 2.05, -.7], fov: 52, k: [1.4, .5] } },
       frame(t, beat, ph, newBeat) {
         const pulse = beat == null ? 0 : Math.pow(1 - ph, 3);
         spk.forEach(g => g.scale.set(1 + pulse * .07, 1 + pulse * .1, 1 + pulse * .07));
@@ -121,6 +145,9 @@ const SCENE = (() => {
         bulb.color.setRGB(1, .72 - danger * .2, .44 - danger * .2);
         if (newBeat && beat % 2 === 0) { const sp = spk[(beat / 2) % 2]; notes.emit(t, sp.position.x, 1.1, sp.position.z + .2) }
         notes.tick(t);
+        posters.forEach((m, i) => { const st = posterState[i]; const h = i === hoverPoster && st !== 'locked';
+          m.material.emissiveIntensity = (st === 'now' ? .18 + pulse * .35 : st === 'done' ? .1 : 0) + (h ? .25 : 0);
+          const sc = h ? 1.05 : 1; m.scale.set(sc, sc, 1) });
       }
     };
   }
@@ -143,19 +170,25 @@ const SCENE = (() => {
     /* 圆桌、塔罗牌、水晶球 */
     S.add(cyl(1.3, 1.3, .1, 14, '#5a2e2a', 0, .95, -.8)); S.add(cyl(.12, .2, .95, 8, dark, 0, .47, -.8));
     S.add(cyl(1.32, 1.32, .02, 14, '#6d2f5f', 0, 1.01, -.8));
-    const cards = [];
-    [-.6, 0, .6].forEach((x, i) => { const c = box(.36, .02, .56, M('#2a1f4d', { emissive: '#6d5aa8', emissiveIntensity: .2 }), x, 1.04, -.4); c.rotation.y = (i - 1) * .12; S.add(c); cards.push(c);
-      const g = box(.3, .021, .5, M('#d9a441', { emissive: '#d9a441', emissiveIntensity: .15, wireframe: true }), x, 1.045, -.4); g.rotation.y = c.rotation.y; S.add(g) });
-    const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(.32, 2), M('#7fe0e8', { emissive: '#3aa5b8', emissiveIntensity: .7, transparent: true, opacity: .75, roughness: .1 }));
-    ball.position.set(0, 1.4, -1.3); S.add(ball); S.add(cyl(.18, .24, .12, 8, '#d9a441', 0, 1.06, -1.3));
-    const ballL = new THREE.PointLight('#66d6e6', .9, 5, 2); ballL.position.set(0, 1.5, -1.3); S.add(ballL);
+    /* 12 张塔罗牌，两排扇形摆在桌上，背面朝上 */
+    const backTex = (() => { const c = document.createElement('canvas'); c.width = 180; c.height = 280; const g = c.getContext('2d'); g.fillStyle = '#2a1f4d'; g.fillRect(0, 0, 180, 280); g.strokeStyle = '#d9a441'; g.lineWidth = 6; g.strokeRect(12, 12, 156, 256); g.lineWidth = 3; g.beginPath(); g.arc(90, 140, 42, 0, 7); g.stroke(); g.beginPath(); for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; g.moveTo(90 + Math.cos(a) * 50, 140 + Math.sin(a) * 50); g.lineTo(90 + Math.cos(a) * 70, 140 + Math.sin(a) * 70) } g.stroke(); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t })();
+    const faceTex = (roman, name, label) => { const c = document.createElement('canvas'); c.width = 180; c.height = 280; const g = c.getContext('2d'); g.fillStyle = '#f1e6d0'; g.fillRect(0, 0, 180, 280); g.strokeStyle = '#8a5a36'; g.lineWidth = 5; g.strokeRect(10, 10, 160, 260); g.fillStyle = '#5a2e2a'; g.textAlign = 'center'; g.font = '700 46px serif'; g.fillText(roman, 90, 90); g.font = '700 30px "Noto Sans SC",sans-serif'; g.fillText(name, 90, 160); g.font = '500 22px "Noto Sans SC",sans-serif'; g.fillStyle = '#8a5a36'; g.fillText(label || '', 90, 235); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.center.set(.5, .5); t.rotation = Math.PI; return t };
+    const side = M('#d9a441'); const cards = [];
+    for (let k = 0; k < 12; k++) {
+      const row = k < 6 ? 0 : 1, j = k % 6, x = -1 + j * .4, z = row ? -1.02 : -.36;
+      const mats = [side, side, new THREE.MeshStandardMaterial({ map: backTex, roughness: .6, emissive: '#6d5aa8', emissiveIntensity: .12 }), new THREE.MeshStandardMaterial({ color: '#f1e6d0', roughness: .6 }), side, side];
+      const c = new THREE.Mesh(new THREE.BoxGeometry(.34, .02, .52), mats); c.position.set(x, 1.04, z); c.rotation.y = (j - 2.5) * -.06; c.castShadow = true; c.userData = { card: k, base: c.position.clone(), flip: 0, goal: 0 }; S.add(c); cards.push(c) }
+    let cardIdx = [], hoverCard = -1;
+    const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 2), M('#7fe0e8', { emissive: '#3aa5b8', emissiveIntensity: .7, transparent: true, opacity: .75, roughness: .1 }));
+    ball.scale.setScalar(.75); ball.position.set(0, 1.42, -2.55); S.add(ball); S.add(cyl(.06, .12, .22, 8, '#d9a441', 0, 1.15, -2.55)); S.add(cyl(.18, .24, .2, 8, '#3b2418', 0, .95, -2.55));
+    const ballL = new THREE.PointLight('#66d6e6', .9, 5, 2); ballL.position.set(0, 1.8, -2.4); S.add(ballL);
     /* 旧钢琴（右边） */
     const pn = new THREE.Group(); pn.position.set(3.2, 0, -1.6); pn.rotation.y = -Math.PI / 2; S.add(pn);
     pn.add(box(2, 1.5, .7, '#2a1710', 0, .75, 0)); pn.add(box(1.9, .06, .35, '#f1e6d0', 0, 1, .45)); pn.add(box(2, .1, .4, '#2a1710', 0, .92, .45));
     for (let k = 0; k < 13; k++) if ([1, 3, 6, 8, 10].includes(k % 12)) pn.add(box(.07, .05, .2, '#120a07', -.9 + k * .15, 1.05, .4));
     /* 蜡烛 */
     const flames = [];
-    [[-1, 1.06, -1.2], [1, 1.06, -1.1], [-2.6, 3, -3.7], [2.6, 3, -3.7], [3.2, 1.55, -1]].forEach(([x, y, z], i) => {
+    [[-1.05, 1.06, -1.55], [1.05, 1.06, -1.55], [-2.6, 3, -3.7], [2.6, 3, -3.7], [3.2, 1.55, -1]].forEach(([x, y, z], i) => {
       S.add(cyl(.05, .05, .22, 6, '#efe5cf', x, y + .11, z));
       const f = new THREE.Mesh(new THREE.ConeGeometry(.04, .12, 6), new THREE.MeshBasicMaterial({ color: '#ffcf70' })); f.position.set(x, y + .29, z); S.add(f);
       const L = new THREE.PointLight('#ffb35a', .7, 4, 2); L.position.set(x, y + .4, z); if (i < 2) L.castShadow = true; S.add(L); flames.push([f, L, Math.random() * 10]) });
@@ -170,13 +203,20 @@ const SCENE = (() => {
     S.add(new THREE.HemisphereLight('#7b5aa8', '#2a1410', .35));
     const notes = notePool(S, 8);
     return {
-      S, cam: { pos: [0, 1.75, 2.8], look: [0, 1.1, -4], fov: 58, k: [2.6, .8] },
+      S, pick: cards, hover(i) { hoverCard = i },
+      tarot(list) { cardIdx = list; cards.forEach(c => { c.userData.flip = 0; c.userData.goal = 0; c.rotation.z = 0; c.position.copy(c.userData.base); c.material[2].emissiveIntensity = .12; c.material[3].map = null; c.material[3].needsUpdate = true; c.visible = true }) },
+      flip(k, roman, name, label) { const c = cards[k]; c.material[3].map = faceTex(roman, name, label); c.material[3].needsUpdate = true; c.userData.goal = 1 },
+      dimRest() { cards.forEach(c => { if (!c.userData.goal) c.material[2].emissiveIntensity = 0, c.material[2].color.set('#6b6380') }) },
+      cam: { pos: [0, 1.75, 2.8], look: [0, 1.1, -4], fov: 58, k: [2.6, .8] },
+      views: { tarot: { pos: [.5, 2.9, 1.3], look: [.5, .9, -1.0], fov: 50, k: [.5, .25] } },
       frame(t, beat, ph, newBeat) {
         const pulse = beat == null ? 0 : Math.pow(1 - ph, 2.5);
         flames.forEach(([f, L, o]) => { const fl = .85 + Math.sin(t / 90 + o) * .08 + Math.sin(t / 37 + o * 3) * .06; f.scale.set(1, fl, 1); L.intensity = .6 * fl + pulse * .15 });
         ball.material.emissiveIntensity = .55 + pulse * .5 + Math.sin(t / 700) * .1; ballL.intensity = .7 + pulse * .6; ball.rotation.y = t / 4000;
         lans.forEach((l, i) => l.rotation.y = Math.sin(t / 1500 + i) * .2);
         dust.rotation.y = t / 60000; dust.position.y = Math.sin(t / 5000) * .1;
+        cards.forEach((c, k) => { const u = c.userData; u.flip += (u.goal - u.flip) * .08; c.rotation.z = u.flip * Math.PI; c.position.y = u.base.y + Math.sin(u.flip * Math.PI) * .35 + (u.goal ? .02 : 0) + (k === hoverCard && !u.goal ? .05 : 0);
+          if (!u.goal) c.material[2].emissiveIntensity = k === hoverCard ? .45 : .12 + pulse * .06 });
         if (newBeat && beat % 4 === 0) notes.emit(t, 3.2 - (Math.random() * .6), 1.2, -1.2);
         notes.tick(t);
       }
@@ -299,7 +339,18 @@ const SCENE = (() => {
 
   /* ================= 调度 ================= */
   const built = {}, MAKERS = { room: buildRoom, shop: buildShop, street: buildStreet, hall: buildHall };
-  let cur = null, curKey = '', px = 0, py = 0, tx = 0, ty = 0, lastBeat = -1;
+  let cur = null, curKey = '', px = 0, py = 0, tx = 0, ty = 0, lastBeat = -1, viewName = '', snap = true;
+  const cp = new THREE.Vector3(), cl = new THREE.Vector3(), tp = new THREE.Vector3(), tl = new THREE.Vector3();
+  /* 点 3D 物体：主页的海报、第二关的塔罗牌 */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let onPick = null, hoverK = -1;
+  function hit(e) {
+    if (!cur || !cur.pick || !onPick || e.target !== R.domElement) return -1;
+    ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam);
+    const h = ray.intersectObjects(cur.pick, false)[0]; if (!h) return -1;
+    return cur.pick.indexOf(h.object);
+  }
+  addEventListener('pointermove', e => { const k = hit(e); if (k !== hoverK) { hoverK = k; cur && cur.hover && cur.hover(k); R.domElement.style.cursor = k >= 0 ? 'pointer' : '' } });
+  addEventListener('click', e => { const k = hit(e); if (k >= 0 && onPick) onPick(k) });
   const get = k => built[k] || (built[k] = MAKERS[k]());
   addEventListener('pointermove', e => { tx = e.clientX / innerWidth * 2 - 1; ty = e.clientY / innerHeight * 2 - 1 });
   addEventListener('resize', () => { R.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() });
@@ -315,17 +366,25 @@ const SCENE = (() => {
     if (!cur || document.hidden) return;
     px += (tx - px) * .04; py += (ty - py) * .04;
     const [beat, ph] = reduce ? [null, 0] : beatNow(); const nb = beat != null && beat !== lastBeat; if (nb) lastBeat = beat;
-    const c = cur.cam;
+    const c = (cur.views && cur.views[viewName]) || cur.cam;
     if (cur.custom) cur.custom(cam, px, py);
-    else { cam.position.set(c.pos[0], c.pos[1], c.pos[2]); cam.lookAt(c.look[0] + px * c.k[0], c.look[1] - py * c.k[1], c.look[2]) }
-    const fov = innerWidth / innerHeight < .9 ? c.fov + 18 : c.fov; if (cam.fov !== fov) { cam.fov = fov; cam.updateProjectionMatrix() }
+    else {
+      tp.set(c.pos[0], c.pos[1], c.pos[2]); tl.set(c.look[0] + px * c.k[0], c.look[1] - py * c.k[1], c.look[2]);
+      if (snap) { cp.copy(tp); cl.copy(tl); snap = false } else { const a = reduce ? 1 : .045; cp.lerp(tp, a); cl.lerp(tl, a) }
+      cam.position.copy(cp); cam.lookAt(cl);
+    }
+    const fov = innerWidth / innerHeight < .9 ? c.fov + 18 : c.fov; if (Math.abs(cam.fov - fov) > .05) { cam.fov += (fov - cam.fov) * .08; cam.updateProjectionMatrix() }
     cur.frame(t, beat, ph, nb);
     R.render(cur.S, cam);
   }
   requestAnimationFrame(loop);
   const SCREEN = { hub: 'room', ideal: 'room', intro: 'room', yearbreak: 'room', play: 'room', mini: 'room', end: 'room', l2: 'shop', l3: 'street', l4: 'hall', portrait: 'hall' };
   return {
-    go(screenId) { const k = SCREEN[screenId] || 'room'; if (k === curKey) return; curKey = k; cur = get(k); host.dataset.scene = k },
+    go(screenId) { const k = SCREEN[screenId] || 'room'; if (k === curKey) return; curKey = k; cur = get(k); host.dataset.scene = k; snap = true; onPick = null },
+    view(name) { viewName = name || '' },
+    onPick(fn) { onPick = fn },
+    posters(list) { get('room').setPosters(list) },
+    tarot(list) { get('shop').tarot(list) }, flip(k, r, n, l) { get('shop').flip(k, r, n, l) }, dimRest() { get('shop').dimRest() },
     year(y) { get('room').setYear(y) },
     danger(d) { if (built.room) built.room.setDanger(d) },
     l3Role(i, roles) { const s = get('street'); if (roles) s.setShops(roles); s.setIndex(i) },
@@ -333,5 +392,5 @@ const SCENE = (() => {
   };
 })();
 window.SCENE = SCENE;
-if (SCENE) { const v = [...document.querySelectorAll('.screen')].find(s => !s.hidden); SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(v ? v.id : 'hub') }
+if (SCENE) { document.body.classList.add('has3d'); const v = [...document.querySelectorAll('.screen')].find(s => !s.hidden); SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(v ? v.id : 'hub'); if (typeof renderHub === 'function' && (!v || v.id === 'hub')) { renderHub(); if (window.MO) MO.drop($('#heroTitle'), { sound: false }) } }
 else document.body.classList.add('no3d');

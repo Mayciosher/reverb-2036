@@ -39,6 +39,7 @@ function startL2() {
   show('l2'); $('#l2go').onclick = l2Play;
 }
 function l2Play() {
+  setView('l2', '');
   E.duck(.12);
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 一</span><h2 class="big-title">随手弹 8 个音</h2>
     <p class="lead">不用想，凭感觉弹。键盘是 C 大调，1 是 Do，从左到右越来越高，也可以按数字键 1 到 8。</p>
@@ -65,6 +66,7 @@ function analyzeMelody(a) {
   return { v, why };
 }
 function l2Read() {
+  setView('l2', '');
   const tok = TOK; E.duck(1);
   const { v, why } = analyzeMelody(L2.notes); for (const k in v) L2.tags[k] = (L2.tags[k] || 0) + v[k];
   const l1 = PROG.log.filter(x => x.lv === 1 && x.k);
@@ -84,26 +86,31 @@ function l2Read() {
 function l2Cards() {
   L2.picks = [];
   const order = shuffle(TAROT.map((_, i) => i)), pos = ['过去', '现在', '下一个十年'], ROMAN = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ', 'Ⅶ', 'Ⅷ', 'Ⅸ', 'Ⅹ', 'Ⅺ', 'Ⅻ'];
-  $('#l2').innerHTML = `<span class="eyebrow">第二关 · 三</span><h2 class="big-title">抽三张牌</h2>
-    <p class="lead" id="l2tip">第一张是你的<b>过去</b>。凭直觉点一张。</p>
+  $('#l2').innerHTML = `<div class="lx-head"><span class="eyebrow">第二关 · 三</span><h2 class="big-title beat" id="l2title">抽三张牌</h2></div>
+    <div class="dialog"><span class="spk">调音婆婆</span><p id="l2tip"></p></div>
     <div class="tarot">${order.map(i => `<div class="tc" data-i="${i}" role="button" tabindex="0" aria-label="一张背面朝上的牌"><div class="back"></div><div class="face"><i>${ROMAN[i]}</i><b>${TAROT[i].n}</b><small></small></div></div>`).join('')}</div>
-    <div class="spread" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}</div>
-    <button class="btn" id="l2next" style="align-self:flex-start" hidden>回答婆婆的三个问题</button>`;
+    <div class="spread" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}<button class="btn" id="l2next" hidden>回答婆婆的三个问题</button></div>`;
+  setView('l2', 'tarot'); MO.drop($('#l2title'));
+  const tip = h => MO.type($('#l2tip'), h);
+  tip(`“第一张是你的<b>过去</b>。别想，凭直觉，${window.SCENE ? '点桌上的一张牌' : '点一张'}。”`);
+  if (window.SCENE) { SCENE.tarot(order); SCENE.onPick(k => flip($$('.tc')[k])) }
   const flip = c => {
-    if (c.classList.contains('flip') || L2.picks.length >= 3) return;
+    if (!c || c.classList.contains('flip') || L2.picks.length >= 3) return;
     const i = +c.dataset.i, k = L2.picks.length; L2.picks.push(i);
+    if (window.SCENE) SCENE.flip($$('.tc').indexOf ? [...$$('.tc')].indexOf(c) : 0, ROMAN[i], TAROT[i].n, pos[k]);
     c.querySelector('.face small').textContent = pos[k]; c.classList.add('flip');
     const sc = STYLES.mystic.scale, t = now();[0, 2, 4].forEach((d, j) => harp(E.sfx, t + j * .12, sc[(i + d) % 8] + 12, .07));
     for (const kk in TAROT[i].v) L2.tags[kk] = (L2.tags[kk] || 0) + TAROT[i].v[kk] * (k === 2 ? 1.5 : 1);
-    $$('#spread div')[k].innerHTML = `<b>${pos[k]}</b>「${TAROT[i].n}」${TAROT[i].mean}`;
-    if (L2.picks.length < 3) $('#l2tip').innerHTML = `下一张是你的<b>${pos[L2.picks.length]}</b>。`;
-    else { $('#l2tip').textContent = '三张牌都翻开了。'; $$('.tc:not(.flip)').forEach(x => x.classList.add('dim')); $('#l2next').hidden = false }
+    const slot = $$('#spread div')[k]; slot.innerHTML = `<b>${pos[k]}</b>「${TAROT[i].n}」${TAROT[i].mean}`; slot.classList.add('got'); MO.rise($('#spread'), 'div.got:last-of-type');
+    if (L2.picks.length < 3) tip(`“「${TAROT[i].n}」……嗯。下一张是你的<b>${pos[L2.picks.length]}</b>。”`);
+    else { tip(`“「${TAROT[i].n}」。三张牌都翻开了。来，我问你三个问题。”`); $$('.tc:not(.flip)').forEach(x => x.classList.add('dim')); if (window.SCENE) SCENE.dimRest(); $('#l2next').hidden = false; MO.rise($('#spread'), '#l2next') }
   };
   $$('.tc').forEach(c => { c.onclick = () => flip(c); c.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(c) } } });
   $('#l2next').onclick = () => l2Soul(0);
 }
 function l2Soul(i) {
   if (i >= SOUL_Q.length) return l2Fortune();
+  setView('l2', '');
   const Q = SOUL_Q[i];
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 四 · 第 ${i + 1} / ${SOUL_Q.length} 问</span><h2 class="big-title">婆婆问你</h2>
     <div class="speech"><p>“${Q.q}”</p></div><p class="mnote">说真话。她听得出来。</p>
@@ -111,6 +118,7 @@ function l2Soul(i) {
   $$('[data-a]').forEach(b => b.onclick = () => { const a = Q.a[+b.dataset.a]; addTags(a[1], L2.tags); L2.answers.push({ q: Q.q, a: a[0], k: a[1] }); harp(E.sfx, now(), 74, .05); l2Soul(i + 1) });
 }
 function l2Fortune() {
+  setView('l2', '');
   const { T, keys } = rankTraits(L2.tags);
   const top = keys[0], second = keys[1];
   const flaw = FLAWY.filter(k => k !== top).sort((a, b) => (T[b] || 0) - (T[a] || 0))[0];
@@ -360,6 +368,7 @@ function roleMusic(role) {
   E.duck(1); E.play(role.style, ALL[role.style]);
 }
 function startL3() {
+  setView('l3', '');
   E.resetMood(); E.duck(1); KEYH = null;
   if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < 7 ? l3Task() : l3End() }
   Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES) });
@@ -377,9 +386,9 @@ function l3Task() {
   const T = TASKS[role.task], time = L3_TIMES[L3.i];
   show('l3'); KEYH = null; roleMusic(role); if (window.SCENE) SCENE.l3Role(L3.i, L3.roles);
   const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
-  $('#l3').innerHTML = `<div class="row" style="justify-content:space-between"><span class="clock">${time}</span><span class="tally">第 ${L3.i + 1}/7 个 · 挑对 ${L3.right} · 交给小谱 ${L3.ai}</span></div>
-    <span class="rolechip">此刻的身份：<b>${role.name}</b>${role.music ? '' : '<i>音乐以外的工作</i>'}</span>
-    <div class="brief"><span class="who">${T.who}</span>${T.brief.replace('{place}', L3.place || '学校')}</div>
+  setTimeout(() => { setView('l3', 'task'); MO.drop($('#l3clock'), { sound: false }); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip'); $('#l3role').classList.add('swap-in') }, 0);
+  $('#l3').innerHTML = `<div class="lx-head"><span class="clock beat" id="l3clock">${time}</span><span class="rolechip" id="l3role">此刻的身份：<b>${role.name}</b>${role.music ? '' : '<i>音乐以外的工作</i>'}</span><span class="tally">第 ${L3.i + 1}/7 个 · 挑对 ${L3.right} · 交给小谱 ${L3.ai}</span></div>
+    <div class="brief dialog"><span class="who spk">${T.who}</span><p id="l3brief"></p></div>
     <div class="clips">${order.map((k, j) => `<div class="clip" data-o="${k}"><b>${letters[j]}</b><div class="wave">${'<i></i>'.repeat(9)}</div><button class="btn ghost sm" data-p="${k}">播放 ${letters[j]}</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" id="l3ai">交给小谱挑</button><button class="btn ghost sm" id="l3stop">停止播放</button></div>
     <div id="l3res"></div>`;
@@ -402,14 +411,14 @@ function l3Task() {
       const a = ev.a[+b.dataset.ev]; addTags(a[1], L3.tags); PROG.log.push({ lv: 3, who: ev.who, say: ev.say, pick: a[0], k: a[1], time });
       L3.i++; saveL3(); E.stopClip(); L3.i < 7 ? l3Task() : l3End();
     });
-    $('#l3res').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#l3res').scrollIntoView({ behavior: 'smooth', block: 'start' }); MO.rise($('#l3res'));
   };
   $$('[data-c]').forEach(b => b.onclick = () => decide(+b.dataset.c, false));
   $('#l3ai').onclick = () => decide(Math.floor(Math.random() * 3), true);
   saveL3();
 }
 function l3End() {
-  show('l3'); E.duck(1); if (window.SCENE) SCENE.l3Role(6, L3.roles);
+  show('l3'); setView('l3', ''); E.duck(1); if (window.SCENE) SCENE.l3Role(6, L3.roles);
   if (E.styleKey !== 'self') roleMusic(L3_ROLES.self);
   const R = L3.roles.map(k => L3_ROLES[k]);
   if (L3.fav == null) {
@@ -446,6 +455,7 @@ const CH_MIN = [[48, 60, 63, 67], [43, 59, 62, 67], [48, 60, 63, 67], [41, 60, 6
 const L4 = { notes: [], tags: {}, ans: {}, dom: {} };
 function countTags(...ks) { return PROG.log.filter(x => x.lv === 1 && ks.some(k => (x.k || '').split(' ').includes(k))).length }
 function startL4() {
+  setView('l4', '');
   Object.assign(L4, { notes: [], tags: {}, ans: {}, dom: {} });
   E.resetMood(); E.duck(1); E.play('orch', ['vln', 'cello', 'harpo']); KEYH = null; if (window.SCENE) SCENE.hall(1);
   const P = PROG, mem = [];
@@ -474,12 +484,14 @@ function l4Ask(i) {
   const Q = l4Questions();
   if (i >= Q.length) return l4Compose();
   const q = Q[i];
-  $('#l4').innerHTML = `<span class="eyebrow">第四关 · 最后的问题 ${i + 1} / ${Q.length}</span><h2 class="big-title">问自己</h2>
-    <div class="speech"><p>${q.q}</p></div><p class="mnote">没有标准答案，只有真话和假话。</p>
+  $('#l4').innerHTML = `<div class="lx-head"><span class="eyebrow">第四关 · 最后的问题 ${i + 1} / ${Q.length}</span><h2 class="big-title beat" id="l4title">问自己</h2></div>
+    <div class="subtitle"><p id="l4q"></p><span class="mnote">没有标准答案，只有真话和假话。</span></div>
     <div class="choices-col">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
+  setView('l4', 'ask'); if (i === 0) MO.drop($('#l4title')); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
   $$('[data-a]').forEach(b => b.onclick = () => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) });
 }
 function l4Compose() {
+  setView('l4', '');
   L4.notes = []; E.play('orch', ['vln']); E.duck(.3);
   $('#l4').innerHTML = `<span class="eyebrow">第四关 · 作曲</span><h2 class="big-title">留给十年前的自己</h2>
     <p class="lead">弹 4 个音，留给 2027 年的自己。弹完以后，管弦乐团会把它奏出来，再高八度演奏一遍，每个音后面都跟着竖琴的回声。1 是 Do，从左到右越来越高，也可以按数字键 1 到 8。</p>

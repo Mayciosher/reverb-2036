@@ -45,11 +45,16 @@ function avatar(who) { let h = 0; for (const ch of who) h = (h * 31 + ch.charCod
    页面切换
    ========================================================= */
 const TITLES = { ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
+/* 横屏布局：电脑或横着的平板用横屏排版，手机竖屏保持原来的竖向排版 */
+function updLX() { document.body.classList.toggle('lx', innerWidth >= 960 && innerWidth / innerHeight > 1.15) }
+updLX(); addEventListener('resize', updLX);
+/* 同一个页面里换到另一种排版（比如第二关的抽牌），3D 镜头也会跟着移过去 */
+function setView(id, v) { const el = $('#' + id); if (el) el.dataset.view = v || ''; document.body.dataset.view = v || ''; if (window.SCENE) SCENE.view(v || (id === 'hub' ? 'hub' : '')) }
 function show(id) {
   TOK++; if (E.ctx) E.stopClip();
   $$('.screen').forEach(s => s.hidden = s.id !== id);
   $('#topbar').hidden = id === 'hub'; $('#topTitle').textContent = TITLES[id] || '';
-  document.body.dataset.screen = id;
+  document.body.dataset.screen = id; setView(id, '');
   if (window.SCENE) { if (id === 'hub') SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(id) }
   const el = $('#' + id); if (el && el.scrollTo) el.scrollTo(0, 0);
   if (id === 'play') { renderChans(); updateMood() }
@@ -57,7 +62,7 @@ function show(id) {
 function goHub() {
   if (E.ctx) { E.stopClip(); E.duck(1) }
   if (G) { saveL1(); G = null }
-  KEYH = null; stopPreview(false); renderHub(); show('hub'); homeMusic();
+  KEYH = null; stopPreview(false); renderHub(); show('hub'); homeMusic(); MO.drop($('#heroTitle')); MO.rise($('#levels'), '.lvl.sel');
 }
 /* 开场音乐：主页、选理想、选音乐占比、关卡说明、校准时播放。
    浏览器不允许网页自己出声，所以要等玩家第一次点击或按键后才开始 */
@@ -85,7 +90,7 @@ const LEVELS = [
   { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，有的和音乐有关，有的在别的行业，比例取决于第一关结局里音乐占你生活几成。每个身份都要用耳朵做一个判断，背后还藏着一个选择。', bgmName: '每个身份一段音乐', bgm: '酒吧是爵士三重奏，咖啡馆是 bossa nova，健身房是 house，音乐节是电子舞曲……最后一段，用的是你在第二关弹的旋律。', style: 'jazz' },
   { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
 ];
-let previewing = null, previewTimer = null, confirmReset = false;
+let previewing = null, previewTimer = null, confirmReset = false, hubSel = null;
 function levelSummary(i) {
   if (i === 0 && PROG.l1) return '你的活法：' + ENDINGS[PROG.l1.id].t;
   if (i === 1 && PROG.l2) return '你的签：' + PROG.l2.title;
@@ -94,12 +99,17 @@ function levelSummary(i) {
   return '已完成';
 }
 function renderHub() {
-  const st = PROG.stage;
+  const st = PROG.stage; if (hubSel == null || hubSel > Math.min(st, 3)) hubSel = Math.min(st, 3);
+  /* 3D 房间右墙上的四张海报就是四个关卡，点海报看这一关的介绍 */
+  if (window.SCENE) {
+    SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
+    SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel') });
+  }
   $('#levels').innerHTML = LEVELS.map((L, i) => {
     const state = i < st ? 'done' : i === st ? 'now' : 'locked';
     const cont = (i === 0 && PROG.l1save) || (i === 2 && PROG.l3save);
     const tag = state === 'done' ? `<span class="tag done">${levelSummary(i)}</span>` : state === 'now' ? `<span class="tag now">${cont ? '进行中' : '下一关'}</span>` : `<span class="tag">完成第 ${i} 关后解锁</span>`;
-    return `<article class="lvl ${state}">
+    return `<article class="lvl ${state}${i === hubSel ? ' sel' : ''}">
       <span class="no">${L.no}</span>
       <h3>${L.name}${tag}</h3>
       <p>${L.desc}</p>
@@ -201,8 +211,8 @@ function livingCost() {
   return [8, '你一个人住在大城市'];
 }
 function renderYB() {
-  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`;
-  $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join('');
+  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; MO.drop($('#ybBig'));
+  $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
 function buildQueue() {
   const y = G.year;
@@ -259,13 +269,13 @@ function renderCard() {
   $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`;
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
-  $('#say').innerHTML = badge + badge2 + c.say;
+  MO.type($('#say'), badge + badge2 + c.say);
   $('#src').textContent = c.real ? '原型：' + c.real : ''; $('#src').hidden = !c.real;
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  $('#yrNum').textContent = `第 ${G.year} 年`; $('#yrCal').textContent = `${2026 + G.year} · 饿死之前`;
+  if ($('#yrNum').textContent !== `第 ${G.year} 年`) { $('#yrNum').textContent = `第 ${G.year} 年`; MO.drop($('#yrNum'), { sound: false }) } $('#yrCal').textContent = `${2026 + G.year} · 饿死之前`;
   renderMeters(); renderUndo();
   requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
 }
@@ -320,12 +330,12 @@ function checkCrisis() {
 function renderMeters() {
   if (!$('#meters').children.length) $('#meters').innerHTML = KEYS.map(k => `<div class="meter" data-k="${k}"><i class="dot"></i><div class="track"><div class="fill"></div></div><span class="mlab">${STAT[k]}</span><span class="mval"></span><b class="dl"></b></div>`).join('');
   if (!G) return;
-  KEYS.forEach(k => { const m = document.querySelector(`.meter[data-k="${k}"]`), v = G.s[k]; m.querySelector('.fill').style.height = v + '%'; m.querySelector('.mval').textContent = v; m.setAttribute('aria-label', `${STAT[k]} ${v}`); m.classList.toggle('warn', v <= 20 || v >= 80) });
+  KEYS.forEach(k => { const m = document.querySelector(`.meter[data-k="${k}"]`), v = G.s[k]; m.querySelector('.fill').style.height = v + '%'; MO.roll(m.querySelector('.mval'), v); m.setAttribute('aria-label', `${STAT[k]} ${v}`); m.classList.toggle('warn', v <= 20 || v >= 80) });
 }
 function updateMood() {
   if (!G) return; const s = G.s;
   let d = 0; KEYS.forEach(k => { const v = s[k]; if (v <= 20) d = Math.max(d, (22 - v) / 22); if (v >= 80) d = Math.max(d, (v - 78) / 22) });
-  E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d);
+  E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d); document.body.classList.toggle('danger', d > .3);
   if (E.ctx) E.lp.frequency.setTargetAtTime(d > .05 ? 18000 * Math.pow(1500 / 18000, d) : 18000, now(), .4);
   if (E.styleKey === 'lofi') E.setLayer('heart', d > .15);
   const notes = [];

@@ -27,9 +27,10 @@
 
 <!-- ========== 主页 ========== -->
 <section class="screen scroll" id="hub">
+  <div class="hubL">
   <div class="hero">
     <div class="row" style="justify-content:space-between"><span class="eyebrow">选题 1 音乐游戏 × 选题 8 十年后的音乐人</span><button class="home snd" data-snd>声音：开</button></div>
-    <h1>十年<span>回响</span></h1>
+    <h1 class="beat" id="heroTitle">十年<span>回响</span></h1>
     <div class="staff" aria-hidden="true"></div>
     <p>2027 到 2036，十年。十年后也许没有人只是“音乐人”，你可能会写歌、会教课、会用 AI、会做生意。这个游戏不替你回答你是谁，只问一个问题：十年后，音乐在你的生活里占几成？四个关卡按顺序走完，没有回头路，最后你会得到自己的音乐人格画像和身份光谱。</p>
     <p class="tapsound" id="tapSound">♪ 点一下页面任意位置，音乐就会响起</p>
@@ -40,7 +41,6 @@
     <button class="home" data-recal>重新校准耳机延迟</button>
   </div>
   <p class="mnote" id="installTip" hidden>安卓手机和电脑（Chrome、Edge）：点浏览器地址栏右侧或菜单里的「安装」。iPhone、iPad：用 Safari 打开，点底部的分享按钮，选「添加到主屏幕」。Mac 上的 Safari：菜单「文件」→「添加到程序坞」。安装后可以像 App 一样从桌面打开，没有网络也能玩。<br>如果是 iPhone，请记得关闭侧边的静音键，否则网页可能没有声音。</p>
-  <div class="levels" id="levels"></div>
   <details class="panel">
     <summary id="gallerySum">结局图鉴</summary>
     <p class="mnote" style="margin-top:8px">第一关一共有 19 种活法。重新开始十年可以解锁更多，组里可以比一比谁解锁得多。</p>
@@ -56,6 +56,8 @@
       <li><b>全部是原创。</b>所有音乐都由浏览器实时合成，没有用任何现成歌曲。</li>
     </ol>
   </details>
+  </div>
+  <div class="levels" id="levels"></div>
 </section>
 
 <!-- ========== 开局：理想的音乐人 ========== -->
@@ -150,6 +152,7 @@
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
 <script src="js/levels.js"></script>
+<script src="js/motion.js"></script>
 <script src="js/scene.js"></script>
 </body>
 </html>

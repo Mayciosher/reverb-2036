@@ -384,3 +384,130 @@ body.no3d .scrim{display:none}
 .mnote{color:#b8afc8}
 .end .kind{display:inline-block;align-self:flex-start;padding:5px 11px;border-radius:9px;background:rgba(14,11,22,.8);font-size:14px}
 .choices button{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+
+/* =========================================================
+   文字动效
+   ========================================================= */
+.beat{display:inline-block;transform-origin:left 80%;transform:scale(calc(1 + var(--beat,0) * .035));
+  text-shadow:0 2px 3px rgba(0,0,0,.55),0 0 26px rgba(0,0,0,.55),0 0 calc(var(--beat,0) * 30px) rgba(227,169,60,.75)}
+.moch{display:inline-block}
+.moch.acc{color:var(--brass)}
+.dropping .moch{animation:chdrop .75s cubic-bezier(.2,.9,.25,1.25) both;animation-delay:calc(var(--i) * var(--gap,55ms))}
+@keyframes chdrop{0%{opacity:0;transform:translateY(-.8em) rotate(-10deg);filter:blur(6px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:none}}
+.tw{opacity:0;transition:opacity .14s}
+.tw.on{opacity:1}
+.typing{cursor:pointer}
+.rising{animation:riseIn .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--ri,0) * 80ms)}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.swap-out{opacity:0!important;transform:translateX(-28px);transition:opacity .2s,transform .2s}
+.swap-in{animation:swapIn .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes swapIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+/* 鼠标环顾时，面板跟着轻微反向移动，像浮在场景里 */
+.float{transform:translate3d(calc(var(--px,0) * -14px),calc(var(--py,0) * -8px),0)}
+.float2{transform:translate3d(calc(var(--px,0) * -26px),calc(var(--py,0) * -14px),0)}
+body.danger .yr b{animation:shake .32s infinite}
+@keyframes shake{0%,100%{translate:0 0}25%{translate:-1.5px .5px}75%{translate:1.5px -.5px}}
+@media (prefers-reduced-motion:reduce){.beat,.float,.float2{transform:none}body.danger .yr b{animation:none}}
+
+/* =========================================================
+   横屏排版（电脑、横着的平板）
+   ========================================================= */
+body.lx #app{max-width:none;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px));padding-top:18px;padding-bottom:18px}
+/* 不再是整条竖向阴影：只在底部和四角轻轻压暗 */
+body.lx .scrim,body.lx[data-screen="play"] .scrim,body.lx[data-screen="yearbreak"] .scrim{
+  background:linear-gradient(0deg,rgba(10,8,18,.6) 0%,rgba(10,8,18,0) 34%),linear-gradient(180deg,rgba(10,8,18,.45) 0%,rgba(10,8,18,0) 16%),radial-gradient(130% 100% at 50% 45%,transparent 55%,rgba(10,8,18,.55) 100%)}
+/* 还没改成横屏排版的页面：放在一块居中的磨砂玻璃上 */
+body.lx .screen.scroll{max-width:760px;width:100%;margin:0 auto;padding:26px 30px;border-radius:22px;background:rgba(16,12,26,.62);
+  backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35)}
+/* 磨砂玻璃（新排版里的面板都用它） */
+body.lx .glass,body.lx .dialog,body.lx #hub .lvl.sel,body.lx #play .meters,body.lx .spread,body.lx .subtitle,body.lx .clip,body.lx #l3res:not(:empty){
+  background:rgba(16,12,26,.6);backdrop-filter:blur(16px) saturate(1.15);-webkit-backdrop-filter:blur(16px) saturate(1.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 20px 60px rgba(0,0,0,.35);border-radius:18px}
+
+/* ---------- 主页：左边是标题，右边墙上是四张关卡海报 ---------- */
+body.lx #hub{max-width:none;margin:0;padding:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0;
+  display:grid;grid-template-columns:minmax(380px,36%) 1fr;column-gap:40px;align-content:center;overflow-y:auto}
+body.lx #hub > *{grid-column:1}
+body.lx #hub .hero{transform:translate3d(calc(var(--px,0) * -14px),calc(var(--py,0) * -8px),0)}
+body.lx #hub .hero h1{font-size:clamp(72px,8vw,120px)}
+body.lx #hub .hero p{font-size:16px;line-height:1.8;max-width:34em}
+body.lx #hub .levels{grid-column:2;grid-row:1 / span 8;align-self:end;justify-self:end;width:min(440px,100%)}
+body.lx.has3d #hub .lvl:not(.sel){display:none}
+body.lx #hub .lvl.sel{padding:18px 20px}
+body.lx #hub .lvl.sel h3{font-size:20px}
+body.lx #hub .lvl.sel p{font-size:14px}
+body.lx #hub .levels::before{content:"点右边墙上的海报，选择关卡";display:block;font-size:13px;color:var(--soft);margin-bottom:8px;text-align:right;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+body.lx:not(.has3d) #hub .levels::before{display:none}
+body.lx #hub .panel{background:rgba(16,12,26,.6)}
+
+/* ---------- 第一关卡牌：卡片居中，两个选项在左右两边 ---------- */
+body.lx #play{display:grid;grid-template-columns:1fr minmax(440px,580px) 1fr;grid-template-rows:auto 1fr auto auto;column-gap:32px;row-gap:12px;align-items:center}
+body.lx #play .hud{grid-column:1 / -1;grid-row:1;align-items:flex-start}
+body.lx #play .hud .yr{transform:translate3d(calc(var(--px,0) * -14px),calc(var(--py,0) * -8px),0)}
+body.lx #play .yr b{font-size:64px}
+body.lx #play .meters{gap:18px;padding:10px 16px}
+body.lx #play .table{grid-column:2;grid-row:2;align-self:center}
+body.lx #play .card{box-shadow:0 30px 80px rgba(0,0,0,.5)}
+body.lx #play .say{font-size:18px}
+body.lx #play .choices{display:contents}
+body.lx #play #bL,body.lx #play #bR{grid-row:2;width:min(240px,100%);min-height:76px;font-size:16px;background:rgba(16,12,26,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.lx #play #bL{grid-column:1;justify-self:end}
+body.lx #play #bR{grid-column:3;justify-self:start}
+body.lx #play #undo{grid-column:2;grid-row:3}
+body.lx #play .desk{grid-column:1 / -1;grid-row:4;background:rgba(12,10,20,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:6px 12px}
+
+/* ---------- 共用：左上角的标题区、底部的对话框 ---------- */
+.lx-head{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.dialog{position:relative;padding:16px 20px 18px}
+.dialog .spk{position:absolute;top:-13px;left:18px;padding:3px 12px;border-radius:8px;background:var(--brass);color:#24180a;font-size:13px;font-weight:700}
+.dialog p{font-size:17px;line-height:1.8;color:var(--fg)}
+body:not(.lx) .dialog{background:var(--stage);border-radius:14px;margin-top:10px}
+
+/* ---------- 第二关：在 3D 桌上抽牌 ---------- */
+body.lx #l2[data-view="tarot"]{max-width:none;margin:0;padding:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0;
+  display:grid;grid-template-columns:1fr minmax(320px,380px);grid-template-rows:auto 1fr auto;gap:18px;overflow:hidden}
+body.lx #l2[data-view="tarot"] .lx-head{grid-column:1;grid-row:1}
+body.lx #l2[data-view="tarot"] .dialog{grid-column:1;grid-row:3;max-width:760px;justify-self:center;width:100%}
+body.lx #l2[data-view="tarot"] .spread{grid-column:2;grid-row:1 / span 3;align-self:center;display:flex;flex-direction:column;gap:10px;padding:16px}
+body.lx #l2[data-view="tarot"] .spread div{font-size:14px;line-height:1.6;color:var(--soft);padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}
+body.lx #l2[data-view="tarot"] .spread div.got{background:rgba(227,169,60,.12);box-shadow:inset 0 0 0 1px rgba(227,169,60,.4);color:var(--fg)}
+body.lx #l2[data-view="tarot"] .spread b{display:block;color:var(--brass);font-size:12px;letter-spacing:.12em;margin-bottom:2px}
+body.lx.has3d #l2[data-view="tarot"] .tarot{display:none}
+body.lx:not(.has3d) #l2[data-view="tarot"] .tarot{grid-column:1;grid-row:2}
+
+/* ---------- 第三关：街上的一天 ---------- */
+body.lx #l3[data-view="task"]{max-width:none;margin:0;padding:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0;
+  display:grid;grid-template-columns:1fr minmax(560px,720px) 1fr;grid-template-rows:auto 1fr auto auto auto;gap:14px;overflow:hidden}
+body.lx #l3[data-view="task"] .lx-head{grid-column:1 / -1;grid-row:1;transform:translate3d(calc(var(--px,0) * -14px),calc(var(--py,0) * -8px),0)}
+body.lx #l3[data-view="task"] .clock{font-size:76px}
+body.lx #l3[data-view="task"] .tally{font-size:13px;color:var(--soft);padding:4px 10px;border-radius:8px;background:rgba(14,11,22,.7)}
+body.lx #l3[data-view="task"] .brief{grid-column:2;grid-row:3;background:rgba(16,12,26,.6);color:var(--fg)}
+body.lx #l3[data-view="task"] .brief .spk{display:block}
+body.lx #l3[data-view="task"] .clips{grid-column:2;grid-row:4}
+body.lx #l3[data-view="task"] .clips + .row{grid-column:2;grid-row:5;justify-content:center}
+body.lx #l3[data-view="task"] #l3res{position:fixed;top:84px;right:28px;bottom:24px;width:min(400px,30vw);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;z-index:3}
+body.lx #l3[data-view="task"] #l3res:empty{display:none}
+
+/* ---------- 第四关：问题像舞台上方的字幕 ---------- */
+body.lx #l4[data-view="ask"]{max-width:none;margin:0;padding:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0;
+  display:grid;grid-template-rows:auto 1fr auto auto;justify-items:center;gap:20px;overflow:hidden}
+body.lx #l4[data-view="ask"] .lx-head{justify-self:start}
+body.lx #l4[data-view="ask"] .subtitle{grid-row:2;align-self:start;max-width:980px;padding:22px 30px;text-align:center;display:flex;flex-direction:column;gap:10px}
+body.lx #l4[data-view="ask"] .subtitle p{font-size:24px;line-height:1.75;color:var(--fg)}
+body.lx #l4[data-view="ask"] .choices-col{grid-row:4;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:12px;max-width:1100px;margin-bottom:8px}
+body.lx #l4[data-view="ask"] .choices-col .btn{min-width:200px;padding:14px 22px;font-size:16px;background:rgba(16,12,26,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body:not(.lx) .subtitle p{background:var(--stage);border-radius:14px;padding:12px 14px;font-size:15px}
+
+/* 横屏：界面层不挡住 3D 场景的点击（海报、塔罗牌），只有面板本身能点 */
+body.lx #app{pointer-events:none}
+body.lx #app > .topbar,body.lx .screen{pointer-events:auto}
+body.lx #hub,body.lx #l2[data-view="tarot"],body.lx #l3[data-view="task"],body.lx #l4[data-view="ask"],body.lx #play{pointer-events:none}
+body.lx #hub > *,body.lx #l2[data-view="tarot"] > *,body.lx #l3[data-view="task"] > *,body.lx #l4[data-view="ask"] > *,body.lx #play > *,body.lx #play .choices > *{pointer-events:auto}
+body.lx #play .choices{pointer-events:none}
+/* 主页左栏放在一块磨砂玻璃上 */
+.hubL{display:contents}
+body.lx .hubL{display:flex;flex-direction:column;gap:14px;grid-column:1;align-self:center;padding:26px 28px;border-radius:22px;background:rgba(16,12,26,.62);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);
+  transform:translate3d(calc(var(--px,0) * -14px),calc(var(--py,0) * -8px),0);max-height:calc(100vh - 60px);overflow-y:auto}
+body.lx #hub .hero{transform:none}
+/* 第三关：右边留出结果面板的位置 */
+body.lx #l3[data-view="task"]{grid-template-columns:minmax(0,1fr) minmax(520px,660px) minmax(440px,1.1fr)}
+body.lx #l3[data-view="task"] .brief,body.lx #l3[data-view="task"] .clips,body.lx #l3[data-view="task"] .clips + .row{grid-column:1 / span 2;justify-self:center;width:min(660px,100%)}
