@@ -53,10 +53,26 @@ function show(id) {
   if (id === 'play') { renderChans(); updateMood() }
 }
 function goHub() {
-  if (E.ctx) { E.stopClip(); E.stop(.4); E.duck(1) }
+  if (E.ctx) { E.stopClip(); E.duck(1) }
   if (G) { saveL1(); G = null }
-  KEYH = null; stopPreview(); renderHub(); show('hub');
+  KEYH = null; stopPreview(false); renderHub(); show('hub'); homeMusic();
 }
+/* 开场音乐：主页、选理想、选音乐占比、关卡说明、校准时播放。
+   浏览器不允许网页自己出声，所以要等玩家第一次点击或按键后才开始 */
+function homeMusic() {
+  if (!E.ctx || previewing !== null || E.styleKey === 'chill') return;
+  E.resetMood(); E.duck(1); E.play('chill', ALL.chill);
+}
+const HOME_SCREENS = ['hub', 'ideal', 'intro'];
+let skipSndToggle = false;
+function firstSound(e) {
+  ['pointerdown', 'keydown'].forEach(ev => document.removeEventListener(ev, firstSound, true));
+  /* 第一次点的就是“声音”按钮：说明玩家想听，直接开始放，不要反过来把声音关掉 */
+  if (e.target && e.target.closest && e.target.closest('[data-snd]')) skipSndToggle = true;
+  const ts = $('#tapSound'); if (ts) ts.style.visibility = 'hidden';
+  E.init(); if (!E.styleKey && HOME_SCREENS.some(id => !$('#' + id).hidden)) homeMusic();
+}
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, firstSound, true));
 
 /* =========================================================
    主页
@@ -98,19 +114,20 @@ function renderHub() {
   $('#gallerySum').textContent = `结局图鉴 · 已解锁 ${[...got].filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}`;
   $('#gallery').innerHTML = Object.entries(ENDINGS).map(([k, v]) => `<span class="${got.has(k) ? 'got' : ''}">${got.has(k) ? v.t : '？？？'}</span>`).join('');
 }
-function stopPreview() { previewing = null; clearTimeout(previewTimer); $$('.listen').forEach(b => { b.classList.remove('on'); b.textContent = '试听本关音乐' }); if (E.ctx && !G) E.stop(.4) }
+/* back = true：试听结束后回到开场音乐；false：马上要换别的音乐 */
+function stopPreview(back = true) { const was = previewing !== null; previewing = null; clearTimeout(previewTimer); $$('.listen').forEach(b => { b.classList.remove('on'); b.textContent = '试听本关音乐' }); if (E.ctx && !G && back && (was || !E.styleKey)) homeMusic() }
 document.addEventListener('click', e => {
   const l = e.target.closest('[data-listen]');
   if (l) {
     const i = +l.dataset.listen; if (previewing === i) { stopPreview(); return }
-    const was = previewing !== null; stopPreview(); previewing = i; E.init(); E.resetMood(); STYLES.lofi.bpm = 84; STYLES.synth.bpm = 100;
+    const was = previewing !== null; stopPreview(false); previewing = i; E.init(); E.resetMood(); STYLES.lofi.bpm = 84; STYLES.synth.bpm = 100;
     setTimeout(() => { if (previewing !== i) return; E.play(LEVELS[i].style, ALL[LEVELS[i].style]); l.classList.add('on'); l.textContent = '停止试听' }, was ? 500 : 0);
     previewTimer = setTimeout(stopPreview, 16000); return;
   }
   const g = e.target.closest('[data-go]');
-  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(); startLevel(g.dataset.go); return }
+  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); startLevel(g.dataset.go); return }
   if (e.target.closest('[data-hub]')) { goHub(); return }
-  if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(); showPortrait(); return }
+  if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(false); showPortrait(); return }
   if (e.target.closest('[data-reset]')) { confirmReset = true; renderHub(); return }
   if (e.target.closest('[data-reset-no]')) { confirmReset = false; renderHub(); return }
   if (e.target.closest('[data-outdated-ok]')) { OUTDATED = false; PROG = blank(); save(); renderHub(); return }
@@ -119,7 +136,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
-  if (id === 'l1') { if (PROG.l1save) resumeL1(); else if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') }
+  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') } }
   else if (id === 'l2') startL2();
   else if (id === 'l3') startL3();
   else startL4();
@@ -318,7 +335,7 @@ function toast(msg, ms = 3200) { const d = document.createElement('div'); d.clas
 E.onLite = on => { if (on) toast('检测到设备有点卡，已自动切换到流畅模式') };
 /* 声音开关：每个页面右上角都有，状态全局同步 */
 E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
-document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); E.setMute(!E.muted) } });
+document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); if (skipSndToggle) { skipSndToggle = false; return } E.setMute(!E.muted) } });
 $$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); const g = b.dataset.g; calibrate(() => newGame(g)) });
 
 /* =========================================================

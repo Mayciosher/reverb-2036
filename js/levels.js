@@ -489,7 +489,7 @@ function buildPortrait() {
 }
 function showPortrait(fresh) {
   const p = PROG.portrait || (PROG.portrait = buildPortrait());
-  if (!E.styleKey) E.play(p.ans && PROG.l4 && PROG.l4.mode === 'min' ? 'orch' : 'orchM', ['vln', 'cello', 'harpo']);
+  if (!E.styleKey || E.styleKey === 'chill') E.play(p.ans && PROG.l4 && PROG.l4.mode === 'min' ? 'orch' : 'orchM', ['vln', 'cello', 'harpo']);
   const id = IDEALS[p.ideal] || null, same = p.ideal === p.arch;
   const maxv = Math.max(...p.bars.map(b => b[1]), 1);
   const s = p.skills, cells = [];

@@ -477,6 +477,9 @@ p{margin:0;line-height:1.65}
 @media (max-width:380px){.who-pick{grid-template-columns:1fr}.tarot{grid-template-columns:repeat(3,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
+.tapsound{font-size:13px;opacity:.7;margin-top:6px;animation:tapPulse 2.4s ease-in-out infinite}
+@keyframes tapPulse{0%,100%{opacity:.45}50%{opacity:.85}}
+
 </style>
 </head>
 <body>
@@ -496,6 +499,7 @@ p{margin:0;line-height:1.65}
     <h1>十年<span>回响</span></h1>
     <div class="staff" aria-hidden="true"></div>
     <p>2027 到 2036，十年。十年后也许没有人只是“音乐人”，你可能会写歌、会教课、会用 AI、会做生意。这个游戏不替你回答你是谁，只问一个问题：十年后，音乐在你的生活里占几成？四个关卡按顺序走完，没有回头路，最后你会得到自己的音乐人格画像和身份光谱。</p>
+    <p class="tapsound" id="tapSound">♪ 点一下页面任意位置，音乐就会响起</p>
   </div>
   <div id="journey"></div>
   <div class="row tools">
@@ -882,8 +886,21 @@ const STYLES = {
     ]
   }
 };
+/* 开场：主页和开局几个页面的轻快 chill 音乐（C 大调，和第一关的小调爵士区分开） */
+const CHILL_MEL = (() => { srand(7); const pent = [72, 74, 76, 79, 81, 84, 86]; const bars = []; let idx = 2; for (let b = 0; b < 8; b++) { const a = new Array(16).fill(null); if (b % 4 === 3) { a[0] = pent[idx]; bars.push(a); continue } for (const st of [0, 2, 3, 6, 8, 10, 11, 14]) { if (rnd() < .5 || st === 0) { idx = Math.max(0, Math.min(pent.length - 1, idx + Math.round((rnd() - .5) * 3))); a[st] = pent[idx] } } bars.push(a) } return bars })();
+STYLES.chill = {
+  bpm: 92, swing: .22,
+  chords: [{ r: 36, v: [59, 64, 67, 74] }, { r: 45, v: [60, 64, 67, 71] }, { r: 41, v: [57, 64, 67, 72] }, { r: 43, v: [57, 62, 65, 71] }],
+  layers: [
+    { name: 'ep', label: '电钢琴', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 7 && st !== 10) return; const c = chordAt(s, bar), b = E.d16() * 4; c.v.forEach((m, i) => keys(out, t + i * .018, m, st === 0 ? b * 1.6 : b * .6, st === 0 ? .04 : .025)) } },
+    { name: 'cbass', label: '贝斯', play(st, bar, t, out, s, E) { const c = chordAt(s, bar), b = E.d16() * 4; if (st === 0) tone(out, t, c.r, b * .8, { type: 'sine', gain: .4, rel: .2 }); if (st === 6) tone(out, t, c.r + 12, b * .3, { type: 'sine', gain: .22, rel: .12 }); if (st === 10) tone(out, t, c.r + 7, b * .6, { type: 'sine', gain: .3, rel: .15 }) } },
+    { name: 'brush', label: '轻鼓', play(st, bar, t, out) { if (st === 0 || st === 9) kick(out, t, .45, 120, 50, .25); if (st === 4 || st === 12) nhit(out, t, { g: .09, type: 'bandpass', f: 2600, d: .14, q: .7 }); if (st % 2 === 0) shaker(out, t, st % 4 === 2 ? .035 : .018) } },
+    { name: 'pluck', label: '拨弦旋律', play(st, bar, t, out, s, E) { const m = CHILL_MEL[bar % 8][st]; if (m == null) return; harp(out, t, m, .045) } },
+    { name: 'vinyl', label: '唱片底噪', play(st, bar, t, out) { if (Math.random() < .35) nhit(out, t + Math.random() * .05, { g: .012 + Math.random() * .02, f: 3000 + Math.random() * 4000, d: .008 }) } }
+  ]
+};
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
-const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'] };
+const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'], chill: ['ep', 'cbass', 'brush', 'pluck', 'vinyl'] };
 
 /* 界面音效 */
 function sfxSwipe() { if (!E.ctx) return; nhit(E.sfx, now(), { g: .12, type: 'bandpass', f: 1200, d: .18, q: 1.2 }) }
@@ -1273,10 +1290,26 @@ function show(id) {
   if (id === 'play') { renderChans(); updateMood() }
 }
 function goHub() {
-  if (E.ctx) { E.stopClip(); E.stop(.4); E.duck(1) }
+  if (E.ctx) { E.stopClip(); E.duck(1) }
   if (G) { saveL1(); G = null }
-  KEYH = null; stopPreview(); renderHub(); show('hub');
+  KEYH = null; stopPreview(false); renderHub(); show('hub'); homeMusic();
 }
+/* 开场音乐：主页、选理想、选音乐占比、关卡说明、校准时播放。
+   浏览器不允许网页自己出声，所以要等玩家第一次点击或按键后才开始 */
+function homeMusic() {
+  if (!E.ctx || previewing !== null || E.styleKey === 'chill') return;
+  E.resetMood(); E.duck(1); E.play('chill', ALL.chill);
+}
+const HOME_SCREENS = ['hub', 'ideal', 'intro'];
+let skipSndToggle = false;
+function firstSound(e) {
+  ['pointerdown', 'keydown'].forEach(ev => document.removeEventListener(ev, firstSound, true));
+  /* 第一次点的就是“声音”按钮：说明玩家想听，直接开始放，不要反过来把声音关掉 */
+  if (e.target && e.target.closest && e.target.closest('[data-snd]')) skipSndToggle = true;
+  const ts = $('#tapSound'); if (ts) ts.style.visibility = 'hidden';
+  E.init(); if (!E.styleKey && HOME_SCREENS.some(id => !$('#' + id).hidden)) homeMusic();
+}
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, firstSound, true));
 
 /* =========================================================
    主页
@@ -1318,19 +1351,20 @@ function renderHub() {
   $('#gallerySum').textContent = `结局图鉴 · 已解锁 ${[...got].filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}`;
   $('#gallery').innerHTML = Object.entries(ENDINGS).map(([k, v]) => `<span class="${got.has(k) ? 'got' : ''}">${got.has(k) ? v.t : '？？？'}</span>`).join('');
 }
-function stopPreview() { previewing = null; clearTimeout(previewTimer); $$('.listen').forEach(b => { b.classList.remove('on'); b.textContent = '试听本关音乐' }); if (E.ctx && !G) E.stop(.4) }
+/* back = true：试听结束后回到开场音乐；false：马上要换别的音乐 */
+function stopPreview(back = true) { const was = previewing !== null; previewing = null; clearTimeout(previewTimer); $$('.listen').forEach(b => { b.classList.remove('on'); b.textContent = '试听本关音乐' }); if (E.ctx && !G && back && (was || !E.styleKey)) homeMusic() }
 document.addEventListener('click', e => {
   const l = e.target.closest('[data-listen]');
   if (l) {
     const i = +l.dataset.listen; if (previewing === i) { stopPreview(); return }
-    const was = previewing !== null; stopPreview(); previewing = i; E.init(); E.resetMood(); STYLES.lofi.bpm = 84; STYLES.synth.bpm = 100;
+    const was = previewing !== null; stopPreview(false); previewing = i; E.init(); E.resetMood(); STYLES.lofi.bpm = 84; STYLES.synth.bpm = 100;
     setTimeout(() => { if (previewing !== i) return; E.play(LEVELS[i].style, ALL[LEVELS[i].style]); l.classList.add('on'); l.textContent = '停止试听' }, was ? 500 : 0);
     previewTimer = setTimeout(stopPreview, 16000); return;
   }
   const g = e.target.closest('[data-go]');
-  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(); startLevel(g.dataset.go); return }
+  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); startLevel(g.dataset.go); return }
   if (e.target.closest('[data-hub]')) { goHub(); return }
-  if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(); showPortrait(); return }
+  if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(false); showPortrait(); return }
   if (e.target.closest('[data-reset]')) { confirmReset = true; renderHub(); return }
   if (e.target.closest('[data-reset-no]')) { confirmReset = false; renderHub(); return }
   if (e.target.closest('[data-outdated-ok]')) { OUTDATED = false; PROG = blank(); save(); renderHub(); return }
@@ -1339,7 +1373,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
-  if (id === 'l1') { if (PROG.l1save) resumeL1(); else if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') }
+  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') } }
   else if (id === 'l2') startL2();
   else if (id === 'l3') startL3();
   else startL4();
@@ -1538,7 +1572,7 @@ function toast(msg, ms = 3200) { const d = document.createElement('div'); d.clas
 E.onLite = on => { if (on) toast('检测到设备有点卡，已自动切换到流畅模式') };
 /* 声音开关：每个页面右上角都有，状态全局同步 */
 E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
-document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); E.setMute(!E.muted) } });
+document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); if (skipSndToggle) { skipSndToggle = false; return } E.setMute(!E.muted) } });
 $$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); const g = b.dataset.g; calibrate(() => newGame(g)) });
 
 /* =========================================================
@@ -2336,7 +2370,7 @@ function buildPortrait() {
 }
 function showPortrait(fresh) {
   const p = PROG.portrait || (PROG.portrait = buildPortrait());
-  if (!E.styleKey) E.play(p.ans && PROG.l4 && PROG.l4.mode === 'min' ? 'orch' : 'orchM', ['vln', 'cello', 'harpo']);
+  if (!E.styleKey || E.styleKey === 'chill') E.play(p.ans && PROG.l4 && PROG.l4.mode === 'min' ? 'orch' : 'orchM', ['vln', 'cello', 'harpo']);
   const id = IDEALS[p.ideal] || null, same = p.ideal === p.arch;
   const maxv = Math.max(...p.bars.map(b => b[1]), 1);
   const s = p.skills, cells = [];

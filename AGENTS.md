@@ -24,6 +24,7 @@
 | 画像的分享海报 | `js/levels.js` 的 `makePoster` |
 | 最后的音乐人格画像、身份光谱、建议 | 文字在 `js/data.js` 的 `TRAITS`、`ADVICE`、`DOMAINS`；排版在 `js/levels.js` 的 `buildPortrait`、`showPortrait`、`identSection` |
 | 某一关的背景音乐、某种乐器的音色、每年新加的乐器 | `js/audio.js` 的 `STYLES` 和各个乐器函数；第一关每年加哪种乐器在 `js/data.js` 的 `UNLOCK` |
+| 主页和开局几页的开场音乐（轻快 chill） | `js/audio.js` 的 `STYLES.chill`；什么时候播放在 `js/game.js` 的 `homeMusic` |
 | 主页、关卡说明、开始前的提醒 | `index.html` |
 | 颜色、字体、大小、排版 | `style.css` |
 

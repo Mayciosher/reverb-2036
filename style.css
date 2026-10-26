@@ -329,3 +329,6 @@ p{margin:0;line-height:1.65}
 @media (max-height:640px){.say{min-height:5em;font-size:16px;margin-top:16px}.track{height:48px}.keys{height:120px}}
 @media (max-width:380px){.who-pick{grid-template-columns:1fr}.tarot{grid-template-columns:repeat(3,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.tapsound{font-size:13px;opacity:.7;margin-top:6px;animation:tapPulse 2.4s ease-in-out infinite}
+@keyframes tapPulse{0%,100%{opacity:.45}50%{opacity:.85}}

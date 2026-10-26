@@ -272,8 +272,21 @@ const STYLES = {
     ]
   }
 };
+/* 开场：主页和开局几个页面的轻快 chill 音乐（C 大调，和第一关的小调爵士区分开） */
+const CHILL_MEL = (() => { srand(7); const pent = [72, 74, 76, 79, 81, 84, 86]; const bars = []; let idx = 2; for (let b = 0; b < 8; b++) { const a = new Array(16).fill(null); if (b % 4 === 3) { a[0] = pent[idx]; bars.push(a); continue } for (const st of [0, 2, 3, 6, 8, 10, 11, 14]) { if (rnd() < .5 || st === 0) { idx = Math.max(0, Math.min(pent.length - 1, idx + Math.round((rnd() - .5) * 3))); a[st] = pent[idx] } } bars.push(a) } return bars })();
+STYLES.chill = {
+  bpm: 92, swing: .22,
+  chords: [{ r: 36, v: [59, 64, 67, 74] }, { r: 45, v: [60, 64, 67, 71] }, { r: 41, v: [57, 64, 67, 72] }, { r: 43, v: [57, 62, 65, 71] }],
+  layers: [
+    { name: 'ep', label: '电钢琴', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 7 && st !== 10) return; const c = chordAt(s, bar), b = E.d16() * 4; c.v.forEach((m, i) => keys(out, t + i * .018, m, st === 0 ? b * 1.6 : b * .6, st === 0 ? .04 : .025)) } },
+    { name: 'cbass', label: '贝斯', play(st, bar, t, out, s, E) { const c = chordAt(s, bar), b = E.d16() * 4; if (st === 0) tone(out, t, c.r, b * .8, { type: 'sine', gain: .4, rel: .2 }); if (st === 6) tone(out, t, c.r + 12, b * .3, { type: 'sine', gain: .22, rel: .12 }); if (st === 10) tone(out, t, c.r + 7, b * .6, { type: 'sine', gain: .3, rel: .15 }) } },
+    { name: 'brush', label: '轻鼓', play(st, bar, t, out) { if (st === 0 || st === 9) kick(out, t, .45, 120, 50, .25); if (st === 4 || st === 12) nhit(out, t, { g: .09, type: 'bandpass', f: 2600, d: .14, q: .7 }); if (st % 2 === 0) shaker(out, t, st % 4 === 2 ? .035 : .018) } },
+    { name: 'pluck', label: '拨弦旋律', play(st, bar, t, out, s, E) { const m = CHILL_MEL[bar % 8][st]; if (m == null) return; harp(out, t, m, .045) } },
+    { name: 'vinyl', label: '唱片底噪', play(st, bar, t, out) { if (Math.random() < .35) nhit(out, t + Math.random() * .05, { g: .012 + Math.random() * .02, f: 3000 + Math.random() * 4000, d: .008 }) } }
+  ]
+};
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
-const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'] };
+const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'], chill: ['ep', 'cbass', 'brush', 'pluck', 'vinyl'] };
 
 /* 界面音效 */
 function sfxSwipe() { if (!E.ctx) return; nhit(E.sfx, now(), { g: .12, type: 'bandpass', f: 1200, d: .18, q: 1.2 }) }
