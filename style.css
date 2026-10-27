@@ -665,3 +665,34 @@ body.lx #l4[data-view="ask"] .programme .btn:hover{transform:translateY(-8px) ro
 /* 第四关的标题区不要压住字幕 */
 body.lx #l4[data-view="ask"]{grid-template-rows:auto 1fr auto auto}
 body.lx #l2[data-view="tarot"] .slips div,body.lx #l2[data-view="tarot"] .slips div.got{color:#4a3426}
+
+/* ---------- 第一关：便利贴换成低饱和、有纸感的颜色 ---------- */
+body.lx #play #bL{background:linear-gradient(#d9c9a6,#cbb68d);color:#3a3024}
+body.lx #play #bR{background:linear-gradient(#c3c7c4,#aeb4b2);color:#2e3333}
+body.lx #play #bL::before,body.lx #play #bR::before{background:rgba(255,255,255,.35)}
+body.lx #play #bL span,body.lx #play #bR span{color:rgba(40,34,30,.5)}
+
+/* ---------- 第三关：少几块东西 ---------- */
+/* 车票：登场时完整出现，平时缩成一条细细的线路 */
+#l3lock .tt-ticket{transition:width .5s,padding .5s}
+body:not(.titling) #l3lock .tt-ticket{width:380px;padding:9px 16px 8px}
+body:not(.titling) #l3lock .tk-h{display:none}
+body:not(.titling) #l3lock .tk-st b{display:none}
+body:not(.titling) #l3lock .tk-st{width:auto}
+body:not(.titling) #l3lock .tk-st i{width:14px;height:14px}
+body:not(.titling) #l3lock .tk-row::before{top:6px}
+body:not(.titling) #l3lock .tk-f{margin-top:6px;font-size:14px}
+/* “交给小谱挑”放进工作单的角落 */
+.od-f{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.od-ai{background:none;border:0;padding:4px 0;font:700 13px var(--f-body);color:#c04a16;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.od-ai:disabled{opacity:.35;cursor:default}
+.cs-top{justify-content:center;padding:4px 10px}
+body.lx #l3[data-view="task"]{grid-template-rows:auto 1fr auto auto}
+body.lx #l3[data-view="task"] .clips{margin-bottom:4vh}
+
+/* ---------- 第四关：字幕背后压暗并虚化一块，不和座椅、乐团抢 ---------- */
+.surtitle::before{inset:-70px -200px;background:radial-gradient(50% 50% at 50% 50%,rgba(8,6,14,.86),rgba(8,6,14,.55) 55%,rgba(8,6,14,0) 100%);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  -webkit-mask-image:radial-gradient(50% 50% at 50% 50%,#000 40%,transparent 100%);mask-image:radial-gradient(50% 50% at 50% 50%,#000 40%,transparent 100%)}
+.surtitle p{font-size:28px;font-weight:500;text-shadow:0 0 20px rgba(255,220,160,.3),0 2px 6px rgba(0,0,0,1),0 0 2px rgba(0,0,0,.9)}
+.surtitle .mnote{color:#e6dff0}

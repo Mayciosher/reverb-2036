@@ -388,13 +388,12 @@ function l3Task() {
   const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
   setTimeout(() => { setView('l3', 'task'); TT.intro($('#l3lock .tt')); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip') }, 0);
   $('#l3').innerHTML = `<div class="lx-head" id="l3lock">${TT.l3(time, role.name, L3.roles.map(k => L3_PLACE[k]), L3.i)}</div>
-    <div class="brief order"><div class="od-h"><b>工作单</b><span>${time} · ${T.who}${role.music ? '' : ' · 音乐以外的工作'}</span></div><p id="l3brief"></p><div class="od-f">今天挑对 ${L3.right} 个 · 交给小谱 ${L3.ai} 次</div></div>
-    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b><span>版本 ${letters[j]} · 小谱生成</span></div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div></div>`).join('')}</div>
-    <div class="row"><button class="btn ghost" id="l3ai">交给小谱挑</button><button class="btn ghost sm" id="l3stop">停止播放</button></div>
+    <div class="brief order"><div class="od-h"><b>工作单</b><span>${time} · ${T.who}${role.music ? '' : ' · 音乐以外的工作'}</span></div><p id="l3brief"></p><div class="od-f"><span>今天挑对 ${L3.right} 个 · 交给小谱 ${L3.ai} 次</span><button class="od-ai" id="l3ai">听不出来？交给小谱挑</button></div></div>
+    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b></div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div></div>`).join('')}</div>
     <div id="l3res"></div>`;
   const playClip = (o, el) => { $$('.clip').forEach(c => c.classList.remove('playing')); el && el.classList.add('playing'); E.playClip(bus => sched(bus, o), .06, () => el && el.classList.remove('playing')) };
-  $('#l3stop').onclick = () => { E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing')) };
-  $$('[data-p]').forEach(b => b.onclick = () => { const k = +b.dataset.p; playClip(T.opts[k].o, b.closest('.clip')); const c = document.querySelector(`[data-c="${k}"]`); if (!c.dataset.done) c.disabled = false });
+  /* 再点一次正在播的那盘磁带，就停下 */
+  $$('[data-p]').forEach(b => b.onclick = () => { const k = +b.dataset.p, el = b.closest('.clip'); if (el.classList.contains('playing')) { E.stopClip(); el.classList.remove('playing'); b.textContent = '▶ 播放'; return } $$('[data-p]').forEach(x => x.textContent = '▶ 播放'); b.textContent = '■ 停止'; playClip(T.opts[k].o, el); const c = document.querySelector(`[data-c="${k}"]`); if (!c.dataset.done) c.disabled = false });
   const decide = (k, byAI) => {
     E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing'));
     $$('[data-c],#l3ai').forEach(b => { b.disabled = true; b.dataset.done = 1 });
