@@ -395,7 +395,7 @@ function l3Task() {
   /* 再点一次正在播的那盘磁带，就停下 */
   $$('[data-p]').forEach(b => b.onclick = () => { const k = +b.dataset.p, el = b.closest('.clip'); if (el.classList.contains('playing')) { E.stopClip(); el.classList.remove('playing'); b.textContent = '▶ 播放'; return } $$('[data-p]').forEach(x => x.textContent = '▶ 播放'); b.textContent = '■ 停止'; playClip(T.opts[k].o, el); const c = document.querySelector(`[data-c="${k}"]`); if (!c.dataset.done) c.disabled = false });
   const decide = (k, byAI) => {
-    E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing'));
+    E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing')); $$('[data-p]').forEach(x => x.textContent = '▶ 播放');
     $$('[data-c],#l3ai').forEach(b => { b.disabled = true; b.dataset.done = 1 });
     const ok = T.opts[k].ok; if (byAI) { L3.ai++; addTags('ai avoid', L3.tags) } else { L3.own++; if (ok) L3.right++ }
     L3.picks.push({ time, role: L3.roles[L3.i], ok, byAI });
@@ -484,10 +484,11 @@ function l4Ask(i) {
   if (i >= Q.length) return l4Compose();
   const q = Q[i];
   $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(i)}</div>
-    <div class="surtitle"><p id="l4q"></p><span class="mnote">没有标准答案，只有真话和假话。</span></div>
-    <div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
+    <div class="booklet"><div class="pg pgL"><div class="bk-h">第${['一', '二', '三', '四'][i]}乐章 · 乐曲解说</div><p id="l4q"></p><span class="bk-note">没有标准答案，只有真话和假话。</span><span class="bk-no">${i * 2 + 2}</span></div>
+      <div class="pg pgR"><div class="bk-h">你的回答 · 圈出一个</div><div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}"><i>${'①②③④'[k]}</i><span>${a[0]}</span><svg class="ink" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M30 8 C110 -4 196 10 190 32 C184 54 60 60 14 46 C-6 38 12 14 52 10"/></svg></button>`).join('')}</div><span class="bk-no">${i * 2 + 3}</span></div></div>`;
   setView('l4', 'ask'); requestAnimationFrame(() => TT.intro($('#l4lock .tt'))); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
-  $$('[data-a]').forEach(b => b.onclick = () => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) });
+  /* 在节目单上用笔圈出答案，圈完翻到下一页 */
+  $$('[data-a]').forEach(b => b.onclick = () => { if (b.dataset.busy) return; $$('[data-a]').forEach(x => x.dataset.busy = 1); b.classList.add('circled'); tone(E.sfx, now(), 79, .08, { type: 'triangle', gain: .03, rel: .2 }); setTimeout(() => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) }, 750) });
 }
 function l4Compose() {
   setView('l4', '');

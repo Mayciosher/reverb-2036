@@ -114,7 +114,7 @@ function renderHub() {
       <h3>${L.name}${tag}</h3>
       <p>${L.desc}</p>
       <p class="bgm">背景音乐：<b>${L.bgmName}</b>。${L.bgm}</p>
-      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '开始'}</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
+      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
     </article>`}).join('');
   let j = '';
   if (st >= 4) j = `<div class="journey"><span class="eyebrow">十年已经走完</span><h3>你的音乐人格：${PROG.portrait ? PROG.portrait.archT : ''}</h3><div class="row"><button class="btn" data-portrait>查看我的音乐人格画像</button><button class="btn ghost" data-reset>重新开始十年</button></div></div>`;
