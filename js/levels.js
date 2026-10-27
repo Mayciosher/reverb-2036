@@ -374,7 +374,7 @@ function roleMusic(role) {
 function startL3() {
   setView('l3', '');
   E.resetMood(); E.duck(1); KEYH = null;
-  if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < 7 ? l3Task() : l3End() }
+  if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < L3.roles.length ? l3Task() : l3End() }
   Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES) });
   E.play('synth', ['pad', 'sbass']);
   const ms = l3Ms(), n = L3.roles.slice(0, 6).filter(k => L3_ROLES[k].music).length;
@@ -412,7 +412,7 @@ function l3Task() {
       <div class="event"><span class="eyebrow">小插曲 · ${ev.who}</span><p>${ev.say}</p><div class="choices-col">${ev.a.map((a, j) => `<button class="btn ghost" data-ev="${j}">${a[0]}</button>`).join('')}</div></div>`;
     $$('[data-ev]').forEach(b => b.onclick = () => {
       const a = ev.a[+b.dataset.ev]; addTags(a[1], L3.tags); PROG.log.push({ lv: 3, who: ev.who, say: ev.say, pick: a[0], k: a[1], time });
-      L3.i++; saveL3(); E.stopClip(); L3.i < 7 ? l3Task() : l3End();
+      L3.i++; saveL3(); E.stopClip(); L3.i < L3.roles.length ? l3Task() : l3End();
     });
     $('#l3res').scrollIntoView({ behavior: 'smooth', block: 'start' }); MO.rise($('#l3res'));
   };
@@ -433,12 +433,12 @@ function l3End() {
     $$('[data-fav]').forEach(b => b.onclick = () => { L3.fav = +b.dataset.fav; PROG.log.push({ lv: 3, who: '你自己', say: '七个身份里，哪一个最像自己？', pick: R[L3.fav].name, k: '' }); saveL3(); l3End() });
     return;
   }
-  const fav = R[L3.fav], share = Math.round(L3.own / 7 * 100);
+  const fav = R[L3.fav], share = Math.round(L3.own / L3.roles.length * 100);
   let t, x;
-  if (L3.own >= 6 && L3.right >= 5) { t = '靠自己的耳朵'; x = '凌晨 2 点 47 分，你合上电脑。今天七件事，几乎都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
-  else if (L3.own >= 4) { t = '和小谱搭档'; x = '凌晨 2 点 47 分，你合上电脑。今天有些判断是你做的，有些交给了小谱。你也说不清，哪些功劳算你的。' }
+  if (L3.own >= L3.roles.length - 1 && L3.right >= L3.roles.length - 2) { t = '靠自己的耳朵'; x = '凌晨 2 点 47 分，你合上电脑。今天七件事，几乎都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
+  else if (L3.own >= Math.ceil(L3.roles.length / 2)) { t = '和小谱搭档'; x = '凌晨 2 点 47 分，你合上电脑。今天有些判断是你做的，有些交给了小谱。你也说不清，哪些功劳算你的。' }
   else { t = '小谱替你听'; x = '凌晨 2 点 47 分，你合上电脑。今天大部分的判断都交给了小谱。你发现自己有点记不清，今天到底听过些什么。' }
-  if (L3.right >= 6) addTags('auth', L3.tags);
+  if (L3.right >= L3.roles.length - 1) addTags('auth', L3.tags);
   skill('l3', L3.right);
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 02:47</span><h2 class="big-title">${t}</h2><p class="lead">${x}</p>
     <p class="lead">你说今天最像你自己的身份，是<b>「${fav.name}」</b>。${fav.name === '你自己' ? '一整天都在给别人做事，最后最像自己的，还是只属于自己的那一刻。' : fav.music ? '还是做音乐的时候。' : '有意思，不是做音乐的那一个。也许你的才华，本来就不止一种用法。'}</p>
@@ -447,7 +447,7 @@ function l3End() {
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
   TT.duo('l3', TT.gen('第三关 · 02:47', t, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order' });
   $('#l3done').onclick = () => {
-    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: fav.name }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
+    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: fav.name, n: L3.roles.length }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
   };
 }
 
@@ -479,18 +479,18 @@ function l4Questions() { if (window.SCENE) SCENE.hall(2);
   const id = IDEALS[PROG.ideal] || IDEALS.indie;
   const nSafe = countTags('money', 'secure'), nSelf = countTags('auth', 'ideal'), nSeen = countTags('approval');
   return [
-    { q: `开始之前，你说你最想成为<b>「${id.t}」</b>。这十年里，你有 <b>${nSafe}</b> 次选了钱或者稳定，<b>${nSelf}</b> 次选了坚持自己，<b>${nSeen}</b> 次选了被更多人看见。<br>现在有人给你一个机会：用一整年零收入，换一张完全属于你的专辑。你换吗？`, a: [['换', 'ideal auth risk'], ['不换', 'secure money'], ['我不知道', 'avoid']], key: 'trade' },
-    { q: '2036 年，AI 已经可以完美模仿你的声音和风格。你觉得你身上，哪一样东西是它<b>永远学不走</b>的？', a: [['我的经历和故事', 'auth'], ['我和听众之间的关系', 'bond'], ['我在现场的那一刻', 'risk'], ['说实话，我不确定', 'ai avoid']], key: 'core' },
-    { q: '2036 年的一个饭局上，有人问你：<b>“你是做什么的？”</b>你会怎么回答？', a: SELF_INTRO.map(x => [x[0], x[2], x[1]]), key: 'intro' },
-    { q: '如果 2046 年的你回头看今天，最希望你从明天开始做的一件事是什么？', a: SELF_ADVICE.map((t, i) => [t, ['auth', 'secure', 'ai', 'bond'][i]]), key: 'self' }
+    { q: `开始之前，你说你最想成为<b>「${id.t}」</b>。这十年里，你有 <b>${nSafe}</b> 次选了钱或者稳定，<b>${nSelf}</b> 次选了坚持自己，<b>${nSeen}</b> 次选了被更多人看见。<br>现在有人给你一个机会：用一整年零收入，换一张完全属于你的专辑。你换吗？`, a: [['换', 'ideal auth risk'], ['不换', 'secure money'], ['我不知道', 'avoid']], key: 'trade', mv: 0 },
+    { q: '2036 年，AI 已经可以完美模仿你的声音和风格。你觉得你身上，哪一样东西是它<b>永远学不走</b>的？', a: [['我的经历和故事', 'auth'], ['我和听众之间的关系', 'bond'], ['我在现场的那一刻', 'risk'], ['说实话，我不确定', 'ai avoid']], key: 'core', mv: 1 },
+    { q: '2036 年的一个饭局上，有人问你：<b>“你是做什么的？”</b>你会怎么回答？', a: SELF_INTRO.map(x => [x[0], x[2], x[1]]), key: 'intro', mv: 2 },
+    { q: '如果 2046 年的你回头看今天，最希望你从明天开始做的一件事是什么？', a: SELF_ADVICE.map((t, i) => [t, ['auth', 'secure', 'ai', 'bond'][i]]), key: 'self', mv: 3 }
   ];
 }
 function l4Ask(i) {
   const Q = l4Questions();
   if (i >= Q.length) return l4Compose();
   const q = Q[i];
-  $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(i)}</div>
-    <div class="booklet"><div class="pg pgL"><div class="bk-h">第${['一', '二', '三', '四'][i]}乐章 · 乐曲解说</div><p id="l4q"></p><span class="bk-note">没有标准答案，只有真话和假话。</span><span class="bk-no">${i * 2 + 2}</span></div>
+  $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(q.mv ?? i)}</div>
+    <div class="booklet"><div class="pg pgL"><div class="bk-h">第${['一', '二', '三', '四'][q.mv ?? i]}乐章 · 乐曲解说</div><p id="l4q"></p><span class="bk-note">没有标准答案，只有真话和假话。</span><span class="bk-no">${i * 2 + 2}</span></div>
       <div class="pg pgR"><div class="bk-h">你的回答 · 圈出一个</div><div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}"><i>${'①②③④'[k]}</i><span>${a[0]}</span><svg class="ink" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M30 8 C110 -4 196 10 190 32 C184 54 60 60 14 46 C-6 38 12 14 52 10"/></svg></button>`).join('')}</div><span class="bk-no">${i * 2 + 3}</span></div></div>`;
   setView('l4', 'ask'); requestAnimationFrame(() => TT.intro($('#l4lock .tt'))); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
   /* 在节目单上用笔圈出答案，圈完翻到下一页 */
@@ -599,7 +599,7 @@ function showPortrait(fresh) { if (window.SCENE) SCENE.hall(3);
   if (s.memory != null) cells.push([`${s.memory}/${s.memN}`, '听音模仿']);
   if (s.tempo != null) cells.push([s.tempo.toFixed(0) + ' 毫秒', '稳拍平均偏差']);
   if (s.ai != null) cells.push([`${s.ai}/${s.aiN}`, '人机辨听']);
-  if (s.l3 != null) cells.push([`${s.l3}/7`, '制作人听辨']);
+  if (s.l3 != null) cells.push([`${s.l3}/${(PROG.l3 && PROG.l3.n) || 7}`, '身兼数职听辨']);
   const verdict = !id ? '' : same ? '你的选择和你开局时的理想是一致的。十年的风浪没有把你吹离初心，这很难得。' : `你开局时想成为「${id.t}」，但十年里一次次的选择，让你更像「${p.archT}」。这不一定是坏事，但值得想一想：是什么让你走到了这里？是你变了，还是你一开始就没那么想？`;
   const adv = [...(ADVICE[p.arch] || [])];
   if (p.ans.core) adv.unshift(`你说 AI 学不走的，是<b>「${p.ans.core}」</b>。把它放到你作品的最前面，这是你在 AI 时代最硬的底牌。`);
