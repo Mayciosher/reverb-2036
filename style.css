@@ -750,3 +750,14 @@ body.lx #hub .lvl.sel .bgm b{color:#2b2230}
 body.lx #hub .lvl.sel .tag{background:rgba(43,34,48,.1);color:#2b2230}
 body.lx #hub .lvl.sel .btn.ghost{color:#2b2230;box-shadow:inset 0 0 0 1.5px rgba(43,34,48,.5)}
 body.lx #hub .lvl.sel .btn:not(.ghost){background:#c04a16;color:#fff8ec}
+
+/* 主页：不用会被裁出硬边的虚化框，改成整屏一层四面都是柔边的暗影，压在标题后面 */
+body.lx .hubL::before{display:none}
+body.lx[data-screen="hub"] .scrim{background:
+  radial-gradient(ellipse 46% 62% at 21% 46%,rgba(8,6,14,.78) 0%,rgba(8,6,14,.55) 40%,rgba(8,6,14,.22) 70%,rgba(8,6,14,0) 100%),
+  linear-gradient(0deg,rgba(10,8,18,.45) 0%,rgba(10,8,18,0) 30%)}
+body.lx #hub .hero h1,body.lx #hub .hero p,body.lx #hub .mnote,body.lx #hub .tools .home,body.lx #hub .panel summary{text-shadow:0 0 18px rgba(8,6,14,.9),0 2px 8px rgba(0,0,0,.9)}
+
+/* 第四关：节目单放在画面正中间 */
+body.lx #l4[data-view="ask"] .booklet{position:absolute;grid-area:auto;left:50%;top:calc(50% + 60px);transform:translate(-50%,-50%);margin:0}
+body.lx #l4[data-view="ask"]{position:relative}
