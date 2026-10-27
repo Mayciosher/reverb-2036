@@ -6,11 +6,12 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 REPO=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 D=sys.argv[1] if len(sys.argv)>1 else tempfile.mkdtemp()
-PKGS={'fontsource-noto-sans-sc-5.3.1':'@fontsource/noto-sans-sc@5.3.1','fontsource-zcool-qingke-huangyou-5.3.0':'@fontsource/zcool-qingke-huangyou@5.3.0','fontsource-ibm-plex-mono-5.3.0':'@fontsource/ibm-plex-mono@5.3.0'}
+PKGS={'fontsource-noto-sans-sc-5.3.1':'@fontsource/noto-sans-sc@5.3.1','fontsource-zcool-qingke-huangyou-5.3.0':'@fontsource/zcool-qingke-huangyou@5.3.0','fontsource-ibm-plex-mono-5.3.0':'@fontsource/ibm-plex-mono@5.3.0',
+      'fontsource-zhi-mang-xing':'@fontsource/zhi-mang-xing','fontsource-zcool-kuaile':'@fontsource/zcool-kuaile','fontsource-orbitron':'@fontsource/orbitron','fontsource-playfair-display':'@fontsource/playfair-display'}
 for d,spec in PKGS.items():
     if not os.path.isdir(os.path.join(D,d,'package')):
-        subprocess.run(['npm','pack','-q',spec],cwd=D,check=True)
-        os.makedirs(os.path.join(D,d),exist_ok=True); tarfile.open(os.path.join(D,d+'.tgz')).extractall(os.path.join(D,d))
+        out=subprocess.run(['npm','pack','-q',spec],cwd=D,check=True,capture_output=True,text=True).stdout.strip().splitlines()[-1]
+        os.makedirs(os.path.join(D,d),exist_ok=True); tarfile.open(os.path.join(D,out)).extractall(os.path.join(D,d))
 OUT=os.path.join(REPO,'fonts')
 os.makedirs(OUT,exist_ok=True)
 for f in glob.glob(OUT+'/*'): os.remove(f)
@@ -28,11 +29,15 @@ def parse_range(r):
     return s
 jobs=[('fontsource-noto-sans-sc-5.3.1','Noto Sans SC',[400,500,700],'noto'),
       ('fontsource-zcool-qingke-huangyou-5.3.0','ZCOOL QingKe HuangYou',[400],'zcool'),
-      ('fontsource-ibm-plex-mono-5.3.0','IBM Plex Mono',[400,600],'plex')]
+      ('fontsource-ibm-plex-mono-5.3.0','IBM Plex Mono',[400,600],'plex'),
+      ('fontsource-zhi-mang-xing','Zhi Mang Xing',[400],'zmx'),
+      ('fontsource-zcool-kuaile','ZCOOL KuaiLe',[400],'kuaile'),
+      ('fontsource-orbitron','Orbitron',[600,700],'orb'),
+      ('fontsource-playfair-display','Playfair Display',['500-italic'],'pfd')]
 css=[];total=0;n=0
 for pkg,fam,weights,short in jobs:
     for w in weights:
-        cssf=os.path.join(D,pkg,'package',f'{w}.css')
+        cssf=os.path.join(D,pkg,'package',f'{w}.css'); style='italic' if 'italic' in str(w) else 'normal'; wn=str(w).split('-')[0]
         src=open(cssf).read()
         for blk in re.findall(r'@font-face\s*\{(.*?)\}',src,re.S):
             m=re.search(r"url\(\./files/([^)]+\.woff2)\)",blk); r=re.search(r'unicode-range:\s*([^;]+);',blk)
@@ -46,6 +51,6 @@ for pkg,fam,weights,short in jobs:
             f=TTFont(inp); s=subset.Subsetter(opts); s.populate(unicodes=need); s.subset(f)
             f.flavor='woff2'; f.save(os.path.join(OUT,outn)); total+=os.path.getsize(os.path.join(OUT,outn))
             ur=','.join('U+%X'%c for c in sorted(need))
-            css.append(f"@font-face{{font-family:'{fam}';font-style:normal;font-display:swap;font-weight:{w};src:url(fonts/{outn}) format('woff2');unicode-range:{ur};}}")
+            css.append(f"@font-face{{font-family:'{fam}';font-style:{style};font-display:swap;font-weight:{wn};src:url(fonts/{outn}) format('woff2');unicode-range:{ur};}}")
 open(os.path.join(REPO,'fonts.css'),'w').write('/* 字体已下载到本地（只保留游戏里用到的字），国内也能正常显示。改了文案后运行 tools/build_fonts.py 重新生成 */\n'+'\n'.join(css)+'\n')
 print('files',n,'total KB',total//1024,'chars',len(used))

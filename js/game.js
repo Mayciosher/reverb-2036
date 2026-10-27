@@ -275,7 +275,7 @@ function renderCard() {
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  if ($('#yrNum').textContent !== `第 ${G.year} 年`) { $('#yrNum').textContent = `第 ${G.year} 年`; MO.drop($('#yrNum'), { sound: false }) } $('#yrCal').textContent = `${2026 + G.year} · 饿死之前`;
+  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#yrLock .tt'))) }
   renderMeters(); renderUndo();
   requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
 }

@@ -14,7 +14,7 @@ h=open('index.html',encoding='utf8').read()
 body=h[h.index('<body')+len('<body data-screen="hub">'):h.index('<script src="js/vendor/three.min.js">')]
 icon='data:image/png;base64,'+base64.b64encode(open('icons/icon-192.png','rb').read()).decode()
 three=open('js/vendor/three.min.js',encoding='utf8').read()
-js='\n'.join(open('js/'+f,encoding='utf8').read() for f in ['audio.js','data.js','game.js','levels.js','motion.js','scene.js'])
+js='\n'.join(open('js/'+f,encoding='utf8').read() for f in ['audio.js','data.js','game.js','levels.js','motion.js','titles.js','scene.js'])
 out=f'''<!doctype html>
 <html lang="zh-CN">
 <head>

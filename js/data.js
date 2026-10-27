@@ -344,6 +344,8 @@ const L3_ROLES = {
   self: { name: '你自己', music: true, dom: 'music', task: 'cadence', style: 'self',
     ev: { who: '妈妈', say: '凌晨两点，妈妈发来一条消息：“还没睡？”', a: [['回：“马上睡”', 'bond'], ['不回，继续做', 'burn']] } }
 };
+/* 第三关一日行程车票上的站名 */
+const L3_PLACE = { ad: '广告公司', wedding: '婚礼礼堂', vocal: '录音棚', aitrain: 'AI 实验室', doc: '纪录片', bar: '小酒馆', teacher: '音乐教室', rehab: '康复中心', coach: '健身房', cafe: '咖啡馆', luthier: '琴行', photo: '音乐节', self: '家' };
 const L3_TIMES = ['08:00', '10:00', '13:00', '16:00', '19:00', '22:00', '02:00'];
 /* 按第一关结局“音乐占几成”决定前六个身份里有几个和音乐相关 */
 function l3MusicCount(ms) { return ms >= 9 ? 6 : ms >= 6 ? 5 : ms >= 3 ? 3 : 2 }

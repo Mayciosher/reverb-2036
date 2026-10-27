@@ -86,11 +86,11 @@ function l2Read() {
 function l2Cards() {
   L2.picks = [];
   const order = shuffle(TAROT.map((_, i) => i)), pos = ['过去', '现在', '下一个十年'], ROMAN = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ', 'Ⅶ', 'Ⅷ', 'Ⅸ', 'Ⅹ', 'Ⅺ', 'Ⅻ'];
-  $('#l2').innerHTML = `<div class="lx-head"><span class="eyebrow">第二关 · 三</span><h2 class="big-title beat" id="l2title">抽三张牌</h2></div>
-    <div class="dialog"><span class="spk">调音婆婆</span><p id="l2tip"></p></div>
+  $('#l2').innerHTML = `<div class="lx-head" id="l2lock">${TT.l2('抽三张牌', '2036 年冬 · 看看下一个十年', 3 / 5)}</div>
+    <div class="letter"><span class="spk">调音婆婆</span><p id="l2tip"></p></div>
     <div class="tarot">${order.map(i => `<div class="tc" data-i="${i}" role="button" tabindex="0" aria-label="一张背面朝上的牌"><div class="back"></div><div class="face"><i>${ROMAN[i]}</i><b>${TAROT[i].n}</b><small></small></div></div>`).join('')}</div>
-    <div class="spread" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}<button class="btn" id="l2next" hidden>回答婆婆的三个问题</button></div>`;
-  setView('l2', 'tarot'); MO.drop($('#l2title'));
+    <div class="spread slips" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}<button class="btn" id="l2next" hidden>回答婆婆的三个问题</button></div>`;
+  setView('l2', 'tarot'); requestAnimationFrame(() => TT.intro($('#l2lock .tt')));
   const tip = h => MO.type($('#l2tip'), h);
   tip(`“第一张是你的<b>过去</b>。别想，凭直觉，${window.SCENE ? '点桌上的一张牌' : '点一张'}。”`);
   if (window.SCENE) { SCENE.tarot(order); SCENE.onPick(k => flip($$('.tc')[k])) }
@@ -386,10 +386,10 @@ function l3Task() {
   const T = TASKS[role.task], time = L3_TIMES[L3.i];
   show('l3'); KEYH = null; roleMusic(role); if (window.SCENE) SCENE.l3Role(L3.i, L3.roles);
   const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
-  setTimeout(() => { setView('l3', 'task'); MO.drop($('#l3clock'), { sound: false }); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip'); $('#l3role').classList.add('swap-in') }, 0);
-  $('#l3').innerHTML = `<div class="lx-head"><span class="clock beat" id="l3clock">${time}</span><span class="rolechip" id="l3role">此刻的身份：<b>${role.name}</b>${role.music ? '' : '<i>音乐以外的工作</i>'}</span><span class="tally">第 ${L3.i + 1}/7 个 · 挑对 ${L3.right} · 交给小谱 ${L3.ai}</span></div>
-    <div class="brief dialog"><span class="who spk">${T.who}</span><p id="l3brief"></p></div>
-    <div class="clips">${order.map((k, j) => `<div class="clip" data-o="${k}"><b>${letters[j]}</b><div class="wave">${'<i></i>'.repeat(9)}</div><button class="btn ghost sm" data-p="${k}">播放 ${letters[j]}</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div>`).join('')}</div>
+  setTimeout(() => { setView('l3', 'task'); TT.intro($('#l3lock .tt')); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip') }, 0);
+  $('#l3').innerHTML = `<div class="lx-head" id="l3lock">${TT.l3(time, role.name, L3.roles.map(k => L3_PLACE[k]), L3.i)}</div>
+    <div class="brief order"><div class="od-h"><b>工作单</b><span>${time} · ${T.who}${role.music ? '' : ' · 音乐以外的工作'}</span></div><p id="l3brief"></p><div class="od-f">今天挑对 ${L3.right} 个 · 交给小谱 ${L3.ai} 次</div></div>
+    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b><span>版本 ${letters[j]} · 小谱生成</span></div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" id="l3ai">交给小谱挑</button><button class="btn ghost sm" id="l3stop">停止播放</button></div>
     <div id="l3res"></div>`;
   const playClip = (o, el) => { $$('.clip').forEach(c => c.classList.remove('playing')); el && el.classList.add('playing'); E.playClip(bus => sched(bus, o), .06, () => el && el.classList.remove('playing')) };
@@ -484,10 +484,10 @@ function l4Ask(i) {
   const Q = l4Questions();
   if (i >= Q.length) return l4Compose();
   const q = Q[i];
-  $('#l4').innerHTML = `<div class="lx-head"><span class="eyebrow">第四关 · 最后的问题 ${i + 1} / ${Q.length}</span><h2 class="big-title beat" id="l4title">问自己</h2></div>
-    <div class="subtitle"><p id="l4q"></p><span class="mnote">没有标准答案，只有真话和假话。</span></div>
-    <div class="choices-col">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
-  setView('l4', 'ask'); if (i === 0) MO.drop($('#l4title')); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
+  $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(i)}</div>
+    <div class="surtitle"><p id="l4q"></p><span class="mnote">没有标准答案，只有真话和假话。</span></div>
+    <div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
+  setView('l4', 'ask'); requestAnimationFrame(() => TT.intro($('#l4lock .tt'))); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
   $$('[data-a]').forEach(b => b.onclick = () => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) });
 }
 function l4Compose() {
