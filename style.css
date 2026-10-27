@@ -724,7 +724,7 @@ body.lx #l4[data-view="ask"]{grid-template-rows:auto 1fr auto}
 body.lx .hubL{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;padding:0;overflow:visible;max-height:none;position:relative}
 body.lx .hubL::before{content:"";position:absolute;inset:-90px -160px -90px -120px;background:radial-gradient(55% 55% at 35% 50%,rgba(8,6,14,.78),rgba(8,6,14,.45) 50%,rgba(8,6,14,0) 100%);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);-webkit-mask-image:radial-gradient(55% 55% at 35% 50%,#000 35%,transparent 100%);mask-image:radial-gradient(55% 55% at 35% 50%,#000 35%,transparent 100%);z-index:-1;pointer-events:none}
-body.lx #hub .hero h1{font-size:clamp(96px,10vw,150px);text-shadow:0 0 30px rgba(233,180,76,.25),0 4px 24px rgba(0,0,0,.75)}
+body.lx #hub .hero h1{font-size:clamp(96px,10vw,150px)}
 body.lx #hub .hero p{font-size:17px;line-height:1.85;color:#f2ecf7;text-shadow:0 2px 8px rgba(0,0,0,.9)}
 body.lx #hub .hero .eyebrow{color:#e9b44c;font-size:14px}
 body.lx #hub .mnote{color:#e6dff0;text-shadow:0 1px 6px rgba(0,0,0,.9)}
