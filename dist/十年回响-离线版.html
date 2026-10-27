@@ -1068,6 +1068,23 @@ body.lx .lx-head .tt-brush{font-size:clamp(50px,4.8vw,74px);white-space:nowrap}
 body.lx .lx-head .tt2 .tt-sub{font-size:18px;flex-wrap:wrap}
 body.lx .lx-head .tt-gt{font-size:clamp(52px,5.2vw,78px)}
 
+/* 手机竖屏：节目单两页上下叠放，标题缩小 */
+@media (max-width:720px){
+  .booklet{grid-template-columns:1fr;width:100%}
+  .booklet .pg{transform:none;min-height:0;padding:18px 18px 30px}
+  .booklet .pgL{border-radius:6px 6px 0 0}.booklet .pgR{border-radius:0 0 6px 6px}
+  .booklet::after{display:none}
+  .booklet #l4q{font-size:17px}
+  body:not(.lx) .tt-big{font-size:36px}
+  body:not(.lx) .tt-sub{font-size:15px;letter-spacing:.06em}
+  body:not(.lx) .tt-brush{font-size:42px}
+  body:not(.lx) .tt-candle{width:28px}
+  body:not(.lx) .flap{width:34px;height:46px;font-size:30px}
+  body:not(.lx) .tt-role{font-size:32px}
+  body:not(.lx) .tt-mvt,body:not(.lx) .tt-gt{font-size:36px}
+  body:not(.lx) .tt-staff{width:240px}
+}
+
 </style>
 </head>
 <body data-screen="hub">
