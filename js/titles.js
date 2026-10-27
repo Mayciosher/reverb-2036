@@ -65,6 +65,22 @@ const TT = (() => {
       setTimeout(() => { el.style.transition = '' }, 1000);
     }, hold);
   }
-  return { l1, l2, l3, l4, intro, MVT };
+  /* 通用标题（非关卡核心画面用），theme 决定用哪一关的字体气质 */
+  function gen(eye, title, sub, theme = 'l1') {
+    return `<div class="tt ttg ttg-${theme}">${eye ? `<div class="tt-eye2">${eye}</div>` : ''}<div class="tt-gt">${title}</div>${sub ? `<div class="tt-sub2">${sub}</div>` : ''}</div>`;
+  }
+  /* 把一个页面变成横屏左右两栏：左边是标题，右边是写在实物上的内容
+     mat：右边是什么材质（note 笔记本、bill 账单、desk 调音台、letter 旧信笺、order 工作单、programme 节目单） */
+  function duo(id, head, { drop = '', mat = 'note', intro: doIntro = false } = {}) {
+    const el = document.getElementById(id); if (!el) return;
+    const main = document.createElement('div'); main.className = 'lx-main';
+    [...el.childNodes].forEach(n => main.appendChild(n));
+    /* 只去掉页面最外层的旧标题，不碰卡片里面的小标题 */
+    if (drop) main.querySelectorAll(drop.split(',').map(x => ':scope > ' + x.trim().replace(/^#\w+ > /, '')).join(',')).forEach(n => n.remove());
+    el.innerHTML = `<div class="lx-head">${head}</div>`; el.appendChild(main);
+    el.dataset.mat = mat; setView(id, 'duo'); el.scrollTop = 0;
+    if (doIntro) requestAnimationFrame(() => intro(el.querySelector('.lx-head .tt')));
+  }
+  return { l1, l2, l3, l4, gen, duo, intro, MVT };
 })();
 window.TT = TT;

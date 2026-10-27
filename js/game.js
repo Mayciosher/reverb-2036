@@ -54,7 +54,7 @@ function show(id) {
   TOK++; if (E.ctx) E.stopClip();
   $$('.screen').forEach(s => s.hidden = s.id !== id);
   $('#topbar').hidden = id === 'hub'; $('#topTitle').textContent = TITLES[id] || '';
-  document.body.dataset.screen = id; setView(id, '');
+  document.body.dataset.screen = id; setView(id, ($('#' + id) && $('#' + id).dataset.fixed) || '');
   if (window.SCENE) { if (id === 'hub') SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(id) }
   const el = $('#' + id); if (el && el.scrollTo) el.scrollTo(0, 0);
   if (id === 'play') { renderChans(); updateMood() }
@@ -161,7 +161,7 @@ function showIdeal() {
   $('#ideal').innerHTML = `<span class="eyebrow">开始之前</span><h2 class="big-title">你心里理想的音乐人</h2>
     <p class="lead">请基于你现在的真实情况想一想：你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
     <div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div>`;
-  show('ideal');
+  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第一问', '你心里理想的音乐人'), { drop: '.eyebrow,.big-title', intro: true });
   $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); showShare() });
 }
 function showShare() {
@@ -169,7 +169,7 @@ function showShare() {
     <p class="lead">十年后，也许没有人只做一件事。一个人可以会写歌、会教课、会剪视频、会做生意。“音乐人”可能是你的全部身份，也可能只是你很多能力里的一种。</p>
     <p class="lead">你希望十年后，音乐在你的生活里占多少？</p>
     <div class="ideals">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div>`;
-  show('ideal'); $('#ideal').scrollTo(0, 0);
+  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第二问', '音乐占几成'), { drop: '.eyebrow,.big-title' });
   $$('[data-share]').forEach(b => b.onclick = () => { PROG.share = MUSIC_SHARE[+b.dataset.share].v; save(); show('intro') });
 }
 
@@ -211,7 +211,7 @@ function livingCost() {
   return [8, '你一个人住在大城市'];
 }
 function renderYB() {
-  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; MO.drop($('#ybBig'));
+  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#ybLock .tt')));
   $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
 function buildQueue() {
@@ -368,7 +368,7 @@ function calibrate(done) {
     <p class="mnote">用手机外放或有线耳机的话，也可以直接跳过。iPhone 用户请先关闭侧边的静音键，否则网页可能没有声音。</p>
     <div class="tapzone"><div class="beats" id="cbeats">${'<i></i>'.repeat(8)}</div><p class="status" id="cst">准备好了就点「开始校准」</p><button class="tap" id="ctap" disabled>点</button></div>
     <div class="row"><button class="btn" id="cgo">开始校准</button><button class="btn ghost" id="cskip">跳过</button></div>`;
-  show('ideal');
+  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 10 秒校准', '听到就点一下'), { drop: '.eyebrow,.big-title' });
   const beat = .6; let t0 = 0, taps = [], live = false;
   const dots = $$('#cbeats i');
   const finish = ms => { PROG.latency = ms; save(); KEYH = null; done() };
@@ -401,7 +401,7 @@ function finishL1(id, survived) {
   $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;
-  G = null; KEYH = null; show('end');
+  G = null; KEYH = null; show('end'); requestAnimationFrame(() => TT.intro($('#end .lx-head .tt')));
 }
 
 /* =========================================================
@@ -421,7 +421,7 @@ function miniResult(title, text, eff) {
     show('play'); applyYearMusic(); apply(eff); G.cur = null; saveL1(); setTimeout(nextCard, 250);
   };
 }
-function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc }
+function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; requestAnimationFrame(() => TT.intro($('#mini .lx-head .tt'))) }
 
 /* 1. 上台演出：跟着节拍按键 */
 function rhythm(hard) {

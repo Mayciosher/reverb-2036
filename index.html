@@ -64,15 +64,16 @@
 <section class="screen scroll" id="ideal" hidden></section>
 
 <!-- ========== 第一关说明 ========== -->
-<section class="screen intro scroll" id="intro" hidden>
-  <span class="eyebrow">第一关</span>
-  <h2 class="big-title">饿死之前</h2>
+<section class="screen intro scroll" id="intro" data-fixed="duo" data-mat="note" hidden>
+  <div class="lx-head"><div class="tt ttg ttg-l1"><div class="tt-eye2">第一关</div><div class="tt-gt">饿死之前</div><div class="tt-sub2">2027 — 2036 · 十年</div></div>
   <div class="notice">
     <b>开始之前</b>
     <p>接下来的每一个选择，请按照你<b>现在真实的情况</b>来选：你真的会怎么做，而不是你觉得应该怎么做。</p>
     <p>忠于自己，不要骗自己。</p>
     <p class="honest">最后的音乐人格画像，只有在你诚实的时候才有意义。</p>
   </div>
+  </div>
+  <div class="lx-main">
   <ol class="rules">
     <li><b class="rt">怎么选</b><p>每张卡片是一个人对你说的一句话。<b>往左滑或往右滑</b>做决定，也可以点卡片下面的按钮，或按键盘 ← →。</p></li>
     <li><b class="rt">四个数值</b><p><b>钱、名气、热爱、原创</b>，每项 0 到 100。每次选择后都会显示具体变化。钱按“1 点约 1000 元”算，开局的 50 就是存款约 5 万。犹豫时，数值上方的圆点会提示这个选择影响哪几项。</p></li>
@@ -88,14 +89,18 @@
     <button class="btn" data-g="he">以「他」开始</button>
     <button class="btn" data-g="she">以「她」开始</button>
   </div>
+  </div>
 </section>
 
 <!-- ========== 每年开头 ========== -->
-<section class="screen yb" id="yearbreak" hidden>
-  <span class="cal" id="ybCal">2027</span>
-  <div class="big" id="ybBig">第 1 年</div>
-  <ul id="ybList"></ul>
-  <button class="btn" id="ybGo" style="align-self:flex-start">开始这一年</button>
+<section class="screen yb" id="yearbreak" data-fixed="duo" data-mat="bill" hidden>
+  <div class="lx-head" id="ybLock"></div>
+  <div class="lx-main">
+    <span class="cal" id="ybCal" hidden>2027</span><div class="big" id="ybBig" hidden>第 1 年</div>
+    <div class="bill-h"><b>这一年的账单</b><span>月初 · 请查收</span></div>
+    <ul id="ybList"></ul>
+    <button class="btn" id="ybGo" style="align-self:flex-start">开始这一年</button>
+  </div>
 </section>
 
 <!-- ========== 第一关卡牌 ========== -->
@@ -125,19 +130,20 @@
 </section>
 
 <!-- ========== 第一关音乐关卡 ========== -->
-<section class="screen scroll" id="mini" hidden>
-  <div class="mini-head"><span class="eyebrow" id="miniEye">音乐关卡</span><h2 id="miniTitle"></h2><p id="miniDesc"></p></div>
-  <div id="miniBody"></div>
+<section class="screen scroll" id="mini" data-fixed="duo" data-mat="desk" hidden>
+  <div class="lx-head"><div class="tt ttg ttg-l1"><div class="tt-eye2" id="miniEye">音乐关卡</div><div class="tt-gt" id="miniTitle"></div><div class="tt-sub2 long" id="miniDesc"></div></div></div>
+  <div class="lx-main"><div id="miniBody"></div></div>
 </section>
 
 <!-- ========== 第一关结局 ========== -->
-<section class="screen end scroll" id="end" hidden>
-  <span class="kind" id="endKind"></span>
-  <h2 id="endTitle"></h2>
-  <p id="endText"></p>
-  <div class="final" id="final"></div>
-  <p class="mnote" id="endMusic"></p>
-  <div class="row"><button class="btn" data-go="l2">进入第二关</button></div>
+<section class="screen end scroll" id="end" data-fixed="duo" data-mat="note" hidden>
+  <div class="lx-head"><div class="tt ttg ttg-l1"><div class="tt-eye2" id="endKind"></div><div class="tt-gt" id="endTitle"></div></div></div>
+  <div class="lx-main">
+    <p id="endText"></p>
+    <div class="final" id="final"></div>
+    <p class="mnote" id="endMusic"></p>
+    <div class="row"><button class="btn" data-go="l2">进入第二关</button></div>
+  </div>
 </section>
 
 <!-- ========== 第二、三、四关和人格画像（内容由 game.js 生成） ========== -->

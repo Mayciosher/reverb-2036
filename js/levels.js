@@ -36,7 +36,7 @@ function startL2() {
     <p class="lead">店里坐着一位眼睛看不见的调音婆婆。她不看手相，也不看八字，只听音乐。</p>
     <div class="speech"><p>“坐吧。随手弹 8 个音给我听。我能听出你这十年是怎么过的，也能告诉你，下一个十年会遇到什么。”</p></div>
     <button class="btn" id="l2go" style="align-self:flex-start">坐下来</button>`;
-  show('l2'); $('#l2go').onclick = l2Play;
+  show('l2'); TT.duo('l2', TT.l2('音乐命运签', '2036 年冬 · 一家没有招牌的小店', 0), { drop: '.eyebrow,.big-title', mat: 'letter', intro: true }); $('#l2go').onclick = l2Play;
 }
 function l2Play() {
   setView('l2', '');
@@ -46,6 +46,7 @@ function l2Play() {
     <div class="slots" id="l2slots">${'<span></span>'.repeat(8)}</div>
     <div id="l2keys"></div>
     <div class="row"><button class="btn ghost sm" id="l2clear">重来</button></div>`;
+  TT.duo('l2', TT.l2('随手弹 8 个音', '凭感觉，不用想', .2), { drop: '.eyebrow,.big-title', mat: 'letter' });
   const kb = buildKeys($('#l2keys'), 8, i => add(i));
   const paint = () => $$('#l2slots span').forEach((s, k) => { s.textContent = L2.notes[k] != null ? NUM[L2.notes[k]] : ''; s.classList.toggle('now', k === L2.notes.length) });
   const add = i => { if (L2.notes.length >= 8) return; playDeg(i); kb.flash(i); L2.notes.push(i); paint(); if (L2.notes.length === 8) { KEYH = null; const t = TOK; setTimeout(() => { if (t === TOK) l2Read() }, 900) } };
@@ -76,6 +77,7 @@ function l2Read() {
   if (PROG.l1) lines.push(`“十年以后，你成了<b>「${ENDINGS[PROG.l1.id].t}」</b>。”她停了一下，“你自己满意吗？不用回答我。”`);
   lines.push('“好了，过去的事说完了。来，抽三张牌，我们看看下一个十年。”');
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 二</span><h2 class="big-title">她听见了你的十年</h2><div class="speech" id="l2sp"></div><button class="btn" id="l2next" style="align-self:flex-start" hidden>抽牌</button>`;
+  TT.duo('l2', TT.l2('她听见了你的十年', '回声铺 · 婆婆在说', .4), { drop: '.eyebrow,.big-title', mat: 'letter' });
   lines.forEach((ln, i) => setTimeout(() => {
     if (tok !== TOK) return; const p = document.createElement('p'); p.innerHTML = ln; $('#l2sp').appendChild(p);
     harp(E.sfx, now(), [62, 66, 69, 74, 70, 67, 74][i % 7], .05);
@@ -115,6 +117,7 @@ function l2Soul(i) {
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 四 · 第 ${i + 1} / ${SOUL_Q.length} 问</span><h2 class="big-title">婆婆问你</h2>
     <div class="speech"><p>“${Q.q}”</p></div><p class="mnote">说真话。她听得出来。</p>
     <div class="choices-col">${Q.a.map((a, k) => `<button class="btn ghost" data-a="${k}">${a[0]}</button>`).join('')}</div>`;
+  TT.duo('l2', TT.l2('婆婆问你', `第 ${i + 1} 问 / 共 ${SOUL_Q.length} 问`, .8), { drop: '.eyebrow,.big-title', mat: 'letter' });
   $$('[data-a]').forEach(b => b.onclick = () => { const a = Q.a[+b.dataset.a]; addTags(a[1], L2.tags); L2.answers.push({ q: Q.q, a: a[0], k: a[1] }); harp(E.sfx, now(), 74, .05); l2Soul(i + 1) });
 }
 function l2Fortune() {
@@ -141,6 +144,7 @@ function l2Fortune() {
       <p class="verse">“这支签你收好。十年后，你会知道它准不准。”</p></article>
     <div class="row"><button class="btn" id="l2hear">听你的命运旋律</button><button class="btn ghost" id="l2done">收下这支签，进入第三关</button></div>
     <p class="mnote">命运旋律是用你刚才弹的 8 个音，配上竖琴和弦乐写成的。播放时背景音乐会暂停，播完自动恢复。</p>`;
+  TT.duo('l2', TT.l2('你的签', '2036 → 2046 · 下一个十年', 1), { drop: '.eyebrow', mat: 'letter', intro: true });
   $('#l2hear').onclick = () => {
     if (E.clipBus) { E.stopClip(); $('#l2hear').textContent = '听你的命运旋律'; return }
     $('#l2hear').textContent = '停止';
@@ -379,7 +383,7 @@ function startL3() {
     <p class="lead">从早上 8 点忙到凌晨 2 点，你要换七个身份：${L3.roles.slice(0, 6).map(k => L3_ROLES[k].name).join('、')}，最后才轮到做回你自己。每换一个身份，背景音乐也会换成那个地方的声音。</p>
     <p class="lead">每个身份都会遇到一个要求，三个版本<b>很接近</b>，要仔细听。不管做哪一行，你靠的都是同一样东西：耳朵。你可以自己挑，也可以点<b>“交给小谱挑”</b>，但小谱是随便挑的。每个要求之后，还有一个小插曲需要你表态。</p>
     <button class="btn" id="l3go" style="align-self:flex-start">开始这一天</button>`;
-  show('l3'); if (window.SCENE) SCENE.l3Role(-1, L3.roles); $('#l3go').onclick = l3Task;
+  show('l3'); if (window.SCENE) SCENE.l3Role(-1, L3.roles); TT.duo('l3', TT.gen('第三关 · 2036 年的一天', '身兼数职的一天', '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order', intro: true }); $('#l3go').onclick = l3Task;
 }
 function l3Task() {
   const role = L3_ROLES[L3.roles[L3.i]]; if (!role) return l3End();
@@ -425,6 +429,7 @@ function l3End() {
       <p class="lead">${R.map((r, i) => `${L3_TIMES[i]} ${r.name}`).join('，')}。</p>
       <div class="speech"><p>躺下之前，你问自己：今天这七个身份里，<b>哪一个让你最像自己？</b></p></div>
       <div class="choices-col">${R.map((r, i) => `<button class="btn ghost" data-fav="${i}">${r.name}</button>`).join('')}</div>`;
+    TT.duo('l3', TT.gen('第三关 · 凌晨 2 点 47 分', `今天你换了${['零', '一', '两', '三', '四', '五', '六', '七'][R.length] || R.length}个身份`, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order', intro: true });
     $$('[data-fav]').forEach(b => b.onclick = () => { L3.fav = +b.dataset.fav; PROG.log.push({ lv: 3, who: '你自己', say: '七个身份里，哪一个最像自己？', pick: R[L3.fav].name, k: '' }); saveL3(); l3End() });
     return;
   }
@@ -440,6 +445,7 @@ function l3End() {
     <div class="final"><div><b>${L3.own}</b><span>自己挑</span></div><div><b>${L3.right}</b><span>挑对</span></div><div><b>${L3.ai}</b><span>交给小谱</span></div><div><b>${share}%</b><span>自己判断</span></div></div>
     <p class="mnote">现在的背景音乐，是用你在第二关弹给调音婆婆的那 8 个音写成的。2036 年 AI 能替你生成很多东西，但听出哪里不对、哪个刚刚好，还得靠人的耳朵。</p>
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
+  TT.duo('l3', TT.gen('第三关 · 02:47', t, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order' });
   $('#l3done').onclick = () => {
     mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: fav.name }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
   };
@@ -467,7 +473,7 @@ function startL4() {
     <p class="lead">十年的最后一个晚上，你坐在钢琴前，回头看这十年。</p>
     <ul class="memories">${mem.join('')}</ul>
     <button class="btn" id="l4go" style="align-self:flex-start">回答最后四个问题</button>`;
-  show('l4'); $('#l4go').onclick = () => l4Ask(0);
+  show('l4'); TT.duo('l4', TT.gen('第四关 · 2036 年 12 月 31 日', '十年回响', '十年的最后一个晚上', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme', intro: true }); $('#l4go').onclick = () => l4Ask(0);
 }
 function l4Questions() { if (window.SCENE) SCENE.hall(2);
   const id = IDEALS[PROG.ideal] || IDEALS.indie;
@@ -498,6 +504,7 @@ function l4Compose() {
     <div class="slots" id="l4slots">${'<span></span>'.repeat(4)}</div>
     <div id="l4keys"></div>
     <div class="row"><button class="btn ghost sm" id="l4clear">重来</button><button class="btn" id="l4play" disabled>让乐团奏响</button></div>`;
+  TT.duo('l4', TT.gen('第四关 · 尾声', '留给十年前的自己', '弹 4 个音', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme' });
   const kb = buildKeys($('#l4keys'), 8, i => add(i));
   const paint = () => { $$('#l4slots span').forEach((s, k) => { s.textContent = L4.notes[k] != null ? NUM[L4.notes[k]] : ''; s.classList.toggle('now', k === L4.notes.length) }); $('#l4play').disabled = L4.notes.length < 4 };
   const add = i => { if (L4.notes.length >= 4) return; harp(E.sfx, now(), SCALE[i], .1); kb.flash(i); L4.notes.push(i); paint() };
@@ -539,6 +546,7 @@ function l4Finale() {
     <div class="bars" id="l4bars">${'<i></i>'.repeat(9)}</div>
     <p class="mnote">${A !== B ? '注意听第五小节：小调变成了大调。' : A === 'maj' ? '整段都在大调上，是明亮的回响。' : '整段都停在小调上。'}调式由你第一关的结局决定。</p>
     <button class="btn ghost sm" id="l4skip" style="align-self:flex-start">直接看画像</button>`;
+  TT.duo('l4', TT.gen('第四关 · 回响中', jp(L4.notes), '管弦乐团正在演奏你的旋律', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme' });
   let info;
   E.playClip(bus => { info = orchFinale(bus, L4.notes, A, B); return info.dur }, 0, () => l4End(B));
   const bars = $$('#l4bars i');
@@ -615,7 +623,7 @@ function showPortrait(fresh) { if (window.SCENE) SCENE.hall(3);
     ${p.notes && p.notes.length ? `<p class="mnote">你留给十年前自己的旋律：<b style="color:var(--brass);font-family:var(--f-mono)">${jp(p.notes)}</b></p>` : ''}
     <p class="mnote">这份画像来自你在游戏里做的选择，它照出的是你今天的价值观，是一面镜子，不是心理诊断，也不是预言。选择的时候越诚实，它照出来的你就越真实。</p>
     <div class="row"><button class="btn" id="poster">生成分享海报</button><button class="btn ghost" data-hub>回到主页</button><button class="btn ghost" data-reset>重新开始十年</button></div>`;
-  show('portrait');
+  show('portrait'); TT.duo('portrait', TT.gen('十年的选择，指向的是', p.archT, p.ident ? `一句话介绍你：「${p.ident}」` : '', 'l4'), { drop: '#portrait > .eyebrow', mat: 'programme', intro: !!fresh });
   $('#poster').onclick = () => makePoster(p);
 }
 
