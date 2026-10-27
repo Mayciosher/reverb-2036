@@ -58,11 +58,11 @@ const TT = (() => {
     el.style.transition = 'none'; el.style.transform = `translate(${dx}px,${dy}px) scale(${s})`; el.style.opacity = '0';
     void el.offsetWidth;
     el.style.transition = 'opacity .5s ease'; el.style.opacity = '1';
-    clearTimeout(el._tt);
+    clearTimeout(el._tt); clearTimeout(el._tt2);
+    /* 先让标题完全退回左上角，中间空出来以后，其他内容再按顺序出现（卡片先，两边选项后） */
     el._tt = setTimeout(() => {
       el.style.transition = 'transform .95s cubic-bezier(.7,0,.2,1)'; el.style.transform = '';
-      document.body.classList.remove('titling');
-      setTimeout(() => { el.style.transition = '' }, 1000);
+      el._tt2 = setTimeout(() => { el.style.transition = ''; document.body.classList.remove('titling') }, 980);
     }, hold);
   }
   /* 通用标题（非关卡核心画面用），theme 决定用哪一关的字体气质 */

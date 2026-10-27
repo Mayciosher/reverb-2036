@@ -756,7 +756,7 @@ body.lx .hubL::before{display:none}
 body.lx[data-screen="hub"] .scrim{background:
   radial-gradient(ellipse 46% 62% at 21% 46%,rgba(8,6,14,.78) 0%,rgba(8,6,14,.55) 40%,rgba(8,6,14,.22) 70%,rgba(8,6,14,0) 100%),
   linear-gradient(0deg,rgba(10,8,18,.45) 0%,rgba(10,8,18,0) 30%)}
-body.lx #hub .hero h1,body.lx #hub .hero p,body.lx #hub .mnote,body.lx #hub .tools .home,body.lx #hub .panel summary{text-shadow:0 0 18px rgba(8,6,14,.9),0 2px 8px rgba(0,0,0,.9)}
+body.lx #hub .hero p,body.lx #hub .mnote,body.lx #hub .tools .home,body.lx #hub .panel summary{text-shadow:0 0 18px rgba(8,6,14,.9),0 2px 8px rgba(0,0,0,.9)}
 
 /* 第四关：节目单放在画面正中间 */
 body.lx #l4[data-view="ask"] .booklet{position:absolute;grid-area:auto;left:50%;top:calc(50% + 60px);transform:translate(-50%,-50%);margin:0}
@@ -847,3 +847,10 @@ body.lx .lx-head .tt-gt{font-size:clamp(52px,5.2vw,78px)}
   body:not(.lx) .tt-mvt,body:not(.lx) .tt-gt{font-size:36px}
   body:not(.lx) .tt-staff{width:240px}
 }
+
+/* 第一关出场顺序：标题在中间时卡片和两边选项都藏起来；标题退回左上角后，卡片先出现，两边选项晚半拍再出现 */
+#play .table{transition:opacity .45s ease,transform .45s ease}
+body.lx #play #bL,body.lx #play #bR{transition:opacity .4s ease .5s,transform .2s,box-shadow .2s}
+body.titling #play .table{opacity:0;transform:translateY(16px)}
+body.titling #play #bL,body.titling #play #bR{opacity:0;pointer-events:none;transition:opacity .2s ease 0s}
+body.titling #play #undo,body.titling #play .desk{opacity:0}
