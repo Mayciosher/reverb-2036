@@ -2184,7 +2184,7 @@ function livingCost() {
   return [8, '你一个人住在大城市'];
 }
 function renderYB() {
-  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#ybLock .tt')));
+  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#ybLock .tt'));
   $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
 function buildQueue() {
@@ -2248,7 +2248,7 @@ function renderCard() {
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#yrLock .tt'))) }
+  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
   renderMeters(); renderUndo();
   requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
 }
@@ -2374,7 +2374,7 @@ function finishL1(id, survived) {
   $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;
-  G = null; KEYH = null; show('end'); requestAnimationFrame(() => TT.intro($('#end .lx-head .tt')));
+  G = null; KEYH = null; show('end'); TT.introSoon(() => $('#end .lx-head .tt'));
 }
 
 /* =========================================================
@@ -2394,7 +2394,7 @@ function miniResult(title, text, eff) {
     show('play'); applyYearMusic(); apply(eff); G.cur = null; saveL1(); setTimeout(nextCard, 250);
   };
 }
-function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; requestAnimationFrame(() => TT.intro($('#mini .lx-head .tt'))) }
+function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; TT.introSoon(() => $('#mini .lx-head .tt')) }
 
 /* 1. 上台演出：跟着节拍按键 */
 function rhythm(hard) {
@@ -2728,7 +2728,7 @@ function l2Cards() {
     <div class="letter"><span class="spk">调音婆婆</span><p id="l2tip"></p></div>
     <div class="tarot">${order.map(i => `<div class="tc" data-i="${i}" role="button" tabindex="0" aria-label="一张背面朝上的牌"><div class="back"></div><div class="face"><i>${ROMAN[i]}</i><b>${TAROT[i].n}</b><small></small></div></div>`).join('')}</div>
     <div class="spread slips" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}<button class="btn" id="l2next" hidden>回答婆婆的三个问题</button></div>`;
-  setView('l2', 'tarot'); requestAnimationFrame(() => TT.intro($('#l2lock .tt')));
+  setView('l2', 'tarot'); TT.introSoon(() => $('#l2lock .tt'));
   const tip = h => MO.type($('#l2tip'), h);
   tip(`“第一张是你的<b>过去</b>。别想，凭直觉，${window.SCENE ? '点桌上的一张牌' : '点一张'}。”`);
   if (window.SCENE) { SCENE.tarot(order); SCENE.onPick(k => flip($$('.tc')[k])) }
@@ -3128,7 +3128,7 @@ function l4Ask(i) {
   $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(q.mv ?? i)}</div>
     <div class="booklet"><div class="pg pgL"><div class="bk-h">第${['一', '二', '三', '四'][q.mv ?? i]}乐章 · 乐曲解说</div><p id="l4q"></p><span class="bk-note">没有标准答案，只有真话和假话。</span><span class="bk-no">${i * 2 + 2}</span></div>
       <div class="pg pgR"><div class="bk-h">你的回答 · 圈出一个</div><div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}"><i>${'①②③④'[k]}</i><span>${a[0]}</span><svg class="ink" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M30 8 C110 -4 196 10 190 32 C184 54 60 60 14 46 C-6 38 12 14 52 10"/></svg></button>`).join('')}</div><span class="bk-no">${i * 2 + 3}</span></div></div>`;
-  setView('l4', 'ask'); requestAnimationFrame(() => TT.intro($('#l4lock .tt'))); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
+  setView('l4', 'ask'); TT.introSoon(() => $('#l4lock .tt')); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
   /* 在节目单上用笔圈出答案，圈完翻到下一页 */
   $$('[data-a]').forEach(b => b.onclick = () => { if (b.dataset.busy) return; $$('[data-a]').forEach(x => x.dataset.busy = 1); b.classList.add('circled'); tone(E.sfx, now(), 79, .08, { type: 'triangle', gain: .03, rel: .2 }); setTimeout(() => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) }, 750) });
 }
@@ -3495,9 +3495,12 @@ const TT = (() => {
     return `<div class="tt tt4"><div class="tt-eye">问自己 · 第${ZH[i]}乐章<em>共四乐章</em></div><div class="tt-mvt">${t}</div><div class="tt-tempo"><i>${it}</i>${zh}</div><div class="tt-mv">${[0, 1, 2, 3].map(k => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</div></div>`;
   }
   /* 电影片头式登场：先在画面正中间大大地出现，停一下，再缩回原来的位置 */
+  let owner = null, pending = 0; /* 当前正在登场的标题：只有它自己能结束“片头”状态，避免上一页的计时器提前把选项放出来 */
   function intro(el, hold = 1300) {
-    if (!el || MO.reduce) return;
-    const r = el.getBoundingClientRect(); if (!r.width) return;
+    if (!el || MO.reduce) { if (!owner) document.body.classList.remove('titling'); return }
+    if (owner && owner !== el) { clearTimeout(owner._tt); clearTimeout(owner._tt2); owner.style.transition = ''; owner.style.transform = ''; owner.style.opacity = '' }
+    const r = el.getBoundingClientRect(); if (!r.width) { if (!owner || owner === el) { owner = null; document.body.classList.remove('titling') } return }
+    owner = el;
     const s = Math.min(1.7, (innerWidth * .62) / r.width, (innerHeight * .5) / r.height);
     const dx = innerWidth / 2 - (r.left + r.width / 2), dy = innerHeight * .44 - (r.top + r.height / 2);
     document.body.classList.add('titling');
@@ -3508,9 +3511,11 @@ const TT = (() => {
     /* 先让标题完全退回左上角，中间空出来以后，其他内容再按顺序出现（卡片先，两边选项后） */
     el._tt = setTimeout(() => {
       el.style.transition = 'transform .95s cubic-bezier(.7,0,.2,1)'; el.style.transform = '';
-      el._tt2 = setTimeout(() => { el.style.transition = ''; document.body.classList.remove('titling') }, 980);
+      el._tt2 = setTimeout(() => { el.style.transition = ''; if (owner === el) { owner = null; if (!pending) document.body.classList.remove('titling') } }, 980);
     }, hold);
   }
+  /* 下一帧再登场，但现在就先把中间空出来，免得卡片和选项抢先露一下 */
+  function introSoon(get, hold) { if (MO.reduce) return; document.body.classList.add('titling'); pending++; requestAnimationFrame(() => { pending = Math.max(0, pending - 1); intro(typeof get === 'function' ? get() : get, hold) }) }
   /* 通用标题（非关卡核心画面用），theme 决定用哪一关的字体气质 */
   function gen(eye, title, sub, theme = 'l1') {
     return `<div class="tt ttg ttg-${theme}">${eye ? `<div class="tt-eye2">${eye}</div>` : ''}<div class="tt-gt">${title}</div>${sub ? `<div class="tt-sub2">${sub}</div>` : ''}</div>`;
@@ -3525,9 +3530,9 @@ const TT = (() => {
     if (drop) main.querySelectorAll(drop.split(',').map(x => ':scope > ' + x.trim().replace(/^#\w+ > /, '')).join(',')).forEach(n => n.remove());
     el.innerHTML = `<div class="lx-head">${head}</div>`; el.appendChild(main);
     el.dataset.mat = mat; setView(id, 'duo'); el.scrollTop = 0;
-    if (doIntro) requestAnimationFrame(() => intro(el.querySelector('.lx-head .tt')));
+    if (doIntro) introSoon(() => el.querySelector('.lx-head .tt'));
   }
-  return { l1, l2, l3, l4, gen, duo, intro, MVT };
+  return { l1, l2, l3, l4, gen, duo, intro, introSoon, MVT };
 })();
 window.TT = TT;
 

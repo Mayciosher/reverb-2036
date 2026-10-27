@@ -92,7 +92,7 @@ function l2Cards() {
     <div class="letter"><span class="spk">调音婆婆</span><p id="l2tip"></p></div>
     <div class="tarot">${order.map(i => `<div class="tc" data-i="${i}" role="button" tabindex="0" aria-label="一张背面朝上的牌"><div class="back"></div><div class="face"><i>${ROMAN[i]}</i><b>${TAROT[i].n}</b><small></small></div></div>`).join('')}</div>
     <div class="spread slips" id="spread">${pos.map(p => `<div><b>${p}</b>还没翻开</div>`).join('')}<button class="btn" id="l2next" hidden>回答婆婆的三个问题</button></div>`;
-  setView('l2', 'tarot'); requestAnimationFrame(() => TT.intro($('#l2lock .tt')));
+  setView('l2', 'tarot'); TT.introSoon(() => $('#l2lock .tt'));
   const tip = h => MO.type($('#l2tip'), h);
   tip(`“第一张是你的<b>过去</b>。别想，凭直觉，${window.SCENE ? '点桌上的一张牌' : '点一张'}。”`);
   if (window.SCENE) { SCENE.tarot(order); SCENE.onPick(k => flip($$('.tc')[k])) }
@@ -492,7 +492,7 @@ function l4Ask(i) {
   $('#l4').innerHTML = `<div class="lx-head" id="l4lock">${TT.l4(q.mv ?? i)}</div>
     <div class="booklet"><div class="pg pgL"><div class="bk-h">第${['一', '二', '三', '四'][q.mv ?? i]}乐章 · 乐曲解说</div><p id="l4q"></p><span class="bk-note">没有标准答案，只有真话和假话。</span><span class="bk-no">${i * 2 + 2}</span></div>
       <div class="pg pgR"><div class="bk-h">你的回答 · 圈出一个</div><div class="choices-col programme">${q.a.map((a, k) => `<button class="btn ghost" data-a="${k}"><i>${'①②③④'[k]}</i><span>${a[0]}</span><svg class="ink" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M30 8 C110 -4 196 10 190 32 C184 54 60 60 14 46 C-6 38 12 14 52 10"/></svg></button>`).join('')}</div><span class="bk-no">${i * 2 + 3}</span></div></div>`;
-  setView('l4', 'ask'); requestAnimationFrame(() => TT.intro($('#l4lock .tt'))); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
+  setView('l4', 'ask'); TT.introSoon(() => $('#l4lock .tt')); MO.type($('#l4q'), q.q); MO.rise($('#l4 .choices-col'), 'button');
   /* 在节目单上用笔圈出答案，圈完翻到下一页 */
   $$('[data-a]').forEach(b => b.onclick = () => { if (b.dataset.busy) return; $$('[data-a]').forEach(x => x.dataset.busy = 1); b.classList.add('circled'); tone(E.sfx, now(), 79, .08, { type: 'triangle', gain: .03, rel: .2 }); setTimeout(() => { const a = q.a[+b.dataset.a]; addTags(a[1], L4.tags); if (a[2]) L4.dom[a[2]] = (L4.dom[a[2]] || 0) + 3; L4.ans[q.key] = a[0]; PROG.log.push({ lv: 4, who: '你自己', say: q.q.replace(/<[^>]+>/g, ''), pick: a[0], k: a[1] }); harp(E.sfx, now(), 67, .05); l4Ask(i + 1) }, 750) });
 }

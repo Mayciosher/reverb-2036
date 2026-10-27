@@ -211,7 +211,7 @@ function livingCost() {
   return [8, '你一个人住在大城市'];
 }
 function renderYB() {
-  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#ybLock .tt')));
+  $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#ybLock .tt'));
   $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
 function buildQueue() {
@@ -275,7 +275,7 @@ function renderCard() {
   const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); requestAnimationFrame(() => TT.intro($('#yrLock .tt'))) }
+  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
   renderMeters(); renderUndo();
   requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
 }
@@ -401,7 +401,7 @@ function finishL1(id, survived) {
   $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;
-  G = null; KEYH = null; show('end'); requestAnimationFrame(() => TT.intro($('#end .lx-head .tt')));
+  G = null; KEYH = null; show('end'); TT.introSoon(() => $('#end .lx-head .tt'));
 }
 
 /* =========================================================
@@ -421,7 +421,7 @@ function miniResult(title, text, eff) {
     show('play'); applyYearMusic(); apply(eff); G.cur = null; saveL1(); setTimeout(nextCard, 250);
   };
 }
-function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; requestAnimationFrame(() => TT.intro($('#mini .lx-head .tt'))) }
+function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; TT.introSoon(() => $('#mini .lx-head .tt')) }
 
 /* 1. 上台演出：跟着节拍按键 */
 function rhythm(hard) {

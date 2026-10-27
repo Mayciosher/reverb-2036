@@ -49,9 +49,12 @@ const TT = (() => {
     return `<div class="tt tt4"><div class="tt-eye">问自己 · 第${ZH[i]}乐章<em>共四乐章</em></div><div class="tt-mvt">${t}</div><div class="tt-tempo"><i>${it}</i>${zh}</div><div class="tt-mv">${[0, 1, 2, 3].map(k => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</div></div>`;
   }
   /* 电影片头式登场：先在画面正中间大大地出现，停一下，再缩回原来的位置 */
+  let owner = null, pending = 0; /* 当前正在登场的标题：只有它自己能结束“片头”状态，避免上一页的计时器提前把选项放出来 */
   function intro(el, hold = 1300) {
-    if (!el || MO.reduce) return;
-    const r = el.getBoundingClientRect(); if (!r.width) return;
+    if (!el || MO.reduce) { if (!owner) document.body.classList.remove('titling'); return }
+    if (owner && owner !== el) { clearTimeout(owner._tt); clearTimeout(owner._tt2); owner.style.transition = ''; owner.style.transform = ''; owner.style.opacity = '' }
+    const r = el.getBoundingClientRect(); if (!r.width) { if (!owner || owner === el) { owner = null; document.body.classList.remove('titling') } return }
+    owner = el;
     const s = Math.min(1.7, (innerWidth * .62) / r.width, (innerHeight * .5) / r.height);
     const dx = innerWidth / 2 - (r.left + r.width / 2), dy = innerHeight * .44 - (r.top + r.height / 2);
     document.body.classList.add('titling');
@@ -62,9 +65,11 @@ const TT = (() => {
     /* 先让标题完全退回左上角，中间空出来以后，其他内容再按顺序出现（卡片先，两边选项后） */
     el._tt = setTimeout(() => {
       el.style.transition = 'transform .95s cubic-bezier(.7,0,.2,1)'; el.style.transform = '';
-      el._tt2 = setTimeout(() => { el.style.transition = ''; document.body.classList.remove('titling') }, 980);
+      el._tt2 = setTimeout(() => { el.style.transition = ''; if (owner === el) { owner = null; if (!pending) document.body.classList.remove('titling') } }, 980);
     }, hold);
   }
+  /* 下一帧再登场，但现在就先把中间空出来，免得卡片和选项抢先露一下 */
+  function introSoon(get, hold) { if (MO.reduce) return; document.body.classList.add('titling'); pending++; requestAnimationFrame(() => { pending = Math.max(0, pending - 1); intro(typeof get === 'function' ? get() : get, hold) }) }
   /* 通用标题（非关卡核心画面用），theme 决定用哪一关的字体气质 */
   function gen(eye, title, sub, theme = 'l1') {
     return `<div class="tt ttg ttg-${theme}">${eye ? `<div class="tt-eye2">${eye}</div>` : ''}<div class="tt-gt">${title}</div>${sub ? `<div class="tt-sub2">${sub}</div>` : ''}</div>`;
@@ -79,8 +84,8 @@ const TT = (() => {
     if (drop) main.querySelectorAll(drop.split(',').map(x => ':scope > ' + x.trim().replace(/^#\w+ > /, '')).join(',')).forEach(n => n.remove());
     el.innerHTML = `<div class="lx-head">${head}</div>`; el.appendChild(main);
     el.dataset.mat = mat; setView(id, 'duo'); el.scrollTop = 0;
-    if (doIntro) requestAnimationFrame(() => intro(el.querySelector('.lx-head .tt')));
+    if (doIntro) introSoon(() => el.querySelector('.lx-head .tt'));
   }
-  return { l1, l2, l3, l4, gen, duo, intro, MVT };
+  return { l1, l2, l3, l4, gen, duo, intro, introSoon, MVT };
 })();
 window.TT = TT;
