@@ -224,7 +224,7 @@ function riser(out, t, d, g) {
   s.connect(f); f.connect(a); a.connect(out); s.start(t); s.stop(t + d + .05);
 }
 /* 相机快门：“咔—嚓”两下 */
-function shutter(out, t) { nhit(out, t, { g: .5, f: 3000, d: .025 }); nhit(out, t + .06, { g: .4, type: 'bandpass', f: 1800, d: .05, q: 2 }) }
+function shutter(out, t) { nhit(out, t, { g: 1.1, type: 'highpass', f: 4200, d: .018 }); nhit(out, t + .004, { g: .7, type: 'bandpass', f: 2600, d: .03, q: 3 }); nhit(out, t + .055, { g: .9, type: 'bandpass', f: 1900, d: .045, q: 2.5 }); nhit(out, t + .06, { g: .6, type: 'highpass', f: 5200, d: .02 }) }
 const chordEv = (list, len, g = 1) => list.flatMap(([s, [r, v]]) => [[s, 'b', r, len, g], ...v.map(m => [s, 'pc', m, len, g])]);
 const melEv = (mel, inst = 'p', g = 1, cents) => mel.map(([m, s, d], i) => [s, inst, m, d, g, cents ? cents[i] || 0 : 0]);
 const C_ = [48, [55, 60, 64]], F_ = [41, [57, 60, 65]], G_ = [43, [55, 59, 62]], Am_ = [45, [57, 60, 64]], Dm_ = [38, [57, 62, 65]], E_ = [40, [56, 59, 64]], Em_ = [40, [55, 59, 64]];

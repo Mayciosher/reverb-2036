@@ -58,7 +58,25 @@ function show(id) {
   if (window.SCENE) { if (id === 'hub') SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(id) }
   const el = $('#' + id); if (el && el.scrollTo) el.scrollTo(0, 0);
   if (id === 'play') { renderChans(); updateMood() }
+  const rb = $('[data-rules]'); if (rb) rb.hidden = !rulesFor(id) || id === 'intro';
+  closeRules();
 }
+/* 右上角「？ 游戏规则」：任何时候都能再看一眼这一关的规则 */
+let MINI_RULES = null;
+function rulesFor(id) {
+  if (['intro', 'yearbreak', 'play', 'end'].includes(id)) return ['第一关 · 饿死之前', RULES.l1];
+  if (id === 'mini') return MINI_RULES ? [MINI_RULES[0], MINI_RULES[1]] : ['第一关 · 饿死之前', RULES.l1];
+  if (RULES[id]) return [TITLES[id], RULES[id]];
+  return null;
+}
+function closeRules() { const m = $('#rulesModal'); if (m) m.remove() }
+function openRules() {
+  const r = rulesFor(document.body.dataset.screen); if (!r) return; closeRules();
+  const m = document.createElement('div'); m.id = 'rulesModal'; m.className = 'rules-modal';
+  m.innerHTML = `<div class="rm-card" role="dialog" aria-label="游戏规则"><div class="rm-h"><b>游戏规则</b><span>${r[0]}</span></div><ol class="rules">${r[1].map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('')}</ol><button class="btn" data-rules-close>知道了</button></div>`;
+  document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-rules-close]')) closeRules() });
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-rules]')) openRules() });
 function goHub() {
   if (E.ctx) { E.stopClip(); E.duck(1) }
   if (G) { saveL1(); G = null }
@@ -113,7 +131,6 @@ function renderHub() {
       <span class="no">${L.no}</span>
       <h3>${L.name}${tag}</h3>
       <p>${L.desc}</p>
-      <p class="bgm">背景音乐：<b>${L.bgmName}</b>。${L.bgm}</p>
       <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
     </article>`}).join('');
   let j = '';
@@ -148,30 +165,36 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
-  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') } }
+  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); showStart() } }
   else if (id === 'l2') startL2();
   else if (id === 'l3') startL3();
   else startL4();
 }
 
 /* =========================================================
-   开局：理想的音乐人
+   开局：三个问题放在同一页（理想的音乐人、音乐占几成、以他还是她开始）
    ========================================================= */
-function showIdeal() {
-  $('#ideal').innerHTML = `<span class="eyebrow">开始之前</span><h2 class="big-title">你心里理想的音乐人</h2>
-    <p class="lead">请基于你现在的真实情况想一想：你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
-    <div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div>`;
-  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第一问', '你心里理想的音乐人'), { drop: '.eyebrow,.big-title', intro: true });
-  $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); showShare() });
+function showStart() {
+  const sel = { ideal: PROG.ideal, share: PROG.share, g: PROG.g };
+  const shareIdx = MUSIC_SHARE.findIndex(m => m.v === sel.share);
+  $('#ideal').innerHTML = `<p class="lead">三个问题，按你<b>现在真实的想法</b>选。走完四关以后，会拿你十年里的选择和这一刻的答案对比。</p>
+    <div class="qgroup"><h4><i>1</i>你心里理想的音乐人</h4><div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn${sel.ideal === k ? ' on' : ''}" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div></div>
+    <div class="qgroup"><h4><i>2</i>十年后，音乐在你生活里占几成？</h4><div class="ideals four">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn${shareIdx === i ? ' on' : ''}" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div></div>
+    <div class="qgroup"><h4><i>3</i>以谁开始</h4><div class="ideals two"><button class="ideal-btn${sel.g === 'he' ? ' on' : ''}" data-gg="he"><b>他</b></button><button class="ideal-btn${sel.g === 'she' ? ' on' : ''}" data-gg="she"><b>她</b></button></div></div>
+    <div class="row"><button class="btn" id="startNext" disabled>下一步：看规则</button></div>`;
+  show('ideal'); TT.duo('ideal', TT.gen('开始之前', '先认识一下你', '三个问题'), { intro: true });
+  const upd = () => { $('#startNext').disabled = !(sel.ideal && sel.share != null && sel.g) };
+  const one = (attr, fn) => $$(`[${attr}]`).forEach(b => b.onclick = () => { $$(`[${attr}]`).forEach(x => x.classList.remove('on')); b.classList.add('on'); fn(b.getAttribute(attr)); sfxSwipe(); upd() });
+  one('data-ideal', v => sel.ideal = v); one('data-share', v => sel.share = MUSIC_SHARE[+v].v); one('data-gg', v => sel.g = v);
+  $('#startNext').onclick = () => { Object.assign(PROG, { ideal: sel.ideal, share: sel.share, g: sel.g }); save(); showIntro() };
+  upd();
 }
-function showShare() {
-  $('#ideal').innerHTML = `<span class="eyebrow">开始之前 · 第二问</span><h2 class="big-title">音乐在你生活里，你希望它占几成？</h2>
-    <p class="lead">十年后，也许没有人只做一件事。一个人可以会写歌、会教课、会剪视频、会做生意。“音乐人”可能是你的全部身份，也可能只是你很多能力里的一种。</p>
-    <p class="lead">你希望十年后，音乐在你的生活里占多少？</p>
-    <div class="ideals">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div>`;
-  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第二问', '音乐占几成'), { drop: '.eyebrow,.big-title' });
-  $$('[data-share]').forEach(b => b.onclick = () => { PROG.share = MUSIC_SHARE[+b.dataset.share].v; save(); show('intro') });
+function showIntro() {
+  $('#l1rules').innerHTML = RULES.l1.map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('');
+  show('intro');
 }
+$('#introBack').onclick = () => showStart();
+$('#introGo').onclick = () => { E.init(); newGame(PROG.g || 'she') };
 
 /* =========================================================
    第一关：饿死之前
@@ -183,7 +206,7 @@ function newGame(g) {
   PROG.g = g;
   const ids = GCARDS[g].map(c => c.id);
   G = { year: 0, s: { m: 50, f: 50, l: 50, o: 50 }, flags: {}, used: [], queue: [], cur: null, idx: 0, total: 0, crisisN: {}, gLeft: [...shuffle(ids.slice(0, ids.length - 1)), ids[ids.length - 1]], yb: [], lock: false };
-  E.resetMood(); renderMeters(); yearBreak();
+  E.resetMood(); if (window.ALARM) ALARM.reset(); renderMeters(); yearBreak();
 }
 function yearLayers() { return Object.entries(UNLOCK).filter(([y]) => +y <= G.year).map(([, n]) => n) }
 function applyYearMusic() { STYLES.lofi.bpm = 80 + (G.year - 1); E.play('lofi', yearLayers()); updateMood() }
@@ -266,23 +289,43 @@ function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
   const card = $('#card'); card.className = 'card enter' + (c.crisis ? ' crisis' : ''); card.style.transform = ''; card.style.opacity = '';
   $('#av').textContent = ch; $('#av').style.background = col;
-  $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`;
+  $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`; card.dataset.wt = whoType(c);
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
   MO.type($('#say'), badge + badge2 + c.say);
-  $('#src').textContent = c.real ? '原型：' + c.real : ''; $('#src').hidden = !c.real;
+  $('#src').innerHTML = c.real ? `<button class="src-t" type="button">原型 ▸</button><span class="src-x">${c.real}</span>` : ''; $('#src').hidden = !c.real; $('#src').classList.remove('open');
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
-  const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
+  const lab = o => `${o.t}${optFx(o, c)}`;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
   if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
   renderMeters(); renderUndo();
-  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
+  /* 先发牌：卡片落到中间，停一下，左右两个选项再出现 */
+  const t = TOK; document.body.classList.add('dealing'); clearTimeout(renderCard._t);
+  void card.offsetWidth; setTimeout(() => card.classList.remove('enter'), 30);
+  renderCard._t = setTimeout(() => { if (t === TOK) document.body.classList.remove('dealing') }, 650);
 }
+/* 卡片是谁发来的：家人、行业里的人、AI、意外，用不同颜色区分 */
+function whoType(c) {
+  if (c.crisis) return 'crisis'; if (c.who === '意外') return 'luck';
+  if (/AI|小谱|推推|系统|算法|分身/.test(c.who)) return 'ai';
+  if (/妈|爸|家里|奶奶|爷爷|表哥|表姐|姐姐|哥哥|弟弟|妹妹|对象|伴侣|朋友|室友|邻居|同学|阿飞|内心|你自己/.test(c.who)) return 'near';
+  return 'work';
+}
+/* 选项下面的小标签：这个选择会影响哪几项（只说影响哪几项，不说加减多少） */
+function optFx(o, c) {
+  if (o.mini) return '<span class="fx"><i class="mini">音乐关卡</i></span>';
+  const ks = KEYS.filter(k => (o.e && o.e[k]) || (o.reset && o.reset[k] != null));
+  const turn = c && c.crisis && (o.turn || o.end) ? '<i class="turn">人生转折</i>' : '';
+  if (!ks.length && !turn) return '';
+  return `<span class="fx">${turn}${ks.map(k => `<i data-k="${k}">${STAT[k]}</i>`).join('')}</span>`;
+}
+document.addEventListener('pointerdown', e => { if (e.target.closest('.src-t')) e.stopPropagation() }, true);
+document.addEventListener('click', e => { const b = e.target.closest('.src-t'); if (b) { e.stopPropagation(); const p = b.parentNode; p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '原型 ▾' : '原型 ▸' } }, true);
 function preview(side) {
   KEYS.forEach(k => {
-    const d = document.querySelector(`.meter[data-k="${k}"] .dot`); d.className = 'dot'; if (!side || !G || !G.cur) return; const opt = resolveCard(G.cur)[side];
-    if (opt.mini) { d.className = 'dot s'; return } const v = (opt.e || {})[k]; if (v || (opt.reset && opt.reset[k] != null)) d.className = 'dot ' + (Math.abs(v || 15) >= 12 ? 'b' : 's')
+    const m = document.querySelector(`.meter[data-k="${k}"]`), d = m.querySelector('.dot'); d.className = 'dot'; m.classList.remove('hint'); if (!side || !G || !G.cur) return; const opt = resolveCard(G.cur)[side];
+    if (opt.mini) return; const v = (opt.e || {})[k]; if (v || (opt.reset && opt.reset[k] != null)) { d.className = 'dot ' + (Math.abs(v || 15) >= 12 ? 'b' : 's'); m.classList.add('hint') }
   });
   $('#leanL').classList.toggle('show', side === 'L'); $('#leanR').classList.toggle('show', side === 'R');
 }
@@ -338,12 +381,13 @@ function updateMood() {
   E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d); document.body.classList.toggle('danger', d > .3);
   if (E.ctx) E.lp.frequency.setTargetAtTime(d > .05 ? 18000 * Math.pow(1500 / 18000, d) : 18000, now(), .4);
   if (E.styleKey === 'lofi') E.setLayer('heart', d > .15);
+  if (window.ALARM) ALARM.check(s);
   const notes = [];
   if (d > .15) notes.push('有数值快到极限了，所以出现了心跳声，声音变闷，节奏变快。');
   if (s.l < 30) notes.push('热爱太低，钢琴开始走音。');
   if (s.o < 35) notes.push('原创太低，节奏不再摇摆，长笛（第 7 年起）变成机器音色。');
   const n = STYLES.lofi.layers.filter(L => E.layers[L.name] && !L.hot).length;
-  $('#mnote').textContent = notes.length ? notes.join(' ') : `Lo-fi 爵士 · 每分钟 ${Math.round(STYLES.lofi.bpm * E.tempoMul)} 拍 · ${n} 种乐器在响，每过一年多一种。`;
+  $('#mnote').textContent = '';
 }
 function renderChans() {
   const box = $('#chans'); if (!box) return;
@@ -355,7 +399,6 @@ E.onLite = on => { if (on) toast('检测到设备有点卡，已自动切换到�
 /* 声音开关：每个页面右上角都有，状态全局同步 */
 E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
 document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); if (skipSndToggle) { skipSndToggle = false; return } E.setMute(!E.muted) } });
-$$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); const g = b.dataset.g; calibrate(() => newGame(g)) });
 
 /* =========================================================
    耳机延迟校准：听到“嗒”就点一下，自动算出延迟
@@ -371,8 +414,8 @@ function calibrate(done) {
   show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 10 秒校准', '听到就点一下'), { drop: '.eyebrow,.big-title' });
   const beat = .6; let t0 = 0, taps = [], live = false;
   const dots = $$('#cbeats i');
-  const finish = ms => { PROG.latency = ms; save(); KEYH = null; done() };
-  $('#cskip').onclick = () => finish(PROG.latency || 0);
+  const finish = ms => { if (ms != null) PROG.latency = ms; save(); KEYH = null; done() };
+  $('#cskip').onclick = () => finish(null);
   $('#cgo').onclick = () => {
     $('#cgo').disabled = true; taps = []; t0 = now() + .8; live = true; $('#ctap').disabled = false; $('#cst').textContent = '听……';
     E.playClip(bus => { for (let i = 0; i < 8; i++) { tone(bus, t0 + i * beat, 84, .05, { type: 'triangle', gain: .3, att: .001, rel: .06 }); E.later(() => dots[i] && dots[i].classList.add('on'), (t0 + i * beat - now()) * 1000) } return 8 * beat + 1.2 }, .05, () => {
@@ -388,7 +431,7 @@ function calibrate(done) {
   $('#ctap').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
   KEYH = e => { if (e.key === ' ') { tap(); return true } };
 }
-const LAT = () => (PROG.latency || 0) / 1000;
+const LAT = () => PROG.latency != null ? PROG.latency / 1000 : (E.ctx ? Math.min(.3, (E.ctx.outputLatency || 0) + (E.ctx.baseLatency || 0)) : 0);
 
 function finishL1(id, survived) {
   const en = ENDINGS[id];

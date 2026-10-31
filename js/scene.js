@@ -87,7 +87,8 @@ const SCENE = (() => {
     const s2 = new THREE.Mesh(new THREE.IcosahedronGeometry(.32, 1), gb); s2.scale.set(1, 1, .25); s2.position.y = .15; gt.add(s2);
     gt.add(box(.1, 1.2, .06, '#5a3a24', 0, .85, 0)); gt.add(box(.18, .26, .06, '#3a2416', 0, 1.55, 0));
     [['#e6b34f', 2.2, -1.2, 1, 1.3], ['#5a7fd6', 2.4, -2.6, .8, .8]].forEach(p => room.add(box(.03, p[3], p[4], p[0], -3.98, p[1], p[2])));
-    [['#c0646f', 2.9, 2.2, .9, 1.2], ['#3aa58c', 3.3, 2.3, .6, .6]].forEach(p => room.add(box(p[3], p[4], .03, p[0], p[1], p[2], -3.98)));
+    /* 两张海报叠在一起时要前后错开，否则会因为在同一个平面上而来回闪 */
+    [['#c0646f', 2.9, 2.2, .9, 1.2, -3.98], ['#5fae96', 3.3, 2.3, .6, .6, -3.93]].forEach(p => room.add(box(p[3], p[4], .03, p[0], p[1], p[2], p[5])));
     const rug = cyl(1.5, 1.5, .03, 12, '#7a5a8e', .4, .02, -.6); room.add(rug);
     const plant = new THREE.Group(); room.add(plant); plant.position.set(3.5, 0, -.4);
     plant.add(box(.5, .5, .5, '#b5813a', 0, .25, 0));
@@ -140,7 +141,7 @@ const SCENE = (() => {
       frame(t, beat, ph, newBeat) {
         const pulse = beat == null ? 0 : Math.pow(1 - ph, 3);
         spk.forEach(g => g.scale.set(1 + pulse * .07, 1 + pulse * .1, 1 + pulse * .07));
-        const flick = danger > .3 ? (Math.sin(t / 37) * Math.sin(t / 91) > .6 ? .35 : 1) : 1;
+        const flick = danger > .3 ? (Math.sin(t / 37) * Math.sin(t / 91) > .75 ? .75 : 1) : 1;
         bulb.intensity = (1.45 + pulse * .45) * flick * (1 - danger * .35); shade.material.emissiveIntensity = (.5 + pulse * .4) * flick;
         bulb.color.setRGB(1, .72 - danger * .2, .44 - danger * .2);
         if (newBeat && beat % 2 === 0) { const sp = spk[(beat / 2) % 2]; notes.emit(t, sp.position.x, 1.1, sp.position.z + .2) }
