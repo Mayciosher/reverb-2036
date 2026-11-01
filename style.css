@@ -854,3 +854,188 @@ body.lx #play #bL,body.lx #play #bR{transition:opacity .4s ease .5s,transform .2
 body.titling #play .table{opacity:0;transform:translateY(16px)}
 body.titling #play #bL,body.titling #play #bR{opacity:0;pointer-events:none;transition:opacity .2s ease 0s}
 body.titling #play #undo,body.titling #play .desk{opacity:0}
+
+/* ===== 第八版：规则、开局、卡片来源、选项标签 ===== */
+.tb-r{display:flex;gap:8px;align-items:center}
+.rules-h{margin:0 0 4px;font:700 22px var(--f-display);letter-spacing:.12em;color:inherit;display:flex;align-items:center;gap:10px}
+.rules-h::before{content:"";width:6px;height:22px;border-radius:3px;background:var(--brass)}
+.rules .rt{font-size:18px}
+.rules p{font-size:16px}
+.rules-modal{position:fixed;inset:0;z-index:70;background:rgba(10,7,16,.55);display:grid;place-items:center;padding:16px;animation:rmIn .25s ease}
+@keyframes rmIn{from{opacity:0}}
+.rm-card{width:min(560px,100%);max-height:86vh;overflow:auto;background:linear-gradient(170deg,#fffaf3,#f2e8da);color:#2b2230;border-radius:18px;padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 3px 0 #d8c8b6,0 6px 0 #c2ad97,0 30px 60px rgba(0,0,0,.55);transform:rotate(-.6deg)}
+.rm-h{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid #2b2230;padding-bottom:8px}
+.rm-h b{font:700 24px var(--f-display);letter-spacing:.14em}
+.rm-h span{font-size:13px;color:#7a6d78}
+.rm-card .rules li{background:rgba(255,255,255,.55);border-color:rgba(43,34,48,.14)}
+.rm-card .rules .rt{color:#2b2230}.rm-card .rules p{color:#4a4050}
+.rm-card .btn{align-self:flex-end}
+/* 开局三个问题 */
+.qgroup{display:flex;flex-direction:column;gap:8px}
+.qgroup h4{margin:0;font-size:17px;display:flex;align-items:center;gap:8px}
+.qgroup h4 i{font:700 13px var(--f-mono);font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--brass);color:#24180a}
+.ideals.four{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.ideals.two{grid-template-columns:repeat(2,minmax(0,160px))}
+.ideals.two .ideal-btn{align-items:center}.ideals.two .ideal-btn b{font-size:20px}
+body.lx [data-view="duo"]:not([data-mat="desk"]) > .lx-main .ideal-btn.on{box-shadow:inset 0 0 0 2.5px #c04a16;background:rgba(255,236,214,.95)}
+body.lx #ideal .lx-main{gap:16px}
+body.lx #ideal .ideal-btn{padding:10px 12px}
+/* 卡片：谁发来的，像聊天消息的抬头一样醒目 */
+.card .whois{height:auto;padding:8px 10px;margin:-4px -6px 4px;border-radius:12px;background:var(--wt,rgba(120,100,140,.12))}
+.card .whois b{font-size:20px;letter-spacing:.04em}
+.card .whois b::before{content:"来自 ";font-size:12px;font-weight:600;letter-spacing:.1em;opacity:.6;margin-right:2px}
+.card[data-wt="near"]{--wt:rgba(224,140,90,.18)}
+.card[data-wt="work"]{--wt:rgba(90,127,214,.15)}
+.card[data-wt="ai"]{--wt:rgba(122,90,214,.18)}
+.card[data-wt="luck"]{--wt:rgba(63,143,106,.18)}
+.card[data-wt="crisis"]{--wt:rgba(192,70,79,.18)}
+/* 原型默认收起，点开才看 */
+.src .src-t{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:#9a5b2a}
+.src .src-x{display:none}
+.src.open .src-x{display:block;margin-top:4px}
+/* 选项下面：这个选择会影响哪几项 */
+#play .fx{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px}
+#play .fx i{font-style:normal;font:700 11px var(--f-body);padding:2px 7px;border-radius:999px;background:rgba(43,34,48,.1);color:rgba(43,34,48,.75);letter-spacing:.05em}
+#play .fx i.mini{background:rgba(227,169,60,.3)}
+#play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
+#play #bL em,#play #bR em{display:flex;flex-direction:column;align-items:center}
+/* 数值提示：鼠标移到选项上，会影响的那几项发亮 */
+.meter.hint .track{box-shadow:0 0 0 2px rgba(255,230,170,.9),0 0 12px rgba(255,210,120,.6)}
+.meter.hint .mlab{color:#ffe1a0}
+/* 每张卡都是：卡片先落下，左右选项再出现 */
+body.dealing #play #bL,body.dealing #play #bR{opacity:0;pointer-events:none;transition:opacity .15s ease 0s}
+#play #bL,#play #bR{transition:opacity .35s ease,transform .2s,box-shadow .2s}
+body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .2s,box-shadow .2s}
+/* 选完以后的“后来……”纸条 */
+.after-note{position:absolute;left:50%;top:50%;z-index:6;width:min(420px,90%);transform:translate(-50%,-50%) rotate(-1.5deg);background:#fffaf0;color:#2b2230;border-radius:4px;padding:18px 20px 12px;
+  box-shadow:0 2px 0 #e6d9c6,0 18px 40px rgba(0,0,0,.45);cursor:pointer;animation:afterIn .35s cubic-bezier(.2,1.2,.4,1)}
+.after-note::before{content:"";position:absolute;top:-10px;left:50%;width:76px;height:22px;margin-left:-38px;background:rgba(255,255,255,.6);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.after-note i{font-style:normal;font:700 13px var(--f-display);letter-spacing:.3em;color:#a0522d}
+.after-note p{margin:6px 0 8px;font-size:18px;line-height:1.65}
+.after-note small{display:block;text-align:right;font-size:12px;color:#9a8c96}
+.after-note.out{opacity:0;transform:translate(-50%,-46%) rotate(-1.5deg);transition:.22s}
+@keyframes afterIn{from{opacity:0;transform:translate(-50%,-40%) rotate(-4deg)}}
+#play .table{position:relative}
+
+/* ===== 第八版：十个音乐小游戏 ===== */
+.mg-rules{display:flex;flex-direction:column;gap:14px}
+.mg-go{font-size:20px;padding:14px 40px}
+.combo{position:absolute;right:8px;top:8px;z-index:3;display:flex;align-items:baseline;gap:4px;font:700 13px var(--f-body);color:#9a8c96;pointer-events:none}
+.combo b{font:700 26px var(--f-mono);color:#2b2230;transition:color .2s}
+.combo.hot b{color:#d0571c}.combo.pop b{animation:comboPop .3s ease}
+@keyframes comboPop{50%{transform:scale(1.4)}}
+#miniBody{position:relative}
+.mg-res .stars{display:flex;gap:6px;font-size:46px;line-height:1}
+.mg-res .stars i{font-style:normal;color:rgba(43,34,48,.18)}
+.mg-res .stars i.on{color:#e3a93c;text-shadow:0 2px 0 #a8731f,0 6px 14px rgba(227,169,60,.5);animation:starIn .5s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(var(--i) * .25s)}
+@keyframes starIn{from{transform:scale(0) rotate(-40deg);opacity:0}}
+.mg-res .near{margin:0;font-weight:700;color:#c0464f;font-size:17px}
+.mg-res .mg-best{margin:0;font:600 14px var(--f-mono);color:#7a6d78}.mg-res .mg-best b{color:#d0571c}
+.mg-res .mg-detail{margin:0;font-size:15px}
+.stars-s{color:#e3a93c;letter-spacing:2px}
+.ear-q{display:flex;flex-direction:column;gap:12px}
+.ear-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ear-o{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:17px;padding:14px 10px}
+.ear-o small{font-size:12px;opacity:.7;font-weight:500}
+.ear-o.right,.arr-row.right .arr-o.on{box-shadow:inset 0 0 0 2.5px #3f8f6a!important;background:rgba(63,143,106,.15)!important}
+.ear-o.wrong,.arr-row.wrong .arr-o.on{box-shadow:inset 0 0 0 2.5px #c0464f!important;background:rgba(192,70,79,.12)!important}
+/* 坏掉的节拍器 */
+.metro-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.metro{all:unset;cursor:pointer;position:relative;width:190px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.35));transition:transform .08s}
+.metro svg{width:100%;display:block}
+.metro.hit{transform:scale(.96) translateY(3px)}
+.metro.broken #pend{transition:transform .6s}
+.metro-hint{display:block;text-align:center;font-size:13px;color:#7a6d78;margin-top:4px}
+/* 镲和小节 */
+.barcount{display:flex;justify-content:center;gap:8px;min-height:40px;align-items:center}
+.barcount i{font-style:normal;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font:700 18px var(--f-mono);background:rgba(43,34,48,.08);transition:.15s}
+.barcount i.on{background:#e3a93c;color:#24180a;transform:translateY(-3px)}
+.barcount em{font-style:normal;color:#7a6d78}
+.cymbal{all:unset;cursor:pointer;align-self:center;width:180px;height:180px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 50%,#3b2a14 0 9px,#f6d58a 10px,#d9a640 38%,#f3cf7a 56%,#b8862e 80%,#e8c06a 100%);box-shadow:0 10px 0 #8a6422,0 20px 30px rgba(0,0,0,.35);transform:rotateX(35deg);transition:transform .1s}
+.cymbal span{font:700 22px var(--f-display);color:#5a3e10;opacity:.6}
+.cymbal.hit{transform:rotateX(35deg) rotate(8deg) scale(.95);box-shadow:0 4px 0 #8a6422,0 0 40px rgba(255,220,120,.9)}
+/* 编曲拼图 */
+.arr{display:flex;flex-direction:column;gap:10px}
+.arr-row{display:grid;grid-template-columns:48px repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.arr-row b{display:grid;place-items:center;font-size:15px}
+.arr-o{all:unset;cursor:pointer;border-radius:10px;padding:10px 8px;background:rgba(43,34,48,.06);box-shadow:inset 0 0 0 1px rgba(43,34,48,.18);display:flex;flex-direction:column;gap:3px;text-align:center;font-size:14px;font-weight:600}
+.arr-o i{font-style:normal;font-size:11px;font-weight:500;opacity:.6}
+.arr-o.on{box-shadow:inset 0 0 0 2.5px #d0571c;background:rgba(255,220,180,.6)}
+/* 越来越长的旋律 */
+.simon{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:10px 0}
+.pad{all:unset;cursor:pointer;aspect-ratio:1/1.3;border-radius:14px;background:var(--c);opacity:.55;display:grid;place-items:end center;padding-bottom:10px;box-shadow:0 6px 0 rgba(0,0,0,.25);transition:opacity .08s,transform .08s}
+.pad b{font:700 18px var(--f-mono);color:rgba(30,20,30,.6)}
+.pad.lit{opacity:1;transform:translateY(-4px);box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px var(--c)}
+.pad.want{outline:3px dashed #c0464f;outline-offset:3px}
+.orch{display:flex;justify-content:center;gap:14px;font-size:28px;opacity:.75}
+.stage-card{display:grid;place-items:center;min-height:240px;font:400 40px var(--f-display);text-align:center;gap:6px;animation:afterIn .4s ease}
+.stage-card b{display:block;font-size:16px;letter-spacing:.3em;color:#d0571c}
+.ai-round{display:flex;flex-direction:column;gap:12px}
+.ai-round .clip.right{box-shadow:inset 0 0 0 2.5px #3f8f6a}.ai-round .clip.wrong{box-shadow:inset 0 0 0 2.5px #c0464f}
+
+/* ===== 第八版：第二关命盘和带进第三关的牌 ===== */
+.chart{display:flex;flex-direction:column;gap:12px;padding:16px 18px;border-radius:12px;background:rgba(255,250,240,.55);box-shadow:inset 0 0 0 1px rgba(90,60,30,.25)}
+.chart .ch-h{display:flex;flex-direction:column;gap:2px}
+.chart .ch-h span{font-size:12px;letter-spacing:.3em;color:#9a5b2a}
+.chart .ch-h b{font:400 34px var(--f-display);color:#2b2230}
+.chart .ch-h em{font-style:normal;font-size:14px;color:#7a6d78}
+.chart dl{display:grid;grid-template-columns:7em 1fr;gap:8px 12px;margin:0}
+.chart dt{font-weight:700;color:#9a5b2a;font-size:14px}
+.chart dd{margin:0;font-size:15px;line-height:1.7}
+.fx3{display:block;font-style:normal;font-size:12px;margin-top:4px;font-weight:700}
+.fx3.up,.fxl li.up b{color:#2f7a58}.fx3.down,.fxl li.down b{color:#b0444f}
+.fxl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.fxl b{margin-right:6px}
+
+/* ===== 第八版：第三关收入、口碑、奖励 ===== */
+.od-pay{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(38,34,46,.3)}
+.od-pay b{font:700 16px var(--f-mono);color:#c04a16}
+.od-pay em,.fxtag{font-style:normal;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:6px}
+.up{color:#2f7a58}.down{color:#b0444f}
+.fxtag.up,.od-pay em.up{background:rgba(63,143,106,.15)}.fxtag.down{background:rgba(192,70,79,.14);color:#b0444f}
+#l3timer{font:700 15px var(--f-mono);color:#c0464f}
+.clip.struck{opacity:.4;position:relative}
+.clip.struck::after{content:"✕ 好耳朵帮你划掉了";position:absolute;inset:auto 0 40%;text-align:center;font:700 13px var(--f-body);color:#b0444f;transform:rotate(-8deg)}
+.gait{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:12px;color:#7a6d78}
+.gait i{width:16px;height:24px;border-radius:50% 50% 45% 45%;background:#5a4f60;opacity:.25;animation:step calc(var(--st) * 2) steps(1) infinite}
+.gait i:nth-child(2){animation-delay:var(--st)}
+@keyframes step{0%{opacity:1;transform:translateY(-3px)}50%{opacity:.25;transform:none}}
+.receipt{display:flex;flex-direction:column;gap:6px}
+.rc-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rc-h span{font:700 18px var(--f-mono);color:#2f7a58}
+.rc-say{margin:0;font-size:15px;font-style:italic}
+.rc-win{margin:0;font-weight:700;color:#2f7a58}
+.rc-note{margin:0;color:#b0444f;font-size:14px}
+.rc-why summary{cursor:pointer;font-size:13px;color:#9a5b2a;font-weight:700}
+.rc-why p{font-size:14px;line-height:1.7}
+.ev-fb{margin:8px 0 0;font-weight:700;color:#9a5b2a}.ev-fb small{font-weight:500;color:#7a6d78}
+.event .btn.picked{box-shadow:inset 0 0 0 2px #c04a16}
+.dayreceipt{background:#f7f5ef;color:#26222e;padding:16px 18px;border-radius:4px;box-shadow:0 14px 30px rgba(0,0,0,.35);font-size:14px;display:flex;flex-direction:column;gap:6px;max-width:440px;
+  -webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle at 6px 100%,transparent 5px,#000 5.5px) bottom/12px 8px repeat-x;mask:linear-gradient(#000,#000) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle at 6px 100%,transparent 5px,#000 5.5px) bottom/12px 8px repeat-x}
+.dr-h{display:flex;justify-content:space-between;border-bottom:2px solid #26222e;padding-bottom:6px;margin-bottom:4px}
+.dr-h b{font:700 18px var(--f-display);letter-spacing:.2em}
+.dr-row{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono)}
+.dr-sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #26222e;border-bottom:1px dashed #26222e;padding:6px 0;margin:4px 0}
+.dr-sum b{font:700 24px var(--f-mono);color:#c04a16}
+.dr-wins{display:flex;flex-direction:column;gap:3px;margin-top:4px}.dr-wins b{font-size:13px;color:#9a5b2a}.dr-wins span::before{content:"🎁 "}
+
+/* ===== 第八版：关卡之间的房间 ===== */
+#transit{display:flex;align-items:flex-end;justify-content:center;padding-bottom:6vh}
+#transit[hidden]{display:none}
+.tr-plaque{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:18px 28px 16px;border-radius:6px;background:linear-gradient(170deg,#fffaf3,#efe3d2);color:#2b2230;
+  box-shadow:0 3px 0 #d8c8b6,0 6px 0 #c2ad97,0 26px 50px rgba(0,0,0,.5);transform:rotate(-1deg);animation:afterIn .5s ease .3s both;max-width:min(520px,92vw)}
+.tr-plaque .eyebrow{color:#9a5b2a}
+.tr-plaque b{font:400 34px var(--f-display)}
+.tr-plaque p{margin:0;color:#5a5266}
+.rv p{margin:0 0 8px;line-height:1.7}.rv .final{margin-top:6px}
+body.lx #transit,#transit{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 16px 7vh;pointer-events:none;grid-template-columns:none}
+#transit[hidden]{display:none!important}
+.rv .final div{background:rgba(43,34,48,.08)!important;color:#2b2230}
+.rv .final b{color:#2b2230!important}.rv .final span{color:#6a5d68!important}
+/* 手机竖屏：顶栏放不下时，收起标题，按钮变短 */
+.topbar .home{white-space:nowrap}
+@media (max-width:560px){ .topbar #topTitle{display:none} .tb-r{gap:6px} .tb-r .home{padding:6px 10px;font-size:12px} }
+body:not(.lx) #play .fx i{background:rgba(255,255,255,.12);color:var(--soft)}
+body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}

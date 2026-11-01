@@ -87,7 +87,8 @@ const SCENE = (() => {
     const s2 = new THREE.Mesh(new THREE.IcosahedronGeometry(.32, 1), gb); s2.scale.set(1, 1, .25); s2.position.y = .15; gt.add(s2);
     gt.add(box(.1, 1.2, .06, '#5a3a24', 0, .85, 0)); gt.add(box(.18, .26, .06, '#3a2416', 0, 1.55, 0));
     [['#e6b34f', 2.2, -1.2, 1, 1.3], ['#5a7fd6', 2.4, -2.6, .8, .8]].forEach(p => room.add(box(.03, p[3], p[4], p[0], -3.98, p[1], p[2])));
-    [['#c0646f', 2.9, 2.2, .9, 1.2], ['#3aa58c', 3.3, 2.3, .6, .6]].forEach(p => room.add(box(p[3], p[4], .03, p[0], p[1], p[2], -3.98)));
+    /* 两张海报叠在一起时要前后错开，否则会因为在同一个平面上而来回闪 */
+    [['#c0646f', 2.9, 2.2, .9, 1.2, -3.98], ['#5fae96', 3.3, 2.3, .6, .6, -3.93]].forEach(p => room.add(box(p[3], p[4], .03, p[0], p[1], p[2], p[5])));
     const rug = cyl(1.5, 1.5, .03, 12, '#7a5a8e', .4, .02, -.6); room.add(rug);
     const plant = new THREE.Group(); room.add(plant); plant.position.set(3.5, 0, -.4);
     plant.add(box(.5, .5, .5, '#b5813a', 0, .25, 0));
@@ -116,7 +117,8 @@ const SCENE = (() => {
       const name = L.name.replace('2036 · ', ''); const lines = name.length > 6 ? [name.slice(0, 5), name.slice(5)] : [name];
       lines.forEach((ln, k) => g.fillText(ln, 30, 320 + k * 50));
       g.font = '500 24px "Noto Sans SC",sans-serif'; g.fillStyle = state === 'locked' ? '#8a8399' : 'rgba(29,22,38,.78)';
-      g.fillText(state === 'done' ? '已完成' : state === 'now' ? '下一关 · 点我' : '完成上一关后解锁', 30, 460);
+      g.fillText(state === 'done' ? '已完成 · 点我回看' : state === 'now' ? '下一关 · 点我' : '完成上一关后解锁', 30, 460);
+      if (state === 'done' && L.result) { g.font = '700 26px "Noto Sans SC",sans-serif'; g.fillStyle = '#1d1626'; const r = L.result.length > 11 ? L.result.slice(0, 11) + '…' : L.result; g.fillText(r, 30, 412) }
       if (state === 'done') { g.save(); g.translate(250, 120); g.rotate(-.3); g.strokeStyle = '#1d1626'; g.lineWidth = 6; g.strokeRect(-70, -28, 140, 56); g.font = '700 30px "Noto Sans SC",sans-serif'; g.fillStyle = '#1d1626'; g.textAlign = 'center'; g.fillText('走过了', 0, 11); g.restore() }
       const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
     }
@@ -125,6 +127,14 @@ const SCENE = (() => {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1.4), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .7, emissive: '#ffffff', emissiveIntensity: 0 }));
       m.position.set(3.98, 2.1, z); m.rotation.y = -Math.PI / 2; m.userData.poster = i; room.add(m); posters.push(m) });
     let posterState = [], hoverPoster = -1;
+    const gal = new THREE.Group(); room.add(gal);
+    const GAL_COL = ['#e3a93c', '#c0646f', '#5a7fd6', '#3aa58c', '#d08a3a', '#7a5ad6', '#e07b5b', '#2f8a9c'];
+    function setGallery(n) {
+      gal.clear();
+      for (let k = 0; k < n; k++) { const row = Math.floor(k / 10), col = k % 10;
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(.2, .27), new THREE.MeshStandardMaterial({ color: GAL_COL[k % GAL_COL.length], roughness: .8, emissive: GAL_COL[k % GAL_COL.length], emissiveIntensity: .15 }));
+        m.position.set(3.97, 1.2 - row * .33, -2.95 + col * .27); m.rotation.y = -Math.PI / 2; m.rotation.x = (k % 3 - 1) * .06; gal.add(m) }
+    }
     function setPosters(list) { posterState = list.map(x => x.state); list.forEach((L, i) => { const m = posters[i].material; if (m.map) m.map.dispose(); m.map = posterTex(i, L, L.state); m.emissiveMap = m.map; m.needsUpdate = true }) }
     S.add(new THREE.HemisphereLight('#a79fe0', '#3a2630', .62));
     const moonL = new THREE.DirectionalLight('#9fb2ff', .55); moonL.position.set(3, 8, -14); moonL.castShadow = true; moonL.shadow.mapSize.set(1024, 1024);
@@ -134,13 +144,13 @@ const SCENE = (() => {
     function setYear(y) { year = y; extra.forEach(o => o.visible = y >= o.userData.y); buildCity(y) }
     setYear(0);
     return {
-      S, setYear, setDanger(d) { danger = d }, setPosters, pick: posters, hover(i) { hoverPoster = i },
+      S, setYear, setDanger(d) { danger = d }, setPosters, setGallery, pick: posters, hover(i) { hoverPoster = i },
       cam: { pos: [.7, 1.5, 3.3], look: [.5, .15, -4], fov: 56, k: [2.4, .7] },
-      views: { hub: { pos: [-1.6, 1.65, 3.1], look: [4, 2.05, -.7], fov: 52, k: [1.4, .5] } },
+      views: { hub: { pos: [-1.6, 1.65, 3.1], look: [4, 2.05, -.7], fov: 52, k: [1.4, .5] }, wall: { pos: [-.4, 1.8, 1.6], look: [4, 1.7, -.6], fov: 60, k: [.4, .2] }, ...Object.fromEntries([-2.5, -1.25, 0, 1.25].map((z, i) => ['p' + i, { pos: [1.7, 2.1, z + .15], look: [4, 2.08, z], fov: 46, k: [.2, .1] }])) },
       frame(t, beat, ph, newBeat) {
         const pulse = beat == null ? 0 : Math.pow(1 - ph, 3);
         spk.forEach(g => g.scale.set(1 + pulse * .07, 1 + pulse * .1, 1 + pulse * .07));
-        const flick = danger > .3 ? (Math.sin(t / 37) * Math.sin(t / 91) > .6 ? .35 : 1) : 1;
+        const flick = danger > .3 ? (Math.sin(t / 37) * Math.sin(t / 91) > .75 ? .75 : 1) : 1;
         bulb.intensity = (1.45 + pulse * .45) * flick * (1 - danger * .35); shade.material.emissiveIntensity = (.5 + pulse * .4) * flick;
         bulb.color.setRGB(1, .72 - danger * .2, .44 - danger * .2);
         if (newBeat && beat % 2 === 0) { const sp = spk[(beat / 2) % 2]; notes.emit(t, sp.position.x, 1.1, sp.position.z + .2) }
@@ -378,12 +388,13 @@ const SCENE = (() => {
     R.render(cur.S, cam);
   }
   requestAnimationFrame(loop);
-  const SCREEN = { hub: 'room', ideal: 'room', intro: 'room', yearbreak: 'room', play: 'room', mini: 'room', end: 'room', l2: 'shop', l3: 'street', l4: 'hall', portrait: 'hall' };
+  const SCREEN = { transit: 'room', hub: 'room', ideal: 'room', intro: 'room', yearbreak: 'room', play: 'room', mini: 'room', end: 'room', l2: 'shop', l3: 'street', l4: 'hall', portrait: 'hall' };
   return {
     go(screenId) { const k = SCREEN[screenId] || 'room'; if (k === curKey) return; curKey = k; cur = get(k); host.dataset.scene = k; snap = true; onPick = null },
     view(name) { viewName = name || '' },
     onPick(fn) { onPick = fn },
     posters(list) { get('room').setPosters(list) },
+    gallery(n) { get('room').setGallery(n) },
     tarot(list) { get('shop').tarot(list) }, flip(k, r, n, l) { get('shop').flip(k, r, n, l) }, dimRest() { get('shop').dimRest() },
     year(y) { get('room').setYear(y) },
     danger(d) { if (built.room) built.room.setDanger(d) },

@@ -10,16 +10,23 @@
 | 标着“真实故事改编”的卡 | `CARDS` 里带 `real` 字段的卡；出处列在 `docs/真实案例来源.md` |
 | 第一关的“意外” | `js/data.js` 里的 `SURPRISES` |
 | 每年的生活开销（跟住处走）、名气的自然下降 | `js/game.js` 的 `yearBreak` 和 `livingCost`；搬家、合租的卡片在 `CARDS` 里（`k62`、`k63`） |
-| 耳机延迟校准 | `js/game.js` 的 `calibrate` |
+| 耳机延迟 | 默认自动估算（`js/game.js` 的 `LAT`）；手动校准在 `calibrate`，主页和节奏类小游戏的规则页都能打开 |
 | 选“他”或“她”时出现的题目 | `js/data.js` 里的 `GCARDS.he` / `GCARDS.she` |
-| 每年的音乐关卡（演出、调弦、听音、稳拍、人机辨听）的开场对话 | `js/data.js` 里的 `MINIS` |
-| 音乐关卡本身的玩法、评分 | `js/game.js` 里的 `rhythm`、`tune`、`memory`、`tempoGame`、`aiTest` |
-| 红框的“人生岔路” | `js/data.js` 里的 `CRISIS` |
+| 每年的音乐关卡的开场对话（每年一个，十年十种玩法） | `js/data.js` 里的 `MINIS` |
+| 音乐关卡本身的玩法、规则、星级、结算文字 | `js/minis.js`：`MINI_DEF` 是十个游戏的规则和结算文字，`gRhythm` 到 `gFinale` 是玩法。每种能力只考一次，见 `docs/能力分配表.md` |
+| 红框的“人生转折”（不会提前结束游戏） | `js/data.js` 里的 `CRISIS` 和 `TURN_AFTER`；处理在 `js/game.js` 的 `choose` |
+| 每一关的游戏规则（规则页和右上角「？ 游戏规则」） | `js/data.js` 里的 `RULES` |
+| 数值告急时的警报和手机通知 | `js/alarm.js` |
+| 选完以后出现的“后来……” | 每张卡选项里的 `a` 字段 |
+| 每年抽哪几张卡（真实故事、身份卡、短卡、回响或意外） | `js/game.js` 的 `buildQueue` |
+| 名气带来的商演收入、争议的代价 | `js/game.js` 的 `fameIncome`；争议选项带 `set: 'scandal'` |
+| 后悔药 | `js/game.js` 的 `undo`（每颗热爱 −3） |
+| 关卡之间回到房间、海报盖章、墙上的结局卡片、回看 | `js/game.js` 的 `transit`、`openReview`；3D 部分在 `js/scene.js` 的 `setPosters`、`setGallery` |
 | 第一关的 19 种结局、结局文字 | `js/data.js` 里的 `ENDINGS` 和 `finalEnding` |
 | 开局选的理想音乐人、音乐占几成 | `js/data.js` 里的 `IDEALS`、`MUSIC_SHARE` |
-| 第二关：调音婆婆、塔罗牌、三个问题、签文 | `js/data.js` 里的 `TAROT`、`SOUL_Q`、`HURDLES`、`NOUN`、`ADJ`；流程在 `js/levels.js` 的 `startL2` 到 `l2Fortune` |
+| 第二关：命盘、塔罗牌（以及它们带进第三关的效果）、问题、签文 | `js/data.js` 里的 `CHART_TYPE`、`CHART_ADVICE`、`TAROT`、`TAROT_FX`、`SOUL_Q`、`HURDLES`、`NOUN`、`ADJ`；流程在 `js/levels.js` 的 `startL2` 到 `l2Fortune` |
 | 第二关的命运旋律 | `js/levels.js` 的 `fateMelody` |
-| 第三关：身份池、每个身份的小插曲、按“音乐占几成”分配身份 | `js/data.js` 的 `L3_ROLES`、`l3MusicCount`；题目和音乐片段在 `js/levels.js` 的 `TASKS`；每个身份的背景音乐在 `js/audio.js` 的 `STYLES`（`jazz`、`bossa` 等） |
+| 第三关：身份池、每个身份的小插曲、报酬和奖励、按“音乐占几成”分配身份 | `js/data.js` 的 `L3_ROLES`、`L3_WORK`、`l3MusicCount`；题目和音乐片段在 `js/levels.js` 的 `TASKS`；每个身份的背景音乐在 `js/audio.js` 的 `STYLES`（`jazz`、`bossa` 等） |
 | 第四关：回望、四个问题、写 4 个音、管弦乐 | `js/levels.js` 的 `startL4`、`l4Questions`、`orchFinale` |
 | 画像的分享海报 | `js/levels.js` 的 `makePoster` |
 | 最后的音乐人格画像、身份光谱、建议 | 文字在 `js/data.js` 的 `TRAITS`、`ADVICE`、`DOMAINS`；排版在 `js/levels.js` 的 `buildPortrait`、`showPortrait`、`identSection` |
@@ -50,7 +57,7 @@
 ## 技术说明
 
 - 纯静态网页，没有构建步骤，没有依赖。直接双击 `index.html` 就能运行。
-- 所有声音由 Web Audio 实时合成，没有音频文件。
+- 钢琴、弦乐、竖琴、小号、圆号、长笛、钟琴用真乐器采样（打包在 `js/samples.js`，用 `tools/build_samples.py` 生成，许可见 `LICENSE`）；鼓、贝斯、合成器等其余声音由 Web Audio 实时合成。采样还没解码完时，会先用合成音色顶上。
 - 背景的 3D 场景由 Three.js（`js/vendor/three.min.js`，r128，MIT 许可）实时渲染，已下载到本地，不依赖外网。
 - 进度存在浏览器的 localStorage 里（键名 `reverb2036-progress-v3`，里面的 `v` 是存档版本）。
 - 字体在 `fonts/` 和 `fonts.css`，已经下载到本地，只保留了游戏里用到的字，不依赖 Google Fonts。

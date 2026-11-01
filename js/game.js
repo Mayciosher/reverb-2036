@@ -16,7 +16,7 @@ let TOK = 0; /* 每次换页面加一，旧页面里的定时器看到号码变�
 const STORE = 'reverb2036-progress-v3', GSTORE = 'reverb2036-gallery';
 const blank = () => ({ stage: 0, ideal: null, g: null, l1save: null, l1: null, l2: null, l3save: null, l3: null, l4: null, portrait: null, share: null, dom: {}, tags: {}, log: [], skills: {} });
 /* 存档版本号：游戏结构有大改动时加 1，旧存档会被提示重新开始 */
-const SAVE_VERSION = 5;
+const SAVE_VERSION = 6;
 let PROG = blank(), GALLERY = [], OUTDATED = false;
 try {
   const r = localStorage.getItem(STORE);
@@ -44,7 +44,7 @@ function avatar(who) { let h = 0; for (const ch of who) h = (h * 31 + ch.charCod
 /* =========================================================
    页面切换
    ========================================================= */
-const TITLES = { ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
+const TITLES = { transit: '回到房间', ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
 /* 横屏布局：电脑或横着的平板用横屏排版，手机竖屏保持原来的竖向排版 */
 function updLX() { document.body.classList.toggle('lx', innerWidth >= 960 && innerWidth / innerHeight > 1.15) }
 updLX(); addEventListener('resize', updLX);
@@ -58,7 +58,36 @@ function show(id) {
   if (window.SCENE) { if (id === 'hub') SCENE.year(PROG.l1save ? PROG.l1save.year : PROG.l1 ? 10 : 0); SCENE.go(id) }
   const el = $('#' + id); if (el && el.scrollTo) el.scrollTo(0, 0);
   if (id === 'play') { renderChans(); updateMood() }
+  const rb = $('[data-rules]'); if (rb) rb.hidden = !rulesFor(id) || id === 'intro';
+  closeRules();
 }
+/* 右上角「？ 游戏规则」：任何时候都能再看一眼这一关的规则 */
+let MINI_RULES = null;
+function rulesFor(id) {
+  if (['intro', 'yearbreak', 'play', 'end'].includes(id)) return ['第一关 · 饿死之前', RULES.l1];
+  if (id === 'mini') return MINI_RULES ? [MINI_RULES[0], MINI_RULES[1]] : ['第一关 · 饿死之前', RULES.l1];
+  if (RULES[id]) return [TITLES[id], RULES[id]];
+  return null;
+}
+/* 回看已经走完的关卡 */
+function openReview(i) {
+  closeRules(); let h = '';
+  if (i === 0 && PROG.l1) { const en = ENDINGS[PROG.l1.id]; h = `<p><b>${en.t}</b></p><p>${en.x}</p><p>十年后，别人介绍你时会说：<b>${en.who}</b>。</p><div class="final">${KEYS.map(k => `<div><b>${PROG.l1.stats[k]}</b><span>${STAT[k]}</span></div>`).join('')}</div>` }
+  if (i === 1 && PROG.l2) { const f = PROG.l2; h = `${f.chart ? `<p>命盘：<b>${f.chart}</b></p>` : ''}<p>签文：<b>${f.title}</b></p><p>${f.verse}</p>${f.fx ? `<ul class="fxl">${f.fx.map(x => `<li class="${TAROT_FX[x][2] ? 'up' : 'down'}"><b>${TAROT_FX[x][0]}</b>${TAROT_FX[x][1]}</li>`).join('')}</ul>` : ''}` }
+  if (i === 2 && PROG.l3) { const l = PROG.l3; h = `<p><b>${l.title}</b></p><p>这一天挣了 <b>${yuan(l.money || 0)}</b>，拿到 ${l.good ?? l.right} 个好评。</p>${l.fav ? `<p>凌晨两点的朋友圈：「${l.fav}」</p>` : ''}` }
+  if (i === 3) { closeRules(); showPortrait(); return }
+  const m = document.createElement('div'); m.id = 'rulesModal'; m.className = 'rules-modal';
+  m.innerHTML = `<div class="rm-card" role="dialog"><div class="rm-h"><b>回看</b><span>第${['一', '二', '三', '四'][i]}关 · ${LEVELS[i].name}</span></div><div class="rv">${h}</div><button class="btn" data-rules-close>知道了</button></div>`;
+  document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-rules-close]')) closeRules() });
+}
+function closeRules() { const m = $('#rulesModal'); if (m) m.remove() }
+function openRules() {
+  const r = rulesFor(document.body.dataset.screen); if (!r) return; closeRules();
+  const m = document.createElement('div'); m.id = 'rulesModal'; m.className = 'rules-modal';
+  m.innerHTML = `<div class="rm-card" role="dialog" aria-label="游戏规则"><div class="rm-h"><b>游戏规则</b><span>${r[0]}</span></div><ol class="rules">${r[1].map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('')}</ol><button class="btn" data-rules-close>知道了</button></div>`;
+  document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-rules-close]')) closeRules() });
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-rules]')) openRules() });
 function goHub() {
   if (E.ctx) { E.stopClip(); E.duck(1) }
   if (G) { saveL1(); G = null }
@@ -80,12 +109,14 @@ function firstSound(e) {
   E.init(); if (!E.styleKey && HOME_SCREENS.some(id => !$('#' + id).hidden)) homeMusic();
 }
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, firstSound, true));
+/* 真乐器音色在后台准备，准备好之前先用合成音色 */
+SMP.onState = st => { const ts = $('#tapSound'); if (!ts) return; if (st === 'loading') { ts.textContent = '♪ 正在准备真乐器音色……'; ts.style.visibility = 'visible' } else ts.style.visibility = 'hidden' };
 
 /* =========================================================
    主页
    ========================================================= */
 const LEVELS = [
-  { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 5 个选择、1 个音乐关卡。数值到极限会遇到人生岔路，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
+  { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 4 个选择、1 个音乐关卡。数值到极限会遇到人生转折，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
   { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '大提琴持续音加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
   { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，有的和音乐有关，有的在别的行业，比例取决于第一关结局里音乐占你生活几成。每个身份都要用耳朵做一个判断，背后还藏着一个选择。', bgmName: '每个身份一段音乐', bgm: '酒吧是爵士三重奏，咖啡馆是 bossa nova，健身房是 house，音乐节是电子舞曲……最后一段，用的是你在第二关弹的旋律。', style: 'jazz' },
   { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
@@ -98,11 +129,36 @@ function levelSummary(i) {
   if (i === 3 && PROG.portrait) return '你的画像：' + PROG.portrait.archT;
   return '已完成';
 }
+/* 海报上写的结果 */
+function levelResult(i) {
+  if (i === 0 && PROG.l1) return '活法：' + ENDINGS[PROG.l1.id].t;
+  if (i === 1 && PROG.l2) return PROG.l2.chart || PROG.l2.title;
+  if (i === 2 && PROG.l3) return '挣了 ' + yuan(PROG.l3.money || 0);
+  if (i === 3 && PROG.portrait) return PROG.portrait.archT;
+  return '';
+}
+/* 关卡之间：回到房间，刚走完的那张海报盖上章，下一张亮起来，镜头推过去，进入下一关 */
+function transit(i, next) {
+  const t0 = TOK + 1; PROG.stage = Math.max(PROG.stage, i + 1); save();
+  show('transit'); KEYH = null;
+  $('#trDone').textContent = `第${['一', '二', '三', '四'][i]}关 · ${LEVELS[i].name} · 走完了`;
+  $('#trResult').textContent = levelResult(i);
+  $('#trNext').textContent = LEVELS[i + 1] ? `下一站：第${['一', '二', '三', '四'][i + 1]}关 · ${LEVELS[i + 1].name}` : '';
+  const list = st => LEVELS.map((L, k) => ({ no: L.no, name: L.name, result: k <= i && st ? levelResult(k) : k < i ? levelResult(k) : '', state: k < i ? 'done' : k === i ? (st ? 'done' : 'now') : k === i + 1 && st > 1 ? 'now' : 'locked' }));
+  let gone = false; const go = () => { if (gone || TOK !== t0) return; gone = true; next() };
+  if (window.SCENE) {
+    SCENE.posters(list(0)); SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length); SCENE.view('p' + i);
+    setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(1)); kick(E.sfx, now(), .9, 90, 40, .25); nhit(E.sfx, now(), { g: .3, type: 'bandpass', f: 700, d: .12 }) }, 1100);
+    setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(2)); SCENE.view('p' + Math.min(3, i + 1)); harp(E.sfx, now(), 74, .06) }, 2300);
+  }
+  $('#trGo').onclick = go; setTimeout(go, window.SCENE ? 5200 : 2600);
+}
 function renderHub() {
   const st = PROG.stage; if (hubSel == null || hubSel > Math.min(st, 3)) hubSel = Math.min(st, 3);
   /* 3D 房间右墙上的四张海报就是四个关卡，点海报看这一关的介绍 */
   if (window.SCENE) {
-    SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
+    SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, result: i < st ? levelResult(i) : '', state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
+    SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length);
     SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel') });
   }
   $('#levels').innerHTML = LEVELS.map((L, i) => {
@@ -113,8 +169,7 @@ function renderHub() {
       <span class="no">${L.no}</span>
       <h3>${L.name}${tag}</h3>
       <p>${L.desc}</p>
-      <p class="bgm">背景音乐：<b>${L.bgmName}</b>。${L.bgm}</p>
-      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
+      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}${state === 'done' ? `<button class="btn ghost sm" data-review="${i}">回看这一关</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
     </article>`}).join('');
   let j = '';
   if (st >= 4) j = `<div class="journey"><span class="eyebrow">十年已经走完</span><h3>你的音乐人格：${PROG.portrait ? PROG.portrait.archT : ''}</h3><div class="row"><button class="btn" data-portrait>查看我的音乐人格画像</button><button class="btn ghost" data-reset>重新开始十年</button></div></div>`;
@@ -137,7 +192,8 @@ document.addEventListener('click', e => {
     previewTimer = setTimeout(stopPreview, 16000); return;
   }
   const g = e.target.closest('[data-go]');
-  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); startLevel(g.dataset.go); return }
+  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); if (document.body.dataset.screen === 'end') transit(0, () => startLevel(g.dataset.go)); else startLevel(g.dataset.go); return }
+  const rv = e.target.closest('[data-review]'); if (rv) { openReview(+rv.dataset.review); return }
   if (e.target.closest('[data-hub]')) { goHub(); return }
   if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(false); showPortrait(); return }
   if (e.target.closest('[data-reset]')) { confirmReset = true; renderHub(); return }
@@ -148,30 +204,36 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-reset-yes]')) { confirmReset = false; PROG = blank(); save(); renderHub(); return }
 });
 function startLevel(id) {
-  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); if (!PROG.ideal) showIdeal(); else if (PROG.share == null) showShare(); else show('intro') } }
+  if (id === 'l1') { if (PROG.l1save) resumeL1(); else { homeMusic(); showStart() } }
   else if (id === 'l2') startL2();
   else if (id === 'l3') startL3();
   else startL4();
 }
 
 /* =========================================================
-   开局：理想的音乐人
+   开局：三个问题放在同一页（理想的音乐人、音乐占几成、以他还是她开始）
    ========================================================= */
-function showIdeal() {
-  $('#ideal').innerHTML = `<span class="eyebrow">开始之前</span><h2 class="big-title">你心里理想的音乐人</h2>
-    <p class="lead">请基于你现在的真实情况想一想：你最想成为哪一种音乐人？走完四关以后，我们会把你十年里真实的选择，和你这一刻的答案放在一起对比，看看你有没有忘记初心。</p>
-    <div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div>`;
-  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第一问', '你心里理想的音乐人'), { drop: '.eyebrow,.big-title', intro: true });
-  $$('[data-ideal]').forEach(b => b.onclick = () => { PROG.ideal = b.dataset.ideal; save(); showShare() });
+function showStart() {
+  const sel = { ideal: PROG.ideal, share: PROG.share, g: PROG.g };
+  const shareIdx = MUSIC_SHARE.findIndex(m => m.v === sel.share);
+  $('#ideal').innerHTML = `<p class="lead">三个问题，按你<b>现在真实的想法</b>选。走完四关以后，会拿你十年里的选择和这一刻的答案对比。</p>
+    <div class="qgroup"><h4><i>1</i>你心里理想的音乐人</h4><div class="ideals">${Object.entries(IDEALS).map(([k, v]) => `<button class="ideal-btn${sel.ideal === k ? ' on' : ''}" data-ideal="${k}"><b>${v.t}</b><span>${v.d}</span></button>`).join('')}</div></div>
+    <div class="qgroup"><h4><i>2</i>十年后，音乐在你生活里占几成？</h4><div class="ideals four">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn${shareIdx === i ? ' on' : ''}" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div></div>
+    <div class="qgroup"><h4><i>3</i>以谁开始</h4><div class="ideals two"><button class="ideal-btn${sel.g === 'he' ? ' on' : ''}" data-gg="he"><b>他</b></button><button class="ideal-btn${sel.g === 'she' ? ' on' : ''}" data-gg="she"><b>她</b></button></div></div>
+    <div class="row"><button class="btn" id="startNext" disabled>下一步：看规则</button></div>`;
+  show('ideal'); TT.duo('ideal', TT.gen('开始之前', '先认识一下你', '三个问题'), { intro: true });
+  const upd = () => { $('#startNext').disabled = !(sel.ideal && sel.share != null && sel.g) };
+  const one = (attr, fn) => $$(`[${attr}]`).forEach(b => b.onclick = () => { $$(`[${attr}]`).forEach(x => x.classList.remove('on')); b.classList.add('on'); fn(b.getAttribute(attr)); sfxSwipe(); upd() });
+  one('data-ideal', v => sel.ideal = v); one('data-share', v => sel.share = MUSIC_SHARE[+v].v); one('data-gg', v => sel.g = v);
+  $('#startNext').onclick = () => { Object.assign(PROG, { ideal: sel.ideal, share: sel.share, g: sel.g }); save(); showIntro() };
+  upd();
 }
-function showShare() {
-  $('#ideal').innerHTML = `<span class="eyebrow">开始之前 · 第二问</span><h2 class="big-title">音乐在你生活里，你希望它占几成？</h2>
-    <p class="lead">十年后，也许没有人只做一件事。一个人可以会写歌、会教课、会剪视频、会做生意。“音乐人”可能是你的全部身份，也可能只是你很多能力里的一种。</p>
-    <p class="lead">你希望十年后，音乐在你的生活里占多少？</p>
-    <div class="ideals">${MUSIC_SHARE.map((m, i) => `<button class="ideal-btn" data-share="${i}"><b>${m.t}（${m.v} 成）</b><span>${m.d}</span></button>`).join('')}</div>`;
-  show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 第二问', '音乐占几成'), { drop: '.eyebrow,.big-title' });
-  $$('[data-share]').forEach(b => b.onclick = () => { PROG.share = MUSIC_SHARE[+b.dataset.share].v; save(); show('intro') });
+function showIntro() {
+  $('#l1rules').innerHTML = RULES.l1.map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('');
+  show('intro');
 }
+$('#introBack').onclick = () => showStart();
+$('#introGo').onclick = () => { E.init(); newGame(PROG.g || 'she') };
 
 /* =========================================================
    第一关：饿死之前
@@ -183,7 +245,7 @@ function newGame(g) {
   PROG.g = g;
   const ids = GCARDS[g].map(c => c.id);
   G = { year: 0, s: { m: 50, f: 50, l: 50, o: 50 }, flags: {}, used: [], queue: [], cur: null, idx: 0, total: 0, crisisN: {}, gLeft: [...shuffle(ids.slice(0, ids.length - 1)), ids[ids.length - 1]], yb: [], lock: false };
-  E.resetMood(); renderMeters(); yearBreak();
+  E.resetMood(); if (window.ALARM) ALARM.reset(); renderMeters(); yearBreak();
 }
 function yearLayers() { return Object.entries(UNLOCK).filter(([y]) => +y <= G.year).map(([, n]) => n) }
 function applyYearMusic() { STYLES.lofi.bpm = 80 + (G.year - 1); E.play('lofi', yearLayers()); updateMood() }
@@ -196,14 +258,18 @@ function yearBreak() {
     G.s.m = Math.max(0, G.s.m - rent); G.s.f = Math.max(0, G.s.f - 3);
     items.push(['生活开销', `钱 −${rent}（约 ${rent} 千元，${where}）`]);
     items.push(['时间', '名气 −3（没人会一直记得你）']);
+    const gig = fameIncome();
+    if (gig) { G.s.m = Math.min(100, G.s.m + gig); items.push(['商演收入', `钱 +${gig}（名气越高，找你演出的越多${G.flags.scandal ? '；你有过争议，品牌和演出商都会压价' : ''}）`]) }
   }
   if (UNLOCK[G.year]) items.push(['新乐器', `${STYLES.lofi.layers.find(L => L.name === UNLOCK[G.year]).label}加入了背景音乐`]);
   items.push(['速度', `每分钟 ${80 + G.year - 1} 拍`]);
-  items.push(['今年', '5 个选择，1 个音乐关卡']);
+  items.push(['今年', '4 个选择，1 个音乐关卡']);
   if (G.year === 10) items.push(['最后一年', '撑过今年，你会得到属于自己的活法']);
   G.yb = items; if (window.SCENE) SCENE.year(G.year); buildQueue(); checkCrisis(); G.cur = null; saveL1();
   renderYB(); show('yearbreak'); applyYearMusic();
 }
+/* 名气变现：名气 40 以上才有人找你商演，每多 10 点多 2 点钱；靠争议红起来的，打对折 */
+function fameIncome() { const f = G.s.f; if (f < 40) return 0; const v = Math.round((f - 40) / 10) * 2; return G.flags.scandal ? Math.floor(v / 2) : v }
 function livingCost() {
   const f = G.flags;
   if (f.smallcity) return [4, '你搬回了小城'];
@@ -214,21 +280,25 @@ function renderYB() {
   $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#ybLock .tt'));
   $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
+/* 每年 4 张卡 + 1 个音乐关卡。四个位置：
+   ① 真实故事改编（每年必有）② 他/她的专属卡，或一张深一点的卡 ③ 一张短卡（轻松一点）
+   ④ 浮动：几年前的选择回来找你（回响），或者一个意外；都没有就换成普通卡
+   每局都从题库里随机抽，所以每次遇到的题都不一样 */
 function buildQueue() {
   const y = G.year;
-  const pool = shuffle(CARDS.filter(c => !G.used.includes(c.id) && c.w[0] <= y && y <= c.w[1] && (!c.need || G.flags[c.need]))).sort((a, b) => a.w[1] - b.w[1]);
-  const gender = y <= 8 && G.gLeft.length;
-  let need = gender ? 4 : 5;
-  /* 每年尽量放一张“真实故事改编” */
-  const real = pool.find(c => c.real); const picked = [];
-  if (real) { picked.push(real); need-- }
-  picked.push(...pool.filter(c => c !== real).slice(0, need));
-  let q = picked.map(c => ({ c: c.id }));
-  if (gender) q.push({ c: G.gLeft.shift() });
-  /* 意外：从第 2 年起，每年约四成概率替换掉一张普通卡 */
-  const sLeft = SURPRISES.filter(c => !G.used.includes(c.id));
-  if (y >= 2 && sLeft.length && Math.random() < .5) { const k = q.findIndex(r => !BYID[r.c].real && !/^(she|he)/.test(r.c)); if (k >= 0) q[k] = { c: pick(sLeft).id } }
-  q = shuffle(q); q.splice(2, 0, { m: y });
+  const ok = c => !G.used.includes(c.id) && c.w[0] <= y && y <= c.w[1] && (!c.need || G.flags[c.need]);
+  const pool = shuffle(CARDS.filter(ok));
+  const take = f => { const i = pool.findIndex(f); return i >= 0 ? { c: pool.splice(i, 1)[0].id } : null };
+  const normal = c => !c.fun && !c.need && !c.real;
+  const real = take(c => c.real) || take(normal);
+  const deep = y <= 8 && G.gLeft.length ? { c: G.gLeft.shift() } : take(normal);
+  const fun = take(c => c.fun) || take(normal);
+  let flt = Math.random() < .7 ? take(c => c.need) : null;
+  if (!flt) { const sLeft = SURPRISES.filter(c => !G.used.includes(c.id) && (!c.need || G.flags[c.need])); if (y >= 2 && sLeft.length && Math.random() < .5) { const hot = sLeft.filter(c => c.need); flt = { c: pick(hot.length ? hot : sLeft).id } } }
+  if (!flt) flt = take(normal) || take(() => true);
+  /* 长卡和短卡交替：长、短、音乐关卡、长、长 */
+  const longs = shuffle([real, deep, flt].filter(Boolean));
+  const q = [longs[0], fun, { m: y }, ...longs.slice(1)].filter(Boolean);
   G.queue = q; G.idx = 0; G.total = q.length;
 }
 $('#ybGo').onclick = () => { if ($('#yearbreak').hidden || !G) return; show('play'); nextCard() };
@@ -241,7 +311,7 @@ function resumeL1() {
 }
 function nextCard() {
   if (!G) return;
-  if (!G.queue.length) { if (G.year >= 10) return finishL1(finalEnding(G.s), true); return yearBreak() }
+  if (!G.queue.length) { if (G.year >= 10) return finishL1(G.turn ? G.turn.end : finalEnding(G.s), true); return yearBreak() }
   G.cur = G.queue.shift(); if (!G.cur.x) G.idx++; G.lock = false; G.snapPrev = G.snapCur || null; G.snapCur = snapshot(); saveL1(); renderCard();
 }
 /* 撤回上一步：保存“做上一个选择之前”的完整状态。每局 3 次 */
@@ -251,38 +321,67 @@ function snapshot() {
 }
 function undo() {
   if (!G || G.lock || !G.snapPrev || (G.regrets ?? 3) <= 0) return;
-  const r = G.snapPrev, left = (G.regrets ?? 3) - 1;
+  const r = G.snapPrev, left = (G.regrets ?? 3) - 1, used = (G.regretUsed || 0) + 1;
   G = JSON.parse(JSON.stringify(r.g)); G.regrets = left; G.snapCur = r; G.snapPrev = null; G.lock = false;
   PROG.tags = JSON.parse(JSON.stringify(r.tags)); PROG.log.length = r.logLen; PROG.skills = JSON.parse(JSON.stringify(r.skills));
-  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe();
+  G.s.l = Math.max(0, G.s.l - 3); G.regretUsed = used;
+  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe(); toast('吃了一颗后悔药。热爱 −3', 2200);
 }
 $('#undo').onclick = undo;
 function renderUndo() {
   const left = G.regrets ?? 3, b = $('#undo');
   b.disabled = !G.snapPrev || left <= 0;
-  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗` : '后悔药用完了';
+  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗（每颗热爱 −3）` : '后悔药用完了';
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
   const card = $('#card'); card.className = 'card enter' + (c.crisis ? ' crisis' : ''); card.style.transform = ''; card.style.opacity = '';
   $('#av').textContent = ch; $('#av').style.background = col;
-  $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`;
+  $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`; card.dataset.wt = whoType(c);
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
   MO.type($('#say'), badge + badge2 + c.say);
-  $('#src').textContent = c.real ? '原型：' + c.real : ''; $('#src').hidden = !c.real;
+  $('#src').innerHTML = c.real ? `<button class="src-t" type="button">原型 ▸</button><span class="src-x">${c.real}</span>` : ''; $('#src').hidden = !c.real; $('#src').classList.remove('open');
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
-  const lab = o => o.end ? `${o.t}<small>走向这个结局</small>` : o.t;
+  const lab = o => `${o.t}${optFx(o, c)}`;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
   if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
   renderMeters(); renderUndo();
-  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('enter')));
+  /* 先发牌：卡片落到中间，停一下，左右两个选项再出现 */
+  const t = TOK; document.body.classList.add('dealing'); clearTimeout(renderCard._t);
+  void card.offsetWidth; setTimeout(() => card.classList.remove('enter'), 30);
+  renderCard._t = setTimeout(() => { if (t === TOK) document.body.classList.remove('dealing') }, 650);
+}
+/* 卡片是谁发来的：家人、行业里的人、AI、意外，用不同颜色区分 */
+function whoType(c) {
+  if (c.crisis) return 'crisis'; if (c.who === '意外') return 'luck';
+  if (/AI|小谱|推推|系统|算法|分身/.test(c.who)) return 'ai';
+  if (/妈|爸|家里|奶奶|爷爷|表哥|表姐|姐姐|哥哥|弟弟|妹妹|对象|伴侣|朋友|室友|邻居|同学|阿飞|内心|你自己/.test(c.who)) return 'near';
+  return 'work';
+}
+/* 选项下面的小标签：这个选择会影响哪几项（只说影响哪几项，不说加减多少） */
+function optFx(o, c) {
+  if (o.mini) return '<span class="fx"><i class="mini">音乐关卡</i></span>';
+  const ks = KEYS.filter(k => (o.e && o.e[k]) || (o.reset && o.reset[k] != null));
+  const turn = c && c.crisis && (o.turn || o.end) ? '<i class="turn">人生转折</i>' : '';
+  if (!ks.length && !turn) return '';
+  return `<span class="fx">${turn}${ks.map(k => `<i data-k="${k}">${STAT[k]}</i>`).join('')}</span>`;
+}
+document.addEventListener('pointerdown', e => { if (e.target.closest('.src-t')) e.stopPropagation() }, true);
+document.addEventListener('click', e => { const b = e.target.closest('.src-t'); if (b) { e.stopPropagation(); const p = b.parentNode; p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '原型 ▾' : '原型 ▸' } }, true);
+/* 选完以后，桌上出现一张小纸条：“后来……”。点一下或等几秒，继续下一张 */
+function showAfter(text, done) {
+  if (!text) { setTimeout(done, 250); return }
+  const n = document.createElement('div'); n.className = 'after-note'; n.innerHTML = `<i>后来</i><p>${text.replace(/^后来/, '')}</p><small>点一下继续</small>`;
+  ($('#play .table') || document.body).appendChild(n); G.lock = true;
+  let gone = false; const go = () => { if (gone) return; gone = true; n.classList.add('out'); setTimeout(() => { n.remove(); done() }, 220) };
+  n.addEventListener('pointerdown', go); setTimeout(go, 1200 + text.length * 70);
 }
 function preview(side) {
   KEYS.forEach(k => {
-    const d = document.querySelector(`.meter[data-k="${k}"] .dot`); d.className = 'dot'; if (!side || !G || !G.cur) return; const opt = resolveCard(G.cur)[side];
-    if (opt.mini) { d.className = 'dot s'; return } const v = (opt.e || {})[k]; if (v || (opt.reset && opt.reset[k] != null)) d.className = 'dot ' + (Math.abs(v || 15) >= 12 ? 'b' : 's')
+    const m = document.querySelector(`.meter[data-k="${k}"]`), d = m.querySelector('.dot'); d.className = 'dot'; m.classList.remove('hint'); if (!side || !G || !G.cur) return; const opt = resolveCard(G.cur)[side];
+    if (opt.mini) return; const v = (opt.e || {})[k]; if (v || (opt.reset && opt.reset[k] != null)) { d.className = 'dot ' + (Math.abs(v || 15) >= 12 ? 'b' : 's'); m.classList.add('hint') }
   });
   $('#leanL').classList.toggle('show', side === 'L'); $('#leanR').classList.toggle('show', side === 'R');
 }
@@ -300,9 +399,16 @@ function choose(side) {
   setTimeout(() => {
     if (opt.mini) return startMini(opt.mini);
     commitChoice(c, opt);
-    if (opt.end) return finishL1(opt.end, false);
-    apply(opt.e || {}, opt.reset); G.cur = null; saveL1();
-    setTimeout(nextCard, 250);
+    let after = opt.a;
+    if (opt.end) {
+      /* 人生转折：不提前结束，记下这一次转向，把数值拉回安全的位置，继续把十年走完 */
+      const k = c.crisis.replace(/\d+/, ''), low = /0$/.test(c.crisis) && !/100$/.test(c.crisis);
+      G.turn = { end: opt.end, y: G.year }; G.turns = (G.turns || []).concat(opt.end);
+      if (opt.end === 'ashore' || opt.end === 'hometown') G.flags.smallcity = 1;
+      apply(opt.e || {}, { [k]: low ? 30 : 70 }); after = TURN_AFTER[opt.end] || ''; toast('人生转折：' + ENDINGS[opt.end].t + '。日子还要继续。', 2600);
+    } else apply(opt.e || {}, opt.reset);
+    G.cur = null; saveL1();
+    const t = TOK; showAfter(after, () => { if (t === TOK) nextCard() });
   }, 300);
 }
 function apply(e = {}, reset) {
@@ -338,12 +444,13 @@ function updateMood() {
   E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d); document.body.classList.toggle('danger', d > .3);
   if (E.ctx) E.lp.frequency.setTargetAtTime(d > .05 ? 18000 * Math.pow(1500 / 18000, d) : 18000, now(), .4);
   if (E.styleKey === 'lofi') E.setLayer('heart', d > .15);
+  if (window.ALARM) ALARM.check(s);
   const notes = [];
   if (d > .15) notes.push('有数值快到极限了，所以出现了心跳声，声音变闷，节奏变快。');
   if (s.l < 30) notes.push('热爱太低，钢琴开始走音。');
   if (s.o < 35) notes.push('原创太低，节奏不再摇摆，长笛（第 7 年起）变成机器音色。');
   const n = STYLES.lofi.layers.filter(L => E.layers[L.name] && !L.hot).length;
-  $('#mnote').textContent = notes.length ? notes.join(' ') : `Lo-fi 爵士 · 每分钟 ${Math.round(STYLES.lofi.bpm * E.tempoMul)} 拍 · ${n} 种乐器在响，每过一年多一种。`;
+  $('#mnote').textContent = '';
 }
 function renderChans() {
   const box = $('#chans'); if (!box) return;
@@ -355,7 +462,6 @@ E.onLite = on => { if (on) toast('检测到设备有点卡，已自动切换到�
 /* 声音开关：每个页面右上角都有，状态全局同步 */
 E.onMute = m => $$('[data-snd]').forEach(b => b.textContent = m ? '声音：关' : '声音：开');
 document.addEventListener('click', e => { if (e.target.closest('[data-snd]')) { E.init(); if (skipSndToggle) { skipSndToggle = false; return } E.setMute(!E.muted) } });
-$$('.who-pick .btn').forEach(b => b.onclick = () => { E.init(); const g = b.dataset.g; calibrate(() => newGame(g)) });
 
 /* =========================================================
    耳机延迟校准：听到“嗒”就点一下，自动算出延迟
@@ -371,8 +477,8 @@ function calibrate(done) {
   show('ideal'); TT.duo('ideal', TT.gen('开始之前 · 10 秒校准', '听到就点一下'), { drop: '.eyebrow,.big-title' });
   const beat = .6; let t0 = 0, taps = [], live = false;
   const dots = $$('#cbeats i');
-  const finish = ms => { PROG.latency = ms; save(); KEYH = null; done() };
-  $('#cskip').onclick = () => finish(PROG.latency || 0);
+  const finish = ms => { if (ms != null) PROG.latency = ms; save(); KEYH = null; done() };
+  $('#cskip').onclick = () => finish(null);
   $('#cgo').onclick = () => {
     $('#cgo').disabled = true; taps = []; t0 = now() + .8; live = true; $('#ctap').disabled = false; $('#cst').textContent = '听……';
     E.playClip(bus => { for (let i = 0; i < 8; i++) { tone(bus, t0 + i * beat, 84, .05, { type: 'triangle', gain: .3, att: .001, rel: .06 }); E.later(() => dots[i] && dots[i].classList.add('on'), (t0 + i * beat - now()) * 1000) } return 8 * beat + 1.2 }, .05, () => {
@@ -388,269 +494,20 @@ function calibrate(done) {
   $('#ctap').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
   KEYH = e => { if (e.key === ' ') { tap(); return true } };
 }
-const LAT = () => (PROG.latency || 0) / 1000;
+const LAT = () => PROG.latency != null ? PROG.latency / 1000 : (E.ctx ? Math.min(.3, (E.ctx.outputLatency || 0) + (E.ctx.baseLatency || 0)) : 0);
 
 function finishL1(id, survived) {
   const en = ENDINGS[id];
   if (en.tone === 'bad') { E.stop(.3); setTimeout(() => { const t0 = now() + .1;[69, 65, 62, 57].forEach((m, i) => keys(E.sfx, t0 + i * .45, m, i === 3 ? 1.6 : .4, .12)) }, 400) }
   else { E.resetMood(); E.play(en.tone === 'good' ? 'orchM' : 'orch', ['vln', 'cello', 'harpo', 'hornm']) }
-  PROG.l1 = { id, stats: { ...G.s }, year: G.year, survived }; PROG.l1save = null; PROG.stage = Math.max(PROG.stage, 1);
+  PROG.l1 = { id, stats: { ...G.s }, year: G.year, survived, regrets: G.regretUsed || 0, turns: G.turns || [] }; PROG.l1save = null; PROG.stage = Math.max(PROG.stage, 1);
   if (!GALLERY.includes(id)) GALLERY.push(id); save();
   const n = PROG.log.filter(x => x.lv === 1).length;
-  $('#endKind').textContent = survived ? '撑过了十年 · 2036' : `第 ${G.year} 年 · 人生岔路`;
+  $('#endKind').textContent = G.turn ? `撑过了十年 · 第 ${G.turn.y} 年的人生转折` : '撑过了十年 · 2036';
   $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;
   G = null; KEYH = null; show('end'); TT.introSoon(() => $('#end .lx-head .tt'));
-}
-
-/* =========================================================
-   第一关：音乐关卡
-   ========================================================= */
-function startMini(kind) {
-  show('mini'); E.duck(1); $('#miniBody').innerHTML = '';
-  const f = { rhythm: () => rhythm(false), rhythm2: () => rhythm(true), tune: () => tune(false), tune2: () => tune(true), memory: () => memory(false), memory2: () => memory(true), tempo: () => tempoGame(false), tempo2: () => tempoGame(true), ai: () => aiTest(false), ai2: () => aiTest(true) }[kind];
-  f();
-}
-function miniResult(title, text, eff) {
-  KEYH = null; E.stopClip(); E.duck(1);
-  const chips = KEYS.filter(k => eff[k]).map(k => `<span class="chip ${eff[k] > 0 ? 'p' : 'n'}">${STAT[k]} ${eff[k] > 0 ? '+' : '−'}${Math.abs(eff[k])}</span>`).join('') || '<span class="chip">数值不变</span>';
-  $('#miniBody').innerHTML = `<div class="result"><h3>${title}</h3><p>${text}</p><div class="chips">${chips}</div><button class="btn" id="miniBack" style="align-self:flex-start">回到这一年</button></div>`;
-  $('#miniBack').onclick = () => {
-    if (!G) return; const c = resolveCard(G.cur); commitChoice(c, c.R);
-    show('play'); applyYearMusic(); apply(eff); G.cur = null; saveL1(); setTimeout(nextCard, 250);
-  };
-}
-function miniHead(eye, title, desc) { $('#miniEye').textContent = '音乐关卡 · ' + eye; $('#miniTitle').textContent = title; $('#miniDesc').textContent = desc; TT.introSoon(() => $('#mini .lx-head .tt')) }
-
-/* 1. 上台演出：跟着节拍按键 */
-function rhythm(hard) {
-  const tok = TOK;
-  miniHead('上台演出', hard ? '三万人的主舞台' : 'Livehouse 暖场', '音符落到金线时，按对应的键（D F J K），手机上直接点那一列。你按中的音会变成这首歌的旋律，按不中就没有声音。');
-  $('#miniBody').innerHTML = `<div class="rh" id="rh">${['D', 'F', 'J', 'K'].map((k, i) => `<div class="lane" data-i="${i}"><span class="lk">${k}</span></div>`).join('')}<div class="hitline"></div><div class="judge" id="judge"></div><div class="count" id="count"></div></div><p class="score" id="score">准备</p>`;
-  const lanes = $$('#rh .lane');
-  ['keys', 'bass', 'drums'].forEach(n => E.setLayer(n, true)); E.setLayer('flute', false); E.setLayer('guitar', false);
-  const d16 = E.d16(), beat = d16 * 4; let t0 = E.nextBarTime(); if (t0 - now() < 2.2) t0 += 16 * d16;
-  const offs = hard ? [0, 2, 4, 6, 7, 8, 10, 12, 14, 15, 16, 17, 18, 20, 22, 23, 24, 26, 27, 28, 29, 30] : [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 21, 22, 24, 26, 28];
-  srand(hard ? 99 : 7); let ln = 0; const curBar = Math.floor(E.step / 16);
-  const notes = offs.map(o => { ln = Math.max(0, Math.min(3, ln + (rnd() < .5 ? -1 : 1) * (rnd() < .7 ? 1 : 2))); const t = t0 + o * beat / 2; const bar = curBar + Math.floor((E.step % 16 + (t - E.nextTime) / d16) / 16); const ch = chordAt(STYLES.lofi, bar); return { t, lane: ln, pitch: ch.v[ln] + 12, done: false, el: null } });
-  const travel = 1.5; let score = 0, hits = 0, live = true;
-  const judgeEl = $('#judge'); let jt;
-  const judge = (txt, cls) => { judgeEl.textContent = txt; judgeEl.className = 'judge show ' + cls; clearTimeout(jt); jt = setTimeout(() => judgeEl.className = 'judge', 260) };
-  const hit = i => {
-    if (!live) return; const n0 = now() - LAT(); lanes[i].classList.add('press'); setTimeout(() => lanes[i].classList.remove('press'), 90);
-    let best = null, bd = 9; for (const n of notes) { if (n.done || n.lane !== i) continue; const d = Math.abs(n.t - n0); if (d < bd) { bd = d; best = n } }
-    if (best && bd < .12) { best.done = true; const p = bd < .055 ? 2 : 1; score += p; hits++; keys(E.sfx, now(), best.pitch, .5, .13); best.el && best.el.classList.add('ok'); judge(p === 2 ? '完美' : '不错', 'good') }
-    else nhit(E.sfx, n0, { g: .05, type: 'bandpass', f: 400, d: .06 });
-    $('#score').textContent = `命中 ${hits} / ${notes.length}`;
-  };
-  KEYH = e => { const i = 'dfjk'.indexOf(e.key.toLowerCase()); if (i >= 0) { hit(i); return true } };
-  lanes.forEach((l, i) => l.addEventListener('pointerdown', e => { e.preventDefault(); hit(i) }));
-  const frame = () => {
-    if (tok !== TOK) return;
-    const n0 = now(), H = lanes[0].clientHeight * .84;
-    const left = t0 - n0; $('#count').textContent = left > 0 ? (left > beat * 3 ? '准备' : Math.ceil(left / beat)) : '';
-    for (const n of notes) {
-      const p = 1 - (n.t + LAT() - n0) / travel; if (p < 0) continue;
-      if (!n.el) { n.el = document.createElement('i'); n.el.className = 'nt'; lanes[n.lane].appendChild(n.el) }
-      if (!n.done) n.el.style.transform = `translateY(${p * H}px)`;
-      if (!n.done && n0 - LAT() > n.t + .16) { n.done = true; n.el.classList.add('miss'); judge('错过', 'bad') }
-    }
-    if (n0 > notes[notes.length - 1].t + .9) {
-      live = false; const r = score / (notes.length * 2); skill('rhythm', r);
-      const k = hard ? 1.5 : 1; let eff, title, text;
-      if (r >= .8) { eff = { m: Math.round(14 * k), f: Math.round(10 * k), l: 5 }; title = '全场跟唱'; text = '台下有人举起手机录你。老板当场多给了一倍演出费。' }
-      else if (r >= .5) { eff = { m: Math.round(8 * k), f: Math.round(4 * k) }; title = '还不错'; text = '有几个地方乱了，但观众没听出来。拿到了演出费。' }
-      else if (r >= .25) { eff = { m: 3, f: -Math.round(3 * k) }; title = '磕磕绊绊'; text = '你听见台下有人笑了一声。演出费只拿到一半。' }
-      else { eff = { f: -Math.round(8 * k), l: -6 }; title = '翻车了'; text = '第二首歌唱到一半，观众开始刷手机。视频被做成了表情包。' }
-      return miniResult(title, `命中 ${hits} / ${notes.length}。${text}`, eff);
-    }
-    requestAnimationFrame(frame);
-  };
-  requestAnimationFrame(frame);
-}
-
-/* 2. 调音：凭耳朵把弦调准 */
-function tune(hard) {
-  const tok = TOK;
-  miniHead('凭耳朵调弦', hard ? '为交响乐团定 A 音' : '帮吉他手调弦', '标准音和琴弦一起响的时候，如果没对准，你会听到“哇—哇—哇”的起伏，这叫拍音。拖动滑块调这根弦：拍音越慢，说明越接近；完全听不到起伏，就调准了。一共三根弦。');
-  E.duck(hard ? .05 : .1);
-  const notes = hard ? [57, 64, 50] : [64, 69, 62];
-  let round = 0, errs = [], off = 0, TU = null, mode = 'both';
-  $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div>
-    <div class="tuner"><p class="status" id="tstat">第 1 根弦</p>
-      <div class="row" style="justify-content:center"><button class="btn sm" data-m="both">一起听</button><button class="btn ghost sm" data-m="ref">只听标准音</button><button class="btn ghost sm" data-m="str">只听琴弦</button></div>
-      <input type="range" id="tslider" min="-100" max="100" step="1" value="0" aria-label="调整琴弦音高">
-      <div class="scale"><span>← 调低</span><span>调高 →</span></div>
-      <button class="btn" id="tdone" style="align-self:center">调好了</button></div>`;
-  const start = () => {
-    if (tok !== TOK) return;
-    const m = notes[round]; off = (Math.random() < .5 ? -1 : 1) * (hard ? 18 + Math.random() * 22 : 35 + Math.random() * 40);
-    $('#tslider').value = 0; $('#tstat').textContent = `第 ${round + 1} 根弦 · 慢慢拖，仔细听拍音`;
-    E.playClip(bus => {
-      const c = E.ctx, mk = (det) => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(m); o.detune.value = det; const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 2400; const g = c.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(.045, now(), .05); o.connect(f); f.connect(g); g.connect(bus); o.start(); return { o, g } };
-      TU = { ref: mk(0), str: mk(off) }; setMode(mode); return 900;
-    }, hard ? .05 : .1);
-  };
-  const setMode = md => { mode = md; if (!TU) return; TU.ref.g.gain.setTargetAtTime(md === 'str' ? 0 : .045, now(), .03); TU.str.g.gain.setTargetAtTime(md === 'ref' ? 0 : .045, now(), .03); $$('[data-m]').forEach(b => b.classList.toggle('ghost', b.dataset.m !== md)) };
-  $$('[data-m]').forEach(b => b.onclick = () => setMode(b.dataset.m));
-  $('#tslider').oninput = e => { if (TU) TU.str.o.detune.setTargetAtTime(off + +e.target.value, now(), .03) };
-  $('#tdone').onclick = () => {
-    if (!TU) return; const err = Math.abs(off + +$('#tslider').value); errs.push(err);
-    $$('#rounds i')[round].className = err < 12 ? 'ok' : 'no';
-    $('#tstat').textContent = err < 5 ? `几乎完美，只差 ${err.toFixed(0)} 音分` : err < 12 ? `很准，差 ${err.toFixed(0)} 音分` : `还差 ${err.toFixed(0)} 音分（100 音分是一个半音）`;
-    err < 12 ? sfxGood() : sfxBuzz(); E.stopClip(); TU = null; round++;
-    setTimeout(() => { if (tok !== TOK) return; if (round < 3) start(); else finish() }, 1400);
-  };
-  const finish = () => {
-    const avg = errs.reduce((a, b) => a + b, 0) / errs.length; skill('tune', avg);
-    const k = hard ? 1.3 : 1; let eff, title, text;
-    if (avg < 6) { eff = { o: Math.round(10 * k), l: 6, f: 4 }; title = '耳朵比调音器还准'; text = '吉他手看了一眼调音器，愣住了：“分毫不差。”' }
-    else if (avg < 12) { eff = { o: Math.round(6 * k), l: 4 }; title = '很准'; text = '录音师点点头，没说什么，这就是最高评价。' }
-    else if (avg < 25) { eff = { o: 2 }; title = '还行'; text = '大致准了，但录音师还是偷偷开了修音。' }
-    else { eff = { o: -6, l: -4 }; title = '没调准'; text = '最后还是用了调音器。你开始想，自己的耳朵是不是被耳机泡坏了。' }
-    miniResult(title, `三根弦平均差 ${avg.toFixed(0)} 音分。${text}`, eff);
-  };
-  start();
-}
-
-/* 3. 听音模仿：只靠耳朵，填完再提交 */
-function memory(hard) {
-  const tok = TOK, n = hard ? 8 : 5;
-  miniHead('听音模仿', hard ? '总决赛：终极听音' : '录音棚试音', `键盘是 C 大调，1 就是 Do，从左到右一个比一个高。每轮先放参考音「1 Do」，再放一段旋律，琴键不会亮。听完以后按顺序弹出你听到的音，填满格子再点「提交」，填错了可以删掉重来。每轮可以再听两遍。`);
-  const lens = hard ? [4, 5, 6] : [3, 4, 5];
-  let round = 0, ok = 0, seq = [], typed = [], canType = false, reps = 2, judged = false;
-  $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div><p class="status" id="mstat">准备</p>
-    <div class="slots" id="mslots"></div>
-    <div class="row" style="justify-content:center;margin-top:10px"><button class="btn ghost sm" id="mref">听参考音 1 Do</button><button class="btn ghost sm" id="mrep">再听一遍（2）</button><button class="btn ghost sm" id="mdel">删除</button><button class="btn sm" id="mok" disabled>提交</button></div>
-    <div id="mkeys"></div>`;
-  E.duck(.08);
-  const kb = buildKeys($('#mkeys'), n, i => press(i));
-  const paint = (marks) => {
-    $('#mslots').innerHTML = seq.map((_, k) => { const v = typed[k]; const cls = marks ? (marks[k] ? 'ok' : 'no') : (k === typed.length && canType ? 'now' : ''); return `<span class="${cls}">${v != null ? NUM[v] : ''}${marks && !marks[k] ? `<i>${NUM[seq[k]]}</i>` : ''}</span>` }).join('');
-    $('#mok').disabled = !(canType && typed.length === seq.length);
-    $('#mdel').disabled = !canType || !typed.length;
-    $('#mkeys .keys').classList.toggle('off', !canType);
-  };
-  const playSeq = withRef => {
-    canType = false; paint(); $('#mstat').textContent = `第 ${round + 1} 轮 · 仔细听`;
-    E.playClip(bus => { let t = now() + .3; if (withRef) { playDeg(0, t, .15, .8, bus); E.later(() => kb.flash(0), 300); t += 1.2 } seq.forEach((p, k) => playDeg(p, t + k * .62, .15, .5, bus)); return t - now() + seq.length * .62 + .2 }, .08,
-      () => { if (tok !== TOK || judged) return; canType = true; $('#mstat').textContent = '轮到你了：按顺序弹出你听到的音'; paint() });
-  };
-  const next = () => {
-    if (tok !== TOK) return; if (round >= 3) return finish();
-    seq = []; let p = Math.floor(Math.random() * (n - 2));
-    for (let k = 0; k < lens[round]; k++) { seq.push(p); const step = pick(hard ? [-3, -2, -1, 1, 2, 3, 4] : [-2, -1, 1, 1, 2]); let q = Math.max(0, Math.min(n - 1, p + step)); if (q === p) q = p > 0 ? p - 1 : p + 1; p = q }
-    typed = []; reps = 2; judged = false; $('#mrep').textContent = '再听一遍（2）'; $('#mrep').disabled = false; $('#mok').textContent = '提交';
-    setTimeout(() => playSeq(true), 500);
-  };
-  const press = i => { if (!canType) return; playDeg(i, now(), .16, .4); kb.flash(i); if (typed.length < seq.length) { typed.push(i); paint() } };
-  $('#mdel').onclick = () => { if (!canType) return; typed.pop(); paint() };
-  $('#mref').onclick = () => { if (judged) return; E.playClip(bus => { playDeg(0, now(), .15, .8, bus); return 1 }, .08); kb.flash(0) };
-  $('#mrep').onclick = () => { if (judged || reps <= 0 || !canType && typed.length) return; reps--; $('#mrep').textContent = `再听一遍（${reps}）`; if (!reps) $('#mrep').disabled = true; const keep = typed.slice(); playSeq(false); typed = keep };
-  $('#mok').onclick = () => {
-    if (judged) { round++; next(); return }
-    if (typed.length !== seq.length) return;
-    judged = true; canType = false; const marks = seq.map((v, k) => typed[k] === v); const good = marks.every(Boolean);
-    $$('#rounds i')[round].className = good ? 'ok' : 'no'; if (good) { ok++; sfxGood() } else sfxBuzz();
-    $('#mstat').textContent = good ? '全对！' : `对了 ${marks.filter(Boolean).length} / ${seq.length} 个，正确答案：${jp(seq)}`;
-    paint(marks); $('#mok').disabled = false; $('#mok').textContent = round < 2 ? '下一轮' : '看结果'; $('#mdel').disabled = true; $('#mrep').disabled = true;
-    if (!good) E.playClip(bus => { const t = now() + .4; seq.forEach((p, k) => { playDeg(p, t + k * .55, .15, .45, bus); E.later(() => kb.flash(p), (.4 + k * .55) * 1000) }); return seq.length * .55 + 1 }, .08);
-  };
-  KEYH = e => { const i = '12345678'.slice(0, n).indexOf(e.key); if (i >= 0) { press(i); return true } if (e.key === 'Backspace') { $('#mdel').click(); return true } if (e.key === 'Enter' && !$('#mok').disabled) { $('#mok').click(); return true } };
-  const finish = () => {
-    skill('memory', ok); const k = hard ? 1.4 : 1; let eff, title, text;
-    if (ok === 3) { eff = { o: Math.round(12 * k), l: 8, f: hard ? 10 : 0 }; title = '耳朵很好'; text = '对方愣了一下：“你学过视唱练耳吧？”' }
-    else if (ok === 2) { eff = { o: Math.round(6 * k), l: 4 }; title = '还行'; text = '错了一段，但听得出你有底子。' }
-    else if (ok === 1) { eff = { o: -2 }; title = '有点吃力'; text = '你开始怀疑，自己是不是太依赖 AI 扒谱了。' }
-    else { eff = { o: -8, l: -6, f: hard ? -8 : 0 }; title = '没听出来'; text = '走出录音棚，你在地铁上把那段旋律听了二十遍。' }
-    miniResult(title, `三轮对了 ${ok} 轮。${text}`, eff);
-  };
-  paint(); next();
-}
-
-/* 4. 稳拍：节拍器停了以后，自己稳住速度 */
-function tempoGame(hard) {
-  const tok = TOK, bpm = hard ? 72 : 92, N = hard ? 12 : 8, beat = 60 / bpm;
-  miniHead('心里的拍子', hard ? '慢歌，不用节拍器' : '节拍器坏了', `先听 4 下节拍器，然后它会停。接着在第 5 拍的位置开始，按照同样的速度连续拍 ${N} 下（点圆圈，或者按空格键）。速度是每分钟 ${bpm} 拍。`);
-  E.duck(.05);
-  $('#miniBody').innerHTML = `<div class="tapzone"><div class="beats" id="tbeats">${'<i></i>'.repeat(4 + N)}</div><p class="status" id="tst">准备好了就点「开始」</p><button class="tap" id="tap" disabled>拍</button><button class="btn" id="tgo">开始</button><div class="offsets" id="toff"></div></div>`;
-  let t0 = 0, taps = [], live = false;
-  const dots = $$('#tbeats i');
-  $('#tgo').onclick = () => {
-    $('#tgo').hidden = true; taps = []; t0 = now() + .6;
-    E.playClip(bus => { for (let i = 0; i < 4; i++) { tone(bus, t0 + i * beat, i ? 84 : 96, .05, { type: 'triangle', gain: .25, att: .001, rel: .06 }); E.later(() => dots[i].classList.add('on'), (t0 + i * beat - now()) * 1000) } return 4 * beat + 1 }, .05);
-    $('#tst').textContent = '听……'; $('#tap').disabled = false; live = true;
-    E.later(() => { if (tok === TOK && live) $('#tst').textContent = `节拍器停了。从第 5 拍开始，自己拍 ${N} 下` }, (t0 + 3.5 * beat - now()) * 1000);
-  };
-  const tap = () => {
-    if (!live) return; const t = now() - LAT(); if (t < t0 + 3.5 * beat) return;
-    taps.push(t); const el = $('#tap'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 80);
-    tone(E.sfx, t, 79, .04, { type: 'triangle', gain: .12, att: .001, rel: .05 });
-    if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on');
-    if (taps.length >= N) { live = false; done() }
-  };
-  $('#tap').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
-  KEYH = e => { if (e.key === ' ' || e.key === 'Enter') { tap(); return true } };
-  const done = () => {
-    const errs = taps.map((t, k) => (t - (t0 + (4 + k) * beat)) * 1000);
-    const mean = errs.reduce((a, b) => a + Math.abs(b), 0) / errs.length; skill('tempo', mean);
-    $('#toff').innerHTML = errs.map(e => `<i class="${e > 0 ? 'late' : ''}" style="height:${Math.min(70, 4 + Math.abs(e) / 3)}px" title="${e.toFixed(0)} 毫秒"></i>`).join('');
-    const drift = errs[errs.length - 1] - errs[0];
-    const tend = Math.abs(drift) < 60 ? '速度很稳' : drift > 0 ? '越拍越慢' : '越拍越快';
-    $('#tst').textContent = `平均偏差 ${mean.toFixed(0)} 毫秒，${tend}。绿色是抢拍，红色是拖拍。`;
-    setTimeout(() => {
-      if (tok !== TOK) return; const k = hard ? 1.3 : 1; let eff, title;
-      if (mean < 35) { eff = { o: Math.round(8 * k), f: 6, l: 4 }; title = '稳得像节拍器' }
-      else if (mean < 70) { eff = { o: Math.round(5 * k), f: 3 }; title = '很稳' }
-      else if (mean < 130) { eff = { o: -2 }; title = '有点飘' }
-      else { eff = { o: -6, f: -4 }; title = '拍子乱了' }
-      miniResult(title, `平均偏差 ${mean.toFixed(0)} 毫秒，${tend}。${tend === '越拍越快' ? '紧张的时候人会不自觉地抢拍，这很常见。' : tend === '越拍越慢' ? '拖拍常常是因为在“等”声音，试着提前一点点。' : '你心里的钟很准。'}`, eff);
-    }, 1800);
-  };
-}
-
-/* 5. 人机辨听 */
-const H_MEL = [[64, 0, 1], [67, 1, 1], [72, 2, 2], [71, 4, 1], [69, 5, 1], [67, 6, 2], [65, 8, 1], [64, 9, 1], [62, 10, 1], [65, 11, 1], [64, 12, 4]];
-const H_CH = [[0, [48, 55, 64]], [4, [43, 50, 59]], [8, [41, 48, 57]], [10, [43, 50, 59]], [12, [48, 55, 64]]];
-function playPiano(kind, bus) {
-  const t0 = now() + .15, b = .56;
-  if (kind === 'ai') {
-    H_MEL.forEach(([m, s, l]) => keys(bus, t0 + s * b, m, l * b * .5, .1));
-    for (let s = 0; s < 16; s++) { const ch = [...H_CH].reverse().find(c => c[0] <= s)[1]; ch.forEach(m => keys(bus, t0 + s * b, m, b * .35, .045)) }
-    return 16 * b + .8;
-  }
-  if (kind === 'aijit') {
-    /* 2036 年的 AI：会“随机”抖动时间和力度，也会踩踏板，但抖动没有方向 */
-    const j = () => (Math.random() - .5) * .07, v = () => .06 + Math.random() * .08;
-    H_MEL.forEach(([m, s, l]) => keys(bus, t0 + s * b + j(), m, l * b * 1.25, v()));
-    H_CH.forEach(([s, ch], ci) => { const span = (H_CH[ci + 1] ? H_CH[ci + 1][0] : 16) - s; for (let k = 0; k < span * 2; k++) keys(bus, t0 + (s + k / 2) * b + j() * .5, ch[k % 3], b * 1.5, .03 + Math.random() * .02) });
-    return 16 * b + 1.6;
-  }
-  /* 真人：开头稍慢，中间往前推，结尾明显渐慢；力度先渐强后渐弱；旋律比伴奏晚一点点 */
-  const warp = s => { const x = s / 16; return s * b * (1 + .5 * Math.pow(x, 3)) + (s >= 1 ? .05 : 0) };
-  const vel = s => .04 + .13 * Math.sin(Math.min(1, s / 12) * Math.PI * .95);
-  H_MEL.forEach(([m, s, l], i) => { const t = t0 + warp(s) + .035, last = i === H_MEL.length - 1; if (m === 72) keys(bus, t - .08, 74, .06, .05); keys(bus, t, m, (warp(s + l) - warp(s)) * 1.3 + (last ? 1.8 : 0), vel(s) * (last ? .75 : 1)) });
-  H_CH.forEach(([s, ch], ci) => { const span = (H_CH[ci + 1] ? H_CH[ci + 1][0] : 16) - s; for (let k = 0; k < span * 2; k++) keys(bus, t0 + warp(s + k / 2), ch[k % 3], b * 1.5, .03 + (k % 3 === 0 ? .02 : 0)) });
-  return warp(16) + 2.4;
-}
-function aiTest(hard) {
-  miniHead('人机辨听', hard ? '2036：AI 也会“不完美”了' : '哪段是人弹的？', hard ? '这一次，AI 也学会了快慢和轻重。但它的变化是随机的，真人的变化是有方向的：往哪里推、在哪里收、哪里呼吸。两段都听完才能选。' : 'A 和 B 是同一段旋律。注意听三件事：速度有没有快慢变化，每个音有没有轻重，音和音之间是断开的还是连着的。两段都听完才能选。');
-  const humanA = Math.random() < .5, heard = { A: false, B: false }, aiKind = hard ? 'aijit' : 'ai';
-  $('#miniBody').innerHTML = `<div class="clips">${['A', 'B'].map(x => `<div class="clip" id="clip${x}"><b>${x}</b><div class="wave">${'<i></i>'.repeat(9)}</div><button class="btn ghost sm" data-play="${x}">播放 ${x}</button><button class="btn sm" data-pick="${x}" disabled>${x} 是人弹的</button></div>`).join('')}</div>`;
-  $$('[data-play]').forEach(b => b.onclick = () => {
-    const x = b.dataset.play, kind = (x === 'A') === humanA ? 'human' : aiKind;
-    $$('.clip').forEach(c => c.classList.remove('playing')); const c = $('#clip' + x); c.classList.add('playing');
-    E.playClip(bus => playPiano(kind, bus), .05, () => c.classList.remove('playing'));
-    heard[x] = true; if (heard.A && heard.B) $$('[data-pick]').forEach(p => p.disabled = false);
-  });
-  $$('[data-pick]').forEach(b => b.onclick = () => {
-    const right = (b.dataset.pick === 'A') === humanA, H = humanA ? 'A' : 'B', A = humanA ? 'B' : 'A'; skill('ai', right ? 1 : 0);
-    const why = hard ? `真人是 ${H}。两段都有快慢和轻重，但 ${A} 的变化是随机的：这个音早一点、下个音晚一点，像在抖。${H} 的变化有方向：一路往中间那句推上去，最后慢慢收住，最后一个音留得很长。随机不等于呼吸。`
-      : `真人是 ${H}：越到后面越慢，最后一个音留得很长；中间那句最响，两头轻；踩了踏板，音连成一片。AI 是 ${A}：每拍一样长，每个音一样重，音和音之间断开，左手和弦像打卡一样每拍砸一下。`;
-    if (right) miniResult('听出来了', why + ' 评审在你的名字后面画了一个勾。', hard ? { o: 14, f: 8, l: 4 } : { o: 12, f: 6, l: 4 });
-    else miniResult('被骗过去了', why, { o: -10, l: -4 });
-  });
 }
 
 /* 简谱键盘 */
