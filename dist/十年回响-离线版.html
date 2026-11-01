@@ -1320,7 +1320,7 @@ body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
 <section class="screen scroll" id="hub">
   <div class="hubL">
   <div class="hero">
-    <div class="row" style="justify-content:space-between"><span class="eyebrow">选题 1 音乐游戏 × 选题 8 十年后的音乐人</span><button class="home snd" data-snd>声音：开</button></div>
+    <div class="row" style="justify-content:flex-end"><button class="home snd" data-snd>声音：开</button></div>
     <h1 class="beat" id="heroTitle">十年<span>回响</span></h1>
     <div class="staff" aria-hidden="true"></div>
     <p>2027 到 2036，十年。十年后也许没有人只是“音乐人”，你可能会写歌、会教课、会用 AI、会做生意。这个游戏不替你回答你是谁，只问一个问题：十年后，音乐在你的生活里占几成？四个关卡按顺序走完，没有回头路，最后你会得到自己的音乐人格画像和身份光谱。</p>
@@ -1823,7 +1823,7 @@ Object.assign(STYLES, {
     { name: 'sbs', play(st, bar, t, out, s, E) { if (st % 8) return; tone(out, t, chordAt(s, bar).r, E.d16() * 7, { type: 'sine', gain: .3, rel: .2 }) } } ] }
 });
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
-const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'], chill: ['ep', 'cbass', 'brush', 'pluck', 'vinyl'] };
+const ALL = { lofi: ['keys', 'bass', 'drums', 'shaker', 'strings', 'guitar', 'flute', 'synth', 'trumpet', 'choir'], mystic: ['drone', 'harp', 'bell', 'tom'], synth: ['pad', 'sbass', 'sdrums', 'sarp'], orch: ['vln', 'cello', 'harpo', 'hornm', 'timp'], orchM: ['vln', 'cello', 'harpo', 'hornm', 'timp'], chill: ['cbass', 'brush', 'pluck', 'vinyl'] }; /* 开场音乐不放电钢琴的分解和弦（换成真钢琴以后听起来像琶音，太吵） */
 for (const k of ['pop', 'wed', 'rnb', 'docu', 'jazz', 'class', 'rehab', 'house', 'bossa', 'acoustic', 'fest', 'self']) ALL[k] = STYLES[k].layers.map(L => L.name);
 
 /* 界面音效 */
