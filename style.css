@@ -1073,3 +1073,42 @@ body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
 /* 朋友圈：自己写一句 */
 .own-post{display:flex;gap:8px;align-items:center}
 .own-post input{flex:1;min-width:0;font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:inherit}
+/* 越来越长的旋律：一个八度八个键，标简谱和唱名 */
+.simon{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.simon .pad{aspect-ratio:auto;height:150px;padding-bottom:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;position:relative}
+.simon .pad b{position:relative;font:800 22px var(--f-mono);color:rgba(30,20,30,.78)}
+.simon .pad b.hi::before{content:"";position:absolute;left:50%;top:-5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:currentColor}
+.simon .pad small{font:600 12px var(--f-body);color:rgba(30,20,30,.6)}
+.simon .pad kbd{position:absolute;top:6px;left:0;right:0;text-align:center;font:500 10px var(--f-mono);color:rgba(30,20,30,.4)}
+@media (max-width:520px){.simon{gap:4px}.simon .pad{height:120px;border-radius:10px}.simon .pad b{font-size:18px}.simon .pad small{font-size:10px}}
+/* 终极对决 */
+.duel{display:flex;flex-direction:column;gap:14px}
+.du-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.du-side{display:flex;flex-direction:column;align-items:center;padding:10px 18px;border-radius:14px;min-width:90px}
+.du-side i{font-style:normal;font-size:11px;letter-spacing:.2em;opacity:.75}
+.du-side b{font:400 30px var(--f-display)}
+.du-side.me{background:linear-gradient(160deg,#f0b45a,#c9772a);color:#2b1a05;box-shadow:0 0 24px rgba(240,180,90,.45)}
+.du-side.ai{background:linear-gradient(160deg,#7b8cff,#4a3fb0);color:#fff;box-shadow:0 0 24px rgba(123,140,255,.45)}
+.du-vs{font:400 40px var(--f-display);color:#fff;text-shadow:0 0 18px #ef8aa0,0 0 4px #fff;animation:vsPulse 1.2s ease-in-out infinite}
+@keyframes vsPulse{50%{transform:scale(1.12)}}
+.du-bar{position:relative;display:flex;height:22px;border-radius:999px;overflow:hidden;background:#4a3fb0;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.du-bar .du-me{background:linear-gradient(90deg,#c9772a,#f0b45a);transition:width .9s cubic-bezier(.2,1.3,.4,1)}
+.du-bar .du-ai{flex:1;background:linear-gradient(90deg,#6a5ae0,#7b8cff)}
+.du-bar em{position:absolute;inset:0;display:grid;place-items:center;font:700 13px var(--f-mono);font-style:normal;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.du-stage{display:flex;flex-direction:column;gap:10px;min-height:260px}
+.du-host .du-say{font-size:19px;line-height:1.7;margin:4px 0 0}
+.du-ai-line{border-left:4px solid #7b8cff;padding:6px 12px;background:rgba(123,140,255,.12);border-radius:0 10px 10px 0}
+.du-ai-line span{font-size:12px;color:#aab3ff}.du-ai-line p{margin:2px 0 0;font-size:17px}
+.du-opts .btn.picked{box-shadow:inset 0 0 0 2px #f0b45a}
+.du-fb{font-size:16px;line-height:1.7;color:#ffe1a0;margin:4px 0}
+.du-card b{font-size:16px}
+.du-result{display:grid;place-items:center;min-height:240px;text-align:center}
+.du-result b{font:400 76px var(--f-display);animation:afterIn .5s cubic-bezier(.2,1.4,.4,1)}
+.du-result.win b{color:#ffd36b;text-shadow:0 0 30px rgba(255,200,90,.8),0 4px 0 #8a5c12}
+.du-result.lose b{color:#c7cbe8}
+.du-result p{font:700 22px var(--f-mono);margin:0}
+#miniBody{position:relative}
+.confetti{position:absolute;inset:-40px 0 0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-20px;left:var(--x);width:8px;height:14px;background:var(--c);transform:rotate(var(--r));animation:cfFall 2.6s cubic-bezier(.3,.6,.5,1) var(--d) forwards;opacity:0}
+@keyframes cfFall{0%{opacity:1;transform:translateY(0) rotate(var(--r))}100%{opacity:0;transform:translateY(520px) rotate(calc(var(--r) + 540deg))}}
+@media (prefers-reduced-motion:reduce){.du-vs,.confetti{animation:none;display:none}}

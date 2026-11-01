@@ -8,8 +8,8 @@
    6 听出哪件乐器独奏  乐团排练
    7 数小节            主舞台救场（在第 4 小节最后一拍敲镲）
    8 编曲              慢歌录制（把乐器一层层拼回去）
-   9 旋律记忆          综艺总决赛（越来越长，挑战纪录）
-   10 总决赛           评审团（把前面的能力串起来）
+   9 旋律记忆          综艺半决赛（一个八度的八个音，越来越长）
+   10 终极对决         综艺总决赛：你 vs AI 歌手（写词、读现场、临场表达，观众投票）
    每个游戏：标题登场 → 游戏规则 → 点「开始」才开始 → 结算（星星、最好成绩、再来一次）
    ========================================================= */
 const MINI_KEY = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'], ARROW = ['←', '↓', '↑', '→'];
@@ -39,12 +39,12 @@ const MINI_DEF = {
   arrange: { eye: '慢歌录制', title: '把编曲拼回去', rules: [['参考小样', '先听参考小样：里面有鼓、贝斯、和弦三层。'], ['每层选一个', '每一层有三个版本，选出和小样一样的那个。'], ['少听几遍', '可以随时听小样和你的版本对比。听得越少就拼对，分数越高。']], run: gArrange,
     eff: [{ o: -6, l: -4 }, { o: 2 }, { o: 7, l: 4 }, { o: 12, l: 6, m: 4 }],
     say: [['拼错了', '制作人听了一遍，默默打开了 AI 编曲。'], ['差一点', '错了一层，听起来总有哪里不对。'], ['拼对了', '制作人说：“就是这个感觉。”'], ['一次就拼对', '制作人把工程文件交给你：“以后编曲你来。”']] },
-  simon: { eye: '综艺总决赛', title: '越来越长的旋律', rules: [['只能用耳朵', '五个键从低到高排好，放旋律的时候键不会亮，只能靠听音高记住，再按顺序弹回来（也可以按数字键 1 到 5）。'], ['越来越长', '一开始就有 4 个音，每对一次多一个音，也会越来越快。'], ['错一个就结束', '弹错时会亮出正确的那个键。记住的音越多，分数越高。']], run: gSimon,
+  simon: { eye: '综艺半决赛', title: '越来越长的旋律', rules: [['只能用耳朵', '八个键是一个完整的八度：简谱 1 2 3 4 5 6 7 和高音 1（do re mi fa sol la si do）。放旋律的时候键不会亮，只能靠听音高记住，再按顺序弹回来（也可以按数字键 1 到 8）。'], ['越来越长', '一开始就有 4 个音，每对一次多一个音，也会越来越快。'], ['错一个就结束', '弹错时会亮出正确的那个键。记住的音越多，分数越高。']], run: gSimon,
     eff: [{ o: -6, f: -6 }, { o: 2, f: -2 }, { o: 8, f: 8 }, { o: 12, f: 14, l: 5 }],
-    say: [['第一轮就出局了', '镜头给了你一个特写，你笑得有点僵。'], ['记住了一些', '你在半决赛水平停下了。'], ['进了前三', '导演说：“观众很喜欢你认真的样子。”'], ['冠军', '最后一个音弹完，全场站了起来。']] },
-  finale: { eye: '评审团', title: '十年的耳朵', rules: [['三道关', '听音、记旋律、分辨真人和 AI，这十年练过的耳朵全都用上。'], ['一关接一关', '每关结束直接进入下一关。'], ['总分', '三关加起来算总分。']], run: gFinale,
-    eff: [{ o: -8, f: -6 }, { o: 2 }, { o: 10, f: 8, l: 4 }, { o: 16, f: 12, l: 8 }],
-    say: [['没过', '评审团说：“2036 年的耳朵，确实不好练。”'], ['勉强过关', '你过了，但过得很险。'], ['通过', '评审团在你的名字后面写下：耳朵可信。'], ['满分', '评审团集体起立：“十年了，你的耳朵还在。”']] }
+    say: [['第一轮就出局了', '镜头给了你一个特写，你笑得有点僵。'], ['记住了一些', '你差一点就进了决赛。'], ['进了决赛', '导演说：“观众很喜欢你认真的样子。”'], ['第一名进决赛', '最后一个音弹完，全场站了起来。']] },
+  finale: { eye: '综艺总决赛', title: '终极对决：你 vs AI 歌手', rules: [['两位选手', '总决赛只剩你，和 AI 歌手「回声」。中间那根条是全场观众的投票，往哪边倒，哪边领先。'], ['三个回合', '写词对决、读现场、主持人提问。这一关不考节奏和音高，考的是 AI 最难学会的东西。'], ['票数过半就赢', '三个回合打完，票数过半的人拿冠军。']], run: gFinale,
+    eff: [{ o: -8, f: -6 }, { o: 2, f: 2 }, { o: 10, f: 10, l: 4 }, { o: 16, f: 16, l: 8 }],
+    say: [['输给了 AI', '颁奖时，回声向你鞠了一躬。它的声音很好听，但台下有人在喊你的名字。'], ['惜败', '只差一点。散场后，好几个观众在门口等你签名。'], ['险胜', '票数咬得很紧，最后一刻，观众站到了你这边。'], ['冠军', '彩带落下来的时候，你想起十年前那个在 Livehouse 暖场的自己。']] }
 };
 MINI_DEF.tempo2 = MINI_DEF.tempo; /* 兼容旧名字 */
 
@@ -449,37 +449,104 @@ function gArrange(done) {
 /* ---------- 9. 综艺总决赛：越来越长的旋律 ---------- */
 function gSimon(done) {
   const tok = TOK; E.duck(.05);
-  const PADS = [[60, '#f0b45a'], [62, '#7fd0b6'], [64, '#9fa6f0'], [67, '#ef8aa0'], [69, '#c6a3ef']];
+  /* 一个完整的八度：C4 到 C5（do re mi fa sol la si do），钢琴采样已逐个测过频率，音高是准的 */
+  const PADS = [[60, '#f0b45a', '1', 'do'], [62, '#f2d36b', '2', 're'], [64, '#9fd98a', '3', 'mi'], [65, '#7fd0b6', '4', 'fa'], [67, '#7fb6e8', '5', 'sol'], [69, '#9fa6f0', '6', 'la'], [71, '#c6a3ef', '7', 'si'], [72, '#ef8aa0', '1', 'do']];
   let seq = [], pos = 0, canTap = false, speed = .55;
-  $('#miniBody').innerHTML = `<p class="status" id="smstat">听，然后跟着弹</p><div class="simon">${PADS.map(([, c], i) => `<button class="pad" data-i="${i}" style="--c:${c}"><b>${i + 1}</b></button>`).join('')}</div><p class="score" id="smlen">长度 0</p>`;
+  $('#miniBody').innerHTML = `<p class="status" id="smstat">听，然后跟着弹</p><div class="simon">${PADS.map(([, c, n, sy], i) => `<button class="pad" data-i="${i}" style="--c:${c}"><b class="${i === 7 ? 'hi' : ''}">${n}</b><small>${sy}</small><kbd>${i + 1}</kbd></button>`).join('')}</div><p class="score" id="smlen">长度 0</p>`;
   const pads = $$('.simon .pad');
   const flash = (i, t = .3) => { pads[i].classList.add('lit'); setTimeout(() => pads[i].classList.remove('lit'), t * 1000) };
-  const sound = (i, t, out) => { keys(out || E.sfx, t, PADS[i][0] + 12, .4, .14); bell(out || E.sfx, t, PADS[i][0] + 24, .02) };
+  /* 只用钢琴本身的音，不叠别的泛音，免得听错音高 */
+  const sound = (i, t, out) => keys(out || E.sfx, t, PADS[i][0], .45, .16);
   const grow = () => {
     if (tok !== TOK) return;
     seq.push(Math.floor(Math.random() * PADS.length)); if (seq.length < 4) return grow();
-    pos = 0; canTap = false; speed = Math.max(.24, .5 - (seq.length - 4) * .045);
+    pos = 0; canTap = false; speed = Math.max(.26, .52 - (seq.length - 4) * .04);
     $('#smstat').textContent = `第 ${seq.length - 3} 轮 · 只听，不看……`;
-    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => sound(p, t0 + k * speed, bus));  /* 放的时候键不亮 */ return seq.length * speed + .6 }, .05,
+    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => sound(p, t0 + k * speed, bus)); return seq.length * speed + .6 }, .05,  /* 放的时候键不亮 */
       () => { if (tok !== TOK) return; canTap = true; $('#smstat').textContent = '轮到你了'; });
   };
   const press = i => {
     if (!canTap) return; sound(i, now()); flash(i, .2);
     if (i !== seq[pos]) { canTap = false; sfxBuzz(); pads[seq[pos]].classList.add('want'); const got = seq.length - 1;
-      $('#smstat').textContent = `错了。正确的是第 ${seq[pos] + 1} 个键。`;
+      $('#smstat').textContent = `错了。这里应该是 ${PADS[seq[pos]][2]}（${PADS[seq[pos]][3]}${seq[pos] === 7 ? '，高音' : ''}）。`;
       setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, (got - 3) / 7)), `你记住了 ${got} 个音的旋律${PROG.best && PROG.best.simonLen ? `，之前的纪录是 ${PROG.best.simonLen} 个` : ''}。`); PROG.best = PROG.best || {}; PROG.best.simonLen = Math.max(PROG.best.simonLen || 0, got) }, 1500); return }
     pos++; if (pos >= seq.length) { canTap = false; $('#smlen').textContent = `长度 ${seq.length}`; sfxGood(); if (seq.length >= 12) return setTimeout(() => done(1, `你记住了全部 ${seq.length} 个音！`), 900); setTimeout(grow, 900) }
   };
   pads.forEach((p, i) => p.addEventListener('pointerdown', e => { e.preventDefault(); press(i) }));
-  KEYH = e => { const i = '12345'.indexOf(e.key); if (i >= 0) { press(i); return true } };
+  KEYH = e => { const i = '12345678'.indexOf(e.key); if (i >= 0) { press(i); return true } };
   grow();
 }
 
-/* ---------- 10. 评审团：三道关 ---------- */
-function gFinale(done) {
-  const tok = TOK; let total = 0; const parts = [];
-  const stage = (name, fn, next) => { if (tok !== TOK) return; $('#miniBody').innerHTML = `<div class="stage-card">${name}</div>`; setTimeout(() => { if (tok !== TOK) return; $('#miniBody').innerHTML = ''; fn((r, d) => { total += r; parts.push(`${name.replace(/<[^>]+>/g, '')}：${Math.round(r * 100)} 分`); next() }) }, 1300) };
-  stage('<b>第一关</b>听音', cb => gEar(cb, ['interval', 'chord', 'note']), () =>
-    stage('<b>第二关</b>记旋律', cb => gSimon(cb), () =>
-      stage('<b>第三关</b>真人还是 AI', cb => { E.duck(.05); aiRound('aijit', ok => cb(ok ? 1 : 0, ''), '2036 年的 AI，也会“不完美”') }, () => { if (tok === TOK) done(total / 3, parts.join('，') + '。') })));
+/* ---------- 10. 综艺总决赛：你 vs AI 歌手 ---------- */
+/* 观众的声音：聊天声、欢呼、跟唱、手机提示音 */
+function crowdChat(out, t, d) { for (let k = 0; k < d * 9; k++) { const tt = t + Math.random() * d; voice(out, tt, 50 + Math.random() * 14, .08 + Math.random() * .12, .025, 'vr') } const c = E.ctx, s = c.createBufferSource(); s.buffer = E.noise; s.loop = true; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 600; f.Q.value = .8; const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(.05, t + .5); a.gain.setValueAtTime(.05, t + d - .5); a.gain.linearRampToValueAtTime(0, t + d); s.connect(f); f.connect(a); a.connect(out); s.start(t); s.stop(t + d + .1) }
+function crowdCheer(out, t, d, g = 1) {
+  const c = E.ctx, s = c.createBufferSource(); s.buffer = E.noise; s.loop = true; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = .6;
+  const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(.22 * g, t + .4); a.gain.setValueAtTime(.2 * g, t + d - .8); a.gain.linearRampToValueAtTime(0, t + d); s.connect(f); f.connect(a); a.connect(out); s.start(t); s.stop(t + d + .1);
+  for (let k = 0; k < d * 1.5; k++) { const tt = t + .3 + Math.random() * (d - .8), o = c.createOscillator(), w = c.createGain(); o.frequency.setValueAtTime(1800 + Math.random() * 600, tt); o.frequency.exponentialRampToValueAtTime(2600 + Math.random() * 600, tt + .25); w.gain.setValueAtTime(0, tt); w.gain.linearRampToValueAtTime(.025 * g, tt + .05); w.gain.linearRampToValueAtTime(0, tt + .35); o.connect(w); w.connect(out); o.start(tt); o.stop(tt + .4) }
 }
+function crowdClap(out, t, d, bpm = 120) { const b = 60 / bpm; for (let k = 0; k * b < d; k++) for (let n = 0; n < 6; n++) nhit(out, t + k * b + Math.random() * .03, { g: .09, type: 'bandpass', f: 1200 + n * 200, d: .06, q: 1.2 }) }
+function crowdSing(out, t) { const mel = [[64, 0, 1], [67, 1, 1], [69, 2, 2], [67, 4, 1], [64, 5, 1], [62, 6, 2]], b = .5; mel.forEach(([m, s, l]) => { for (let v = 0; v < 6; v++) voice(out, t + s * b + Math.random() * .06, m - 12 + (v % 2 ? 12 : 0) + (Math.random() - .5) * .3, l * b * .95, .02, 'vo') }); return 8 * b }
+function phoneDing(out, t) { tone(out, t, 88, .08, { type: 'sine', gain: .05, rel: .2 }); tone(out, t + .1, 93, .1, { type: 'sine', gain: .05, rel: .3 }) }
+const DUEL_LYRIC = [
+  { cue: '十年以后我还在唱歌，', ai: '“追逐梦想的光，照亮星辰大海。”', opts: [['“像追着光的蝴蝶，飞过星辰大海。”', -10, '押韵很漂亮，可这一句换成谁来唱都一样。'], ['“梦想在心中燃烧，永远不会熄灭。”', -14, '这是 AI 最擅长写的句子：好听，但是空。'], ['“房租涨了三次，吉他还是那一把。”', 18, '有一个具体的东西，大家就信了。']] },
+  { cue: '凌晨两点的城市，', ai: '“霓虹闪烁，寂寞如潮水般涌来。”', opts: [['“灯火阑珊，孤独在心底蔓延。”', -12, '和 AI 那句几乎一模一样，观众分不出来谁是谁。'], ['“便利店只剩关东煮还热着。”', 18, '一个画面，就把“寂寞”两个字省掉了。'], ['“星星眨眼，诉说着我的思念。”', -14, '漂亮的套路，观众已经听过一千遍了。']] },
+  { cue: '妈妈打来电话，', ai: '“温暖的声音，是我永远的港湾。”', opts: [['“爱是永恒的避风港，守护我成长。”', -14, '大词太多了，听不到妈妈本人。'], ['“只问我吃了没，没问我唱得怎么样。”', 18, '一句家常话，台下好几个人眼眶红了。'], ['“思念化作千言万语，在心中回响。”', -12, '比 AI 那句还像 AI。']] }
+];
+const DUEL_LIVE = [
+  { key: 'chat', play: (bus, t) => { crowdChat(bus, t, 4.5); phoneDing(bus, t + 1.2); phoneDing(bus, t + 3.1); nhit(bus, t + 2.4, { g: .12, type: 'bandpass', f: 500, d: .25 }); return 5 }, hint: '台下在小声聊天，好几个人低头看手机，还有人咳嗽。观众的注意力已经散了。' },
+  { key: 'sing', play: (bus, t) => crowdSing(bus, t) + .5, hint: '台下几千个人在跟着你唱，有高有低，但一个字都没错。这时候，观众想当主角。' },
+  { key: 'hype', play: (bus, t) => { crowdCheer(bus, t, 4.5); crowdClap(bus, t + .3, 4); return 5 }, hint: '欢呼、口哨、整齐的拍手声，全场已经热到顶了。现在停下来，会把这股劲浇灭。' }
+];
+const DUEL_LIVE_OPTS = [['放下吉他，跟台下聊两句，再唱一首安静的', 'chat'], ['把麦克风朝向观众，副歌让他们唱', 'sing'], ['一秒都不停，直接接最炸的那一首', 'hype']];
+const DUEL_ASK = { q: '“AI 一分钟就能写十首歌，回声刚才也唱得很好。你凭什么站在这里？”', opts: [['“因为这十年，每一首歌都是我自己活出来的。”', 18, '台下安静了一秒，然后掌声响起来。', 'auth'], ['“我会用 AI，但我比它更懂你们。”', 8, '很聪明的回答，有人点头，也有人觉得太圆滑。', 'ai'], ['“说实话，我也不知道。我只是还想唱。”', 14, '你说得很老实，观众反而更信你了。', 'bond'], ['“它只是机器，根本不懂音乐。”', -10, '回声没有反驳。观众觉得你有点急了。', 'fight']] };
+function gFinale(done) {
+  const tok = TOK; E.duck(.05);
+  let vote = 50; const log = [];
+  $('#miniBody').innerHTML = `<div class="duel">
+    <div class="du-top"><div class="du-side me"><i>选手</i><b>你</b></div><div class="du-vs">VS</div><div class="du-side ai"><i>AI</i><b>回声</b></div></div>
+    <div class="du-bar"><span class="du-me" id="duMe" style="width:50%"></span><span class="du-ai"></span><em id="duPct">50 : 50</em></div>
+    <div class="du-stage" id="duStage"></div></div>`;
+  const stage = $('#duStage');
+  const setVote = v => { vote = Math.max(4, Math.min(96, Math.round(v))); $('#duMe').style.width = vote + '%'; $('#duPct').textContent = `${vote} : ${100 - vote}` };
+  const host = (title, text) => `<div class="du-host"><span class="eyebrow">${title}</span><p class="du-say">${text}</p></div>`;
+  const later = (fn, ms) => setTimeout(() => { if (tok === TOK) fn() }, ms);
+  /* 每一回合：先是 AI 的票数，再是你的选择 */
+  const swing = (d, ai = 6) => { setVote(vote - ai); later(() => { setVote(vote + d); if (d > 0) E.playClip(bus => { crowdCheer(bus, now() + .05, 2, .6); return 2.2 }, .05) }, 900) };
+  const pick = (opts, onPick) => {
+    const box = document.createElement('div'); box.className = 'choices-col du-opts';
+    box.innerHTML = opts.map((o, j) => `<button class="btn ghost" data-d="${j}">${o[0]}</button>`).join(''); stage.appendChild(box); MO.rise(box, 'button');
+    box.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { box.querySelectorAll('[data-d]').forEach(x => x.disabled = true); b.classList.add('picked'); onPick(+b.dataset.d) });
+  };
+  const fb = (t, next) => { const p = document.createElement('p'); p.className = 'du-fb'; p.textContent = t; stage.appendChild(p); const n = document.createElement('button'); n.className = 'btn'; n.textContent = '下一回合 →'; n.style.alignSelf = 'flex-start'; n.onclick = next; later(() => stage.appendChild(n), 1400) };
+  const card = (t, sub, next) => { stage.innerHTML = `<div class="stage-card du-card"><b>${t}</b>${sub}</div>`; E.playClip(bus => { const t0 = now() + .05; [60, 64, 67, 72].forEach((m, i) => trumpet(bus, t0 + i * .12, m, .4, .05)); return 1.2 }, .05); later(next, 1700) };
+  /* 第一回合：写词 */
+  const r1 = () => card('第一回合', '写词对决', () => {
+    const L = pick0(DUEL_LYRIC);
+    stage.innerHTML = host('主持人', `大屏幕上是半句歌词：<b>「${L.cue}」</b>两位选手各接一句。`) + `<div class="du-ai-line"><span>回声接的是</span><p>${L.ai}</p></div><p class="mnote">轮到你了。三句里选一句：</p>`;
+    later(() => { setVote(vote + 6); pick(L.opts, j => { const o = L.opts[j]; log.push(o[1]); swing(o[1], 0); fb(o[2], r2) }) }, 900);
+  });
+  /* 第二回合：读现场 */
+  const r2 = () => card('第二回合', '读现场', () => {
+    const S = pick0(DUEL_LIVE); let heard = false;
+    stage.innerHTML = host('导播', '下一首之前，你只能听台下的声音。<b>听完决定接下来怎么唱。</b>回声会照着歌单往下唱。') + `<button class="btn pre-hum" id="duListen"><span>▶</span> 听听台下</button><p class="mnote" id="duHint"></p>`;
+    $('#duListen').onclick = () => { $('#duListen').classList.add('heard'); E.playClip(bus => S.play(bus, now() + .1), .05, () => { if (heard || tok !== TOK) return; heard = true; pick(DUEL_LIVE_OPTS, j => { const ok = DUEL_LIVE_OPTS[j][1] === S.key, d = ok ? 18 : -8; log.push(d); swing(d, 8); fb(`${ok ? '读对了。' : '没读准。'}${S.hint}`, r3) }) }) };
+  });
+  /* 第三回合：主持人提问 */
+  const r3 = () => card('第三回合', '主持人提问', () => {
+    stage.innerHTML = host('主持人', DUEL_ASK.q) + `<div class="du-ai-line"><span>回声先答</span><p>“我会一直学习，努力写出大家喜欢的歌。”</p></div>`;
+    later(() => { setVote(vote + 4); pick(DUEL_ASK.opts, j => { const o = DUEL_ASK.opts[j]; log.push(o[1]); PROG.log.push({ lv: 1, y: G ? G.year : 10, who: '主持人', say: DUEL_ASK.q, pick: o[0].replace(/[“”]/g, ''), k: o[3] }); swing(o[1], 0); later(() => { const p = document.createElement('p'); p.className = 'du-fb'; p.textContent = o[2]; stage.appendChild(p); later(end, 2200) }, 300) }) }, 1100);
+  });
+  /* 揭晓：赢了有彩带和“冠军”大字 */
+  const end = () => {
+    const win = vote > 50;
+    stage.innerHTML = `<div class="du-result ${win ? 'win' : 'lose'}"><span class="eyebrow">最终票数</span><b>${win ? '冠军' : '亚军'}</b><p>${vote} : ${100 - vote}</p></div>`;
+    if (win) { const cf = document.createElement('div'); cf.className = 'confetti'; cf.innerHTML = Array.from({ length: 60 }, (_, i) => `<i style="--x:${Math.random() * 100}%;--d:${(Math.random() * 1.2).toFixed(2)}s;--c:${['#f0b45a', '#ef8aa0', '#7fd0b6', '#9fa6f0', '#fff'][i % 5]};--r:${Math.round(Math.random() * 360)}deg"></i>`).join(''); $('#miniBody').appendChild(cf);
+      E.playClip(bus => { const t0 = now() + .05; crowdCheer(bus, t0, 4); [[60, 64, 67], [65, 69, 72], [67, 71, 74], [72, 76, 79]].forEach((c, i) => c.forEach(m => trumpet(bus, t0 + i * .32, m, i === 3 ? 1.4 : .3, .045))); return 4.2 }, .05) }
+    else E.playClip(bus => { crowdCheer(bus, now() + .05, 2.5, .4); return 2.6 }, .05);
+    const ratio = win ? Math.min(1, .6 + (vote - 50) / 30 * .4) : Math.max(0, vote / 50 * .59);  /* 赢了至少两星 */
+    later(() => done(ratio, `最终票数 ${vote} : ${100 - vote}，${win ? '你赢了 AI 歌手回声' : '回声赢了这一场'}。三个回合：${log.map(d => d > 0 ? '+' + d : d).join('、')}。`), 3800);
+  };
+  r1();
+}
+const pick0 = a => a[Math.floor(Math.random() * a.length)];
