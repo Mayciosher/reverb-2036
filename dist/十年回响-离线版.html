@@ -403,7 +403,6 @@ p{margin:0;line-height:1.65}
   box-shadow:0 18px 40px rgba(0,0,0,.45);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s}
 .card.drag{transition:none;cursor:grabbing}
 .card.enter{transform:translateY(16px) scale(.96);opacity:0}
-.card::after{content:"";position:absolute;left:0;right:0;top:64px;border-top:2px dashed rgba(43,35,51,.18)}
 .card.crisis{box-shadow:0 0 0 3px var(--bad),0 18px 40px rgba(0,0,0,.45)}
 .whois{display:flex;gap:12px;align-items:center;height:48px}
 .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:22px;color:var(--paper);flex:none}
@@ -1143,18 +1142,18 @@ body.lx [data-view="duo"]:not([data-mat="desk"]) > .lx-main .ideal-btn.on{box-sh
 body.lx #ideal .lx-main{gap:16px}
 body.lx #ideal .ideal-btn{padding:10px 12px}
 /* 卡片：谁发来的，像聊天消息的抬头一样醒目 */
-.card .whois{height:auto;padding:8px 10px;margin:-4px -6px 4px;border-radius:12px;background:var(--wt,rgba(120,100,140,.12))}
+.card .whois{height:auto;padding:12px 18px;margin:-20px -20px 12px;border-radius:18px 18px 0 0;background:var(--wt,#4a3f5c);color:#fff}
+.card .whois small{color:rgba(255,255,255,.78)}
+.card .whois .av{box-shadow:0 0 0 2px rgba(255,255,255,.85)}
 .card .whois b{font-size:20px;letter-spacing:.04em}
 .card .whois b::before{content:"来自 ";font-size:12px;font-weight:600;letter-spacing:.1em;opacity:.6;margin-right:2px}
-.card[data-wt="near"]{--wt:rgba(224,140,90,.18)}
-.card[data-wt="work"]{--wt:rgba(90,127,214,.15)}
-.card[data-wt="ai"]{--wt:rgba(122,90,214,.18)}
-.card[data-wt="luck"]{--wt:rgba(63,143,106,.18)}
-.card[data-wt="crisis"]{--wt:rgba(192,70,79,.18)}
+.card[data-wt="near"]{--wt:#b8643c}
+.card[data-wt="work"]{--wt:#3d5a99}
+.card[data-wt="ai"]{--wt:#5b44a8}
+.card[data-wt="luck"]{--wt:#2f7a58}
+.card[data-wt="crisis"]{--wt:#a8343f}
 /* 原型默认收起，点开才看 */
-.src .src-t{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:#9a5b2a}
-.src .src-x{display:none}
-.src.open .src-x{display:block;margin-top:4px}
+.src b{font-size:12px;font-weight:700;color:#9a5b2a;margin-right:6px;letter-spacing:.1em}
 /* 选项下面：这个选择会影响哪几项 */
 #play .fx{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px}
 #play .fx i{font-style:normal;font:700 11px var(--f-body);padding:2px 7px;border-radius:999px;background:rgba(43,34,48,.1);color:rgba(43,34,48,.75);letter-spacing:.05em}
@@ -1168,15 +1167,27 @@ body.lx #ideal .ideal-btn{padding:10px 12px}
 body.dealing #play #bL,body.dealing #play #bR{opacity:0;pointer-events:none;transition:opacity .15s ease 0s}
 #play #bL,#play #bR{transition:opacity .35s ease,transform .2s,box-shadow .2s}
 body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .2s,box-shadow .2s}
-/* 选完以后的“后来……”纸条 */
-.after-note{position:absolute;left:50%;top:50%;z-index:6;width:min(420px,90%);transform:translate(-50%,-50%) rotate(-1.5deg);background:#fffaf0;color:#2b2230;border-radius:4px;padding:18px 20px 12px;
-  box-shadow:0 2px 0 #e6d9c6,0 18px 40px rgba(0,0,0,.45);cursor:pointer;animation:afterIn .35s cubic-bezier(.2,1.2,.4,1)}
-.after-note::before{content:"";position:absolute;top:-10px;left:50%;width:76px;height:22px;margin-left:-38px;background:rgba(255,255,255,.6);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
-.after-note i{font-style:normal;font:700 13px var(--f-display);letter-spacing:.3em;color:#a0522d}
-.after-note p{margin:6px 0 8px;font-size:18px;line-height:1.65}
-.after-note small{display:block;text-align:right;font-size:12px;color:#9a8c96}
-.after-note.out{opacity:0;transform:translate(-50%,-46%) rotate(-1.5deg);transition:.22s}
-@keyframes afterIn{from{opacity:0;transform:translate(-50%,-40%) rotate(-4deg)}}
+/* 选完以后：卡片的位置翻出一张“后来”卡，打字机写出后来发生的事，点一下才继续 */
+.after-card{position:absolute;left:50%;top:50%;z-index:6;width:min(460px,94%);min-height:240px;margin:0;transform:translate(-50%,-50%);perspective:1200px;cursor:pointer}
+.after-card .ac-in{position:relative;background:#fffaf0;color:#2b2230;border-radius:18px;padding:22px 24px 18px;transform-origin:50% 50%;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 30px,rgba(160,82,45,.10) 30px 31px);
+  box-shadow:0 2px 0 #e6d9c6,0 22px 50px rgba(0,0,0,.5);animation:acFlip .62s cubic-bezier(.2,.9,.25,1.05) both}
+.after-card .ac-in::before{content:"";position:absolute;top:-11px;left:50%;width:84px;height:24px;margin-left:-42px;background:rgba(255,255,255,.62);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.after-card .ac-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.after-card .ac-stamp{display:inline-block;font:700 15px var(--f-display);letter-spacing:.4em;color:#a0522d;border:2px solid #a0522d;border-radius:6px;padding:3px 4px 3px 10px;transform:rotate(-6deg);
+  opacity:0;animation:acStamp .38s cubic-bezier(.3,1.6,.5,1) .5s forwards}
+.after-card .ac-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(160,82,45,.5),transparent);transform-origin:left;transform:scaleX(0);animation:acLine .5s ease .7s forwards}
+.after-card p{margin:6px 0 10px;font-size:20px;line-height:1.75;min-height:3.5em}
+.after-card small{display:block;text-align:right;font-size:13px;color:#a0522d;font-weight:700;opacity:0;transition:opacity .3s}
+.after-card.ready small{opacity:1;animation:acNudge 1.4s ease-in-out .3s infinite}
+.after-card.out .ac-in{animation:acOut .3s ease forwards}
+@keyframes acFlip{0%{transform:rotateY(-90deg) scale(.92);opacity:.2}60%{transform:rotateY(8deg) scale(1.01);opacity:1}100%{transform:none}}
+@keyframes acStamp{0%{opacity:0;transform:rotate(-6deg) scale(2.2)}100%{opacity:1;transform:rotate(-6deg) scale(1)}}
+@keyframes acLine{to{transform:scaleX(1)}}
+@keyframes acNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@keyframes acOut{to{transform:translateY(-14px) rotate(2deg);opacity:0}}
+body.aftering #play #bL,body.aftering #play #bR,body.aftering #play #undo{opacity:0;pointer-events:none;transition:opacity .2s}
+@media (prefers-reduced-motion:reduce){.after-card .ac-in,.after-card .ac-stamp,.after-card .ac-line{animation:none;opacity:1;transform:none}}
 #play .table{position:relative}
 
 /* ===== 第八版：十个音乐小游戏 ===== */
@@ -1300,6 +1311,29 @@ body.lx #transit,#transit{position:fixed;inset:0;display:flex;flex-direction:col
 @media (max-width:560px){ .topbar #topTitle{display:none} .tb-r{gap:6px} .tb-r .home{padding:6px 10px;font-size:12px} }
 body:not(.lx) #play .fx i{background:rgba(255,255,255,.12);color:var(--soft)}
 body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
+
+/* ===== 第九版 ===== */
+/* 酒吧：「听客人哼」按钮要醒目 */
+.btn.pre-hum{align-self:flex-start;background:linear-gradient(180deg,#ffcf5a,#f0a020);color:#2b1a05;border:0;font-weight:800;font-size:16px;padding:12px 20px;border-radius:999px;
+  box-shadow:0 0 0 3px rgba(255,207,90,.35),0 8px 18px rgba(240,160,32,.45);animation:humPulse 1.6s ease-in-out infinite}
+.btn.pre-hum span{display:inline-block;margin-right:4px}
+.btn.pre-hum.heard{animation:none;box-shadow:0 4px 10px rgba(240,160,32,.35)}
+@keyframes humPulse{0%,100%{box-shadow:0 0 0 3px rgba(255,207,90,.35),0 8px 18px rgba(240,160,32,.45)}50%{box-shadow:0 0 0 9px rgba(255,207,90,.12),0 8px 22px rgba(240,160,32,.6)}}
+@media (prefers-reduced-motion:reduce){.btn.pre-hum{animation:none}}
+/* 答完以后再听一遍 */
+.rc-replay{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}
+.rc-replay>span{font-size:12px;color:var(--paper-mute,#8a7f90);margin-right:2px}
+.rc-replay .btn{color:#2b2230;background:rgba(43,35,51,.05);border:1px solid rgba(43,35,51,.3);box-shadow:none}
+.rc-replay .btn:hover{background:rgba(43,35,51,.1)}
+.rc-replay .btn.r{box-shadow:inset 0 0 0 2px #2e9b6d;color:#1f6b4a}
+.rc-replay .btn.x{box-shadow:inset 0 0 0 2px #c0464f;color:#a3343d}
+.rc-replay .btn.me.f{box-shadow:inset 0 0 0 2px #d79a2e;color:#7a5410}
+/* 你自己：三个版本 */
+.cs-top .cs-ver{font:700 14px var(--f-body);color:#2b2230}
+.clip.cassette.picked{box-shadow:0 0 0 3px #f0b45a,0 16px 30px rgba(0,0,0,.5)}
+/* 朋友圈：自己写一句 */
+.own-post{display:flex;gap:8px;align-items:center}
+.own-post input{flex:1;min-width:0;font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:inherit}
 
 </style>
 </head>
@@ -1589,15 +1623,19 @@ function tone(out, t, midi, dur, o = {}) {
   n.connect(g); g.connect(out); osc.start(t); osc.stop(t + hold + rel * 1.5 + .05);
   return osc;
 }
-/* 开场音乐的电钢琴：一直用原来的合成音色（不换成真钢琴采样，真钢琴在这里听起来像琶音） */
-function epKeys(out, t, midi, dur, gain = .06) {
-  tone(out, t, midi, dur, { type: 'sine', gain, att: .004, rel: .5 });
-  tone(out, t, midi + 12, dur * .6, { type: 'triangle', gain: gain * (.12 + gain * 1.6), att: .003, rel: .3 });
+/* 背景音乐里的钢琴：一律用合成的电钢琴音色（真钢琴采样当伴奏听起来很假，像机器在弹琶音） */
+function epKeys(out, t, midi, dur, gain = .06, detune = 0) {
+  tone(out, t, midi, dur, { type: 'sine', gain, att: .004, rel: .5, detune });
+  tone(out, t, midi + 12, dur * .6, { type: 'triangle', gain: gain * (.12 + gain * 1.6), att: .003, rel: .3, detune });
   tone(out, t, midi, .04, { type: 'triangle', gain: gain * .5, att: .002, rel: .06, cut: 2500 + gain * 20000 });
 }
-/* 钢琴：力度越大越亮 */
+/* 真钢琴：只用在需要单独听的地方（听音题、AI 测试、命运旋律、第三关的片段）。
+   像真人弹：每个音力度和时间都有一点点随机，音色偏暗偏柔 */
 function keys(out, t, midi, dur, gain = .06, detune = 0) {
-  if (SMP.has('piano')) return SMP.play('piano', out, t, midi + detune / 100, dur + .15, gain, { rel: .6, cut: 1800 + gain * 45000 });
+  if (SMP.has('piano')) {
+    const v = gain * (.82 + Math.random() * .3), tt = t + Math.random() * .014;
+    return SMP.play('piano', out, tt, midi + detune / 100, dur + .2, v, { rel: .7, cut: 1300 + v * 26000 });
+  }
   tone(out, t, midi, dur, { type: 'sine', gain, att: .004, rel: .5, detune });
   tone(out, t, midi + 12, dur * .6, { type: 'triangle', gain: gain * (.12 + gain * 1.6), att: .003, rel: .3, detune });
   tone(out, t, midi, .04, { type: 'triangle', gain: gain * .5, att: .002, rel: .06, cut: 2500 + gain * 20000 });
@@ -1705,7 +1743,7 @@ const STYLES = {
     bpm: 80, swing: .3,
     chords: [{ r: 38, v: [53, 57, 60, 64] }, { r: 43, v: [53, 57, 59, 64] }, { r: 36, v: [52, 55, 59, 62] }, { r: 45, v: [55, 58, 61, 64] }],
     layers: [
-      { name: 'keys', label: '钢琴', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 6) return; const c = chordAt(s, bar); const dt = () => (Math.random() - .5) * 90 * Math.max(0, 1 - E.mood.love * 2.2); const b = E.d16() * 4; c.v.forEach((m, i) => keys(out, t + i * .012, m, st === 0 ? b * 1.4 : b * .9, st === 0 ? .05 : .035, dt())) } },
+      { name: 'keys', label: '钢琴', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 6) return; const c = chordAt(s, bar); const dt = () => (Math.random() - .5) * 90 * Math.max(0, 1 - E.mood.love * 2.2); const b = E.d16() * 4; c.v.forEach((m, i) => epKeys(out, t + i * .012, m, st === 0 ? b * 1.4 : b * .9, st === 0 ? .05 : .035, dt())) } },
       { name: 'bass', label: '贝斯', play(st, bar, t, out, s, E) { const c = chordAt(s, bar), n = chordAt(s, bar + 1), b = E.d16() * 4; if (st === 0) tone(out, t, c.r, b * .9, { type: 'triangle', gain: .42, rel: .15, cut: 900 }); if (st === 8) tone(out, t, c.r + 7, b * .8, { type: 'triangle', gain: .36, rel: .15, cut: 900 }); if (st === 14) tone(out, t, n.r - 1, b * .35, { type: 'triangle', gain: .3, rel: .1, cut: 900 }) } },
       { name: 'drums', label: '鼓组', play(st, bar, t, out) { if (st === 0 || st === 10 || (st === 7 && bar % 2)) kick(out, t, .75); if (st === 4 || st === 12) snare(out, t, .22); if (st % 2 === 0) hat(out, t, st % 4 === 2 ? .07 : .04) } },
       { name: 'shaker', label: '沙锤', play(st, bar, t, out) { shaker(out, t, st % 4 === 2 ? .05 : .025) } },
@@ -1722,7 +1760,7 @@ const STYLES = {
   mystic: {
     bpm: 62, swing: 0, chords: [{ r: 38 }, { r: 38 }, { r: 39 }, { r: 38 }], scale: [62, 63, 66, 67, 69, 70, 72, 74],
     layers: [
-      { name: 'drone', label: '大提琴', play(st, bar, t, out, s, E) { if (st) return; const c = chordAt(s, bar), b = E.d16() * 16; strings(out, t, c.r, b, .03, { att: 1.2, cut: 700 }); strings(out, t, c.r + 7, b, .02, { att: 1.4, cut: 800 }) } },
+      { name: 'drone', label: '合成垫', play(st, bar, t, out, s, E) { if (st) return; const c = chordAt(s, bar), b = E.d16() * 16; [c.r + 12, c.r + 19].forEach((m, i) => { tone(out, t, m, b, { type: 'triangle', gain: .012 - i * .003, att: 1.6, rel: 1.4, cut: 900, detune: -5 }); tone(out, t, m, b, { type: 'sine', gain: .014 - i * .004, att: 1.8, rel: 1.4, detune: 5 }) }) } },
       { name: 'harp', label: '竖琴', play(st, bar, t, out, s) { if (st % 2) return; const sc = s.scale, i = (st / 2 + bar * 3) % 8; harp(out, t, sc[i] + (bar % 2 && st > 7 ? 12 : 0), .06) } },
       { name: 'bell', label: '钟琴', play(st, bar, t, out, s) { if (st === 0 || (st === 8 && bar % 2)) bell(out, t, s.scale[(bar * 5 + st) % 8] + 12, .04) } },
       { name: 'tom', label: '手鼓', play(st, bar, t, out) { if (st === 0) kick(out, t, .5, 120, 70, .4); if (st === 6 || st === 10) kick(out, t, .3, 180, 110, .25) } }
@@ -1782,26 +1820,26 @@ Object.assign(STYLES, {
     { name: 'wcl', play(st, bar, t, out, s, E) { if (st % 8) return; strings(out, t, chordAt(s, bar).r, E.d16() * 8, .03, { att: .4, cut: 800 }) } } ] },
   /* 人声制作人：慢速 R&B */
   rnb: { bpm: 70, swing: .18, chords: CH_JAZZ, layers: [
-    { name: 'rky', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 10) return; chordAt(s, bar).v.forEach((m, i) => keys(out, t + i * .02, m + 12, E.d16() * (st ? 5 : 9), .03)) } },
+    { name: 'rky', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 10) return; chordAt(s, bar).v.forEach((m, i) => epKeys(out, t + i * .02, m + 12, E.d16() * (st ? 5 : 9), .03)) } },
     { name: 'rbs', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 7 && st !== 10) return; tone(out, t, chordAt(s, bar).r, E.d16() * 2.5, { type: 'sine', gain: .4, rel: .2 }) } },
     { name: 'rdr', play(st, bar, t, out) { if (st === 0 || st === 7 || st === 10) kick(out, t, .5, 110, 45, .3); if (st === 4 || st === 12) nhit(out, t, { g: .12, type: 'bandpass', f: 1600, d: .12 }); if (st % 2 === 0) hat(out, t, .022) } } ] },
-  /* 纪录片作曲：钢琴加大提琴 */
+  /* 纪录片作曲：电钢琴加大提琴 */
   docu: { bpm: 60, swing: 0, chords: CH_SOFT, layers: [
-    { name: 'dpn', play(st, bar, t, out, s, E) { if (st % 4) return; const c = chordAt(s, bar); keys(out, t, c.v[[0, 2, 1, 3][st / 4]] + 12, E.d16() * 6, .04) } },
+    { name: 'dpn', play(st, bar, t, out, s, E) { if (st % 4) return; const c = chordAt(s, bar); epKeys(out, t, c.v[[0, 2, 1, 3][st / 4]] + 12, E.d16() * 6, .04) } },
     { name: 'dce', play(st, bar, t, out, s, E) { if (st) return; strings(out, t, chordAt(s, bar).r, E.d16() * 16, .035, { att: 1, cut: 700 }) } } ] },
   /* 酒吧驻唱：爵士三重奏（钢琴、低音提琴、刷子鼓） */
   jazz: { bpm: 118, swing: .33, chords: CH_JAZZ, layers: [
     { name: 'jbs', play(st, bar, t, out, s, E) { if (st % 4) return; const c = chordAt(s, bar), n = chordAt(s, bar + 1); const walk = [c.r, c.r + 4, c.r + 7, n.r - 1][st / 4]; tone(out, t, walk, E.d16() * 3.4, { type: 'triangle', gain: .38, rel: .1, cut: 700 }) } },
-    { name: 'jpn', play(st, bar, t, out, s) { if (st !== 6 && st !== 14 && !(st === 3 && bar % 2)) return; chordAt(s, bar).v.forEach((m, i) => keys(out, t + i * .01, m, .25, .035)) } },
+    { name: 'jpn', play(st, bar, t, out, s) { if (st !== 6 && st !== 14 && !(st === 3 && bar % 2)) return; chordAt(s, bar).v.forEach((m, i) => epKeys(out, t + i * .01, m, .3, .03)) } },
     { name: 'jdr', play(st, bar, t, out) { if (st % 4 === 0 || st % 4 === 3) hat(out, t, st % 4 === 3 ? .035 : .05, .12); if (st === 4 || st === 12) nhit(out, t, { g: .05, type: 'bandpass', f: 2200, d: .2 }) } } ] },
   /* 音乐老师：明亮的钢琴加木琴 */
   class: { bpm: 100, swing: 0, chords: CH_POP, layers: [
-    { name: 'cpn', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 8) return; chordAt(s, bar).v.forEach(m => keys(out, t, m, E.d16() * 7, .035)) } },
+    { name: 'cpn', play(st, bar, t, out, s, E) { if (st !== 0 && st !== 8) return; chordAt(s, bar).v.forEach(m => epKeys(out, t, m, E.d16() * 7, .035)) } },
     { name: 'cxy', play(st, bar, t, out, s) { const pat = [0, 3, 6, 8, 12, 14]; const k = pat.indexOf(st); if (k < 0) return; const pent = [72, 74, 76, 79, 81, 84]; bell(out, t, pent[(k * 2 + bar * 3) % 6], .05) } },
     { name: 'cbs', play(st, bar, t, out, s, E) { if (st % 8) return; tone(out, t, chordAt(s, bar).r + 12, E.d16() * 6, { type: 'sine', gain: .3, rel: .2 }) } } ] },
   /* 康复治疗师：温暖的钢琴，每一拍都很稳 */
   rehab: { bpm: 88, swing: 0, chords: CH_SOFT, layers: [
-    { name: 'hpn', play(st, bar, t, out, s, E) { if (st % 4) return; chordAt(s, bar).v.slice(0, 3).forEach(m => keys(out, t, m, E.d16() * 3, .03)) } },
+    { name: 'hpn', play(st, bar, t, out, s, E) { if (st % 4) return; chordAt(s, bar).v.slice(0, 3).forEach(m => epKeys(out, t, m, E.d16() * 3, .03)) } },
     { name: 'hpd', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => strings(out, t, m - 12, E.d16() * 16, .008, { att: 1.2, cut: 1200 })) } },
     { name: 'hbt', play(st, bar, t, out) { if (st % 4 === 0) kick(out, t, .3, 100, 50, .2) } } ] },
   /* 健身教练：house 舞曲 */
@@ -1824,8 +1862,9 @@ Object.assign(STYLES, {
     { name: 'fbs', play(st, bar, t, out, s, E) { if (st % 2 === 0) return; tone(out, t, chordAt(s, bar).r + 12, E.d16() * .9, { type: 'sawtooth', gain: .09, rel: .04, cut: 600, q: 4 }) } } ] },
   /* 你自己：用第二关弹给调音婆婆的 8 个音 */
   self: { bpm: 76, swing: 0, chords: CH_POP, mel: [0, 2, 4, 5, 4, 2, 1, 0], layers: [
-    { name: 'smel', play(st, bar, t, out, s, E) { if (st % 4) return; const i = (bar % 2) * 4 + st / 4; keys(out, t, SCALE[s.mel[i % s.mel.length]] + 12, E.d16() * 3.6, .06) } },
+    { name: 'smel', play(st, bar, t, out, s, E) { if (st % 4) return; const i = (bar % 2) * 4 + st / 4; epKeys(out, t, (s.minor ? SELF_MINOR : SCALE)[s.mel[i % s.mel.length]] + 12, E.d16() * 3.6, .06) } },
     { name: 'spd', play(st, bar, t, out, s, E) { if (st) return; chordAt(s, bar).v.forEach(m => strings(out, t, m - 12, E.d16() * 16, .01, { att: 1, cut: 1300 })) } },
+    { name: 'sdr', play(st, bar, t, out, s) { if (!s.fast) return; if (st % 4 === 0) kick(out, t, .55); if (st === 4 || st === 12) snare(out, t, .14); if (st % 2 === 0) hat(out, t, .035) } },
     { name: 'sbs', play(st, bar, t, out, s, E) { if (st % 8) return; tone(out, t, chordAt(s, bar).r, E.d16() * 7, { type: 'sine', gain: .3, rel: .2 }) } } ] }
 });
 STYLES.orchM = Object.assign({}, STYLES.orch, { chords: [{ r: 36, v: [60, 64, 67] }, { r: 45, v: [60, 64, 69] }, { r: 41, v: [60, 65, 69] }, { r: 43, v: [59, 62, 67] }] });
@@ -1839,7 +1878,7 @@ function sfxBuzz() { if (!E.ctx) return; tone(E.sfx, now(), 40, .25, { type: 'sa
 function sfxGood() { if (!E.ctx) return; const t = now(); [72, 76, 79].forEach((m, i) => tone(E.sfx, t + i * .07, m, .1, { type: 'triangle', gain: .07, rel: .4 })) }
 
 /* 简谱键盘的音：C 大调，1 = Do */
-const SCALE = [60, 62, 64, 65, 67, 69, 71, 72];
+const SCALE = [60, 62, 64, 65, 67, 69, 71, 72], SELF_MINOR = [57, 59, 60, 62, 64, 65, 67, 69];
 function playDeg(i, t, g = .15, dur = .5, out) { keys(out || E.sfx, t ?? now(), SCALE[i], dur, g) }
 
 /* =========================================================
@@ -1886,6 +1925,7 @@ const RULES = {
     ['时间在走', '每年要付生活开销，名气不去维护会慢慢变低。'],
     ['AI 越来越近', '年份越往后，AI 能做的事越多。按今天的你会怎么选来回答。'],
     ['后悔药', '选错了可以撤回，一共 3 颗。反悔有代价：涉及钱要付违约金，涉及别人会失信，按钮上会写明。'],
+    ['低了告急，高了高光', '数值掉得太低会响警报；涨得很高是你的高光时刻，满了会遇到一个带着代价的机会。'],
     ['一年的节奏', '每年 4 个选择、1 个音乐关卡，一共十年。中途离开，下次会接着玩。']
   ],
   l2: [
@@ -1898,7 +1938,8 @@ const RULES = {
     ['一天几个身份', '每个身份接一单活：听三个版本，挑出最合适的那一个。'],
     ['挑对和挑错', '挑对拿全款，还有一份现实里的奖励；挑错要返工，扣一部分钱。'],
     ['连续好评', '连续 3 单好评，平台给你推荐位，下一单报酬翻倍。'],
-    ['交给小谱', '听不出来可以交给 AI 助手小谱，但它是随便挑的。']
+    ['交给小谱', '听不出来可以交给 AI 助手小谱，但它是随便挑的。'],
+    ['最后一单是你自己', '凌晨的最后一单没有对错：用你第二关弹的 8 个音编成三个版本，选一个你喜欢的，它会在第四关开场时响起。']
   ],
   l4: [
     ['回看十年', '先看一眼这十年里最重要的几个选择。'],
@@ -1924,103 +1965,103 @@ const TRAIT_DOMAIN = {
 const CARDS = [
   /* —— 2027 到 2030：眼下就在发生的事 —— */
   { id: 'k01', who: '妈妈', w: [1, 4], say: '你都毕业了，要不考个编吧？音乐老师也是音乐。', L: { t: '再给我三年', a: '后来妈妈没再提考编，只是每次打电话都问：“吃饭了吗？”', e: { l: 6, m: -5 }, k: 'ideal risk' }, R: { t: '那我去报个名', a: '后来你考上了。教室里那架走音的钢琴，你一弹就是好几年。', e: { m: 10, l: -12 }, k: 'secure' } },
-  { id: 'k02', who: '小谱', w: [1, 4], say: '小谱：“我一晚上能帮你写 100 首歌，你只要挑。年费 998，开通吗？”', L: { t: '我自己写', a: '后来你写得很慢，但每一首你都记得是怎么来的。', e: { o: 8, m: -3 }, k: 'auth' }, R: { t: '开通', a: '后来你的硬盘里有了几千首歌。你一首也哼不出来。', e: { m: -1, o: -10, f: 8 }, k: 'ai', set: 'ai' } },
+  { id: 'k02', who: '小谱', w: [1, 4], say: '我是你的 AI 作曲助手。一晚上能帮你写 100 首歌，你只要挑。开通年费会员吗？998 元。', L: { t: '我自己写', a: '后来你写得很慢，但每一首你都记得是怎么来的。', e: { o: 8, m: -3 }, k: 'auth' }, R: { t: '开通', a: '后来你的硬盘里有了几千首歌。你一首也哼不出来。', e: { m: -1, o: -10, f: 8 }, k: 'ai', set: 'ai' } },
   { id: 'k03', who: '阿飞', w: [1, 3], say: '兄弟，组个乐队吧！排练室一小时 80 块，我们 AA。', L: { t: '我想单干', a: '后来阿飞找了别人组队。他们的第一场演出，你在台下。', e: { l: -5, m: 4 }, k: 'secure' }, R: { t: '组！', a: '后来你们在排练室里吵过很多次架，也一起笑过很多次。', e: { m: -4, l: 10, f: 3 }, k: 'bond risk', set: 'band' } },
-  { id: 'k04', who: '房东', w: [1, 4], say: '房东：“下个月起房租涨 300。还有，邻居投诉你半夜弹琴。”', L: { t: '搬去城中村', a: '后来城中村的窗户正对着别人的厨房，你习惯了在油烟味里写歌。', e: { m: 3, l: -6 }, k: 'secure' }, R: { t: '咬牙续租', a: '后来你买了一台电钢琴，晚上戴着耳机练。', e: { m: -4, l: 3 }, k: 'risk' } },
-  { id: 'k05', who: '制作人', w: [1, 4], say: '制作人：“现在的流行歌，前奏平均只有 5 秒。你的有 40 秒。”', L: { t: '保留 40 秒', a: '后来这首歌听的人不多，但听完的人都说，前奏是最好的部分。', e: { o: 8, f: -8 }, k: 'auth' }, R: { t: '砍到 5 秒', a: '后来这首歌火了一阵。你自己再也没完整听过一遍。', e: { f: 10, o: -8 }, k: 'approval' }, real: '2017 年美国俄亥俄州立大学的研究：1986—2015 年的热门歌曲，前奏从平均 20 多秒缩短到约 5 秒。' },
+  { id: 'k04', who: '房东', w: [1, 4], say: '下个月起房租涨 300。还有，隔音棉别贴了，邻居投诉你半夜弹琴。', L: { t: '搬去城中村', a: '后来城中村的窗户正对着别人的厨房，你习惯了在油烟味里写歌。', e: { m: 3, l: -6 }, k: 'secure' }, R: { t: '咬牙续租', a: '后来你买了一台电钢琴，晚上戴着耳机练。', e: { m: -4, l: 3 }, k: 'risk' } },
+  { id: 'k05', who: '制作人', w: [1, 4], say: '制作人拿出数据：现在的流行歌，前奏平均只有 5 秒，三十年前是 20 多秒。你的新歌前奏有 40 秒。', L: { t: '保留 40 秒', a: '后来这首歌听的人不多，但听完的人都说，前奏是最好的部分。', e: { o: 8, f: -8 }, k: 'auth' }, R: { t: '砍到 5 秒', a: '后来这首歌火了一阵。你自己再也没完整听过一遍。', e: { f: 10, o: -8 }, k: 'approval' }, real: '2017 年美国俄亥俄州立大学的研究：1986—2015 年的热门歌曲，前奏从平均 20 多秒缩短到约 5 秒。' },
   { id: 'k06', who: '奶茶品牌', w: [1, 4], say: '帮我们写个 15 秒广告歌，要洗脑，明天就要。预算 2000。', L: { t: '不接', a: '后来那首广告歌别人写了，你在奶茶店里听到过一次，确实很洗脑。', e: { m: -3, o: 3 }, k: 'ideal' }, R: { t: '接', a: '后来你在奶茶店里听到自己写的广告歌，忍不住跟着哼了一句。', e: { m: 2, o: -5, l: -3 }, k: 'money' } },
   { id: 'k07', who: '陈老师', w: [1, 4], say: '我的工作室缺个编曲助理。钱很少，但能学到真本事。', L: { t: '谢谢，不去了', a: '后来你在网上看到陈老师新带的助理，已经开始独立编曲了。', e: { m: 3, l: -3 }, k: 'money' }, R: { t: '去', a: '后来你学会了一件事：好的编曲，是知道哪里不放音符。', e: { m: -5, o: 10, l: 5 }, k: 'ideal bond' } },
   { id: 'k08', who: '乐迷', w: [1, 4], say: '我在地铁里听你的歌哭了。能出实体专辑吗？我想收藏。', L: { t: '实体太贵了', a: '后来那位乐迷还是在每首新歌下面留言。', e: { m: 3, f: -5 }, k: 'secure' }, R: { t: '众筹做黑胶', a: '后来你收到了一张照片：你的黑胶放在乐迷的床头。', e: { m: -10, f: 10, l: 8 }, k: 'risk bond' } },
   { id: 'k09', who: '网红小鹿', w: [1, 4], say: '我有一百万粉丝，想用你的歌当 BGM。不给钱，给流量，干不干？', L: { t: '要授权费', a: '后来他用了别人的歌。那首歌一夜之间被一百万人听到了。', e: { m: 3, f: -5 }, k: 'money fight' }, R: { t: '免费给你用', a: '后来很多人知道了这段旋律，但很少有人知道是你写的。', e: { f: 15, m: -3, o: -3 }, k: 'approval' } },
   { id: 'k10', who: '酒吧老板', w: [1, 4], say: '这个月每周来驻唱两晚，一晚 500，但只能唱点歌单，不许唱原创。', L: { t: '那算了', a: '后来那个月你在家写了三首新歌，房租是借的。', e: { m: -3, o: 5 }, k: 'auth' }, R: { t: '唱', a: '后来你把点歌单唱得滚瓜烂熟。有一晚你偷偷加了一首自己的，没人发现。', e: { m: 4, o: -5 }, k: 'money' } },
   { id: 'k11', who: '学生家长', w: [1, 4], say: '我家孩子想学吉他。一节课 300，一周一节，可以吗？', L: { t: '没空', a: '后来那个孩子找了别的老师。', e: { m: -3, l: 2 }, k: 'ideal' }, R: { t: '可以', a: '后来那个孩子学会的第一首歌，是你写的。', e: { m: 15, l: -6 }, k: 'money secure', set: 'teach' } },
-  { id: 'k12', who: '内心', w: [1, 4], say: '凌晨三点，你写出了一段自己都起鸡皮疙瘩的旋律。可明早要交甲方的稿。', L: { t: '先交稿', a: '后来那段旋律你没能再找回来。', e: { m: 8, l: -8 }, k: 'money secure' }, R: { t: '继续写', a: '后来甲方骂了你一顿。那段旋律成了你最喜欢的一首歌。', e: { o: 10, l: 8, m: -8 }, k: 'ideal burn' } },
+  { id: 'k12', who: '内心', w: [1, 4], say: '凌晨三点，你写出了一段自己都起鸡皮疙瘩的旋律。可明天一早要交甲方的稿。', L: { t: '先交稿', a: '后来那段旋律你没能再找回来。', e: { m: 8, l: -8 }, k: 'money secure' }, R: { t: '继续写', a: '后来甲方骂了你一顿。那段旋律成了你最喜欢的一首歌。', e: { o: 10, l: 8, m: -8 }, k: 'ideal burn' } },
   { id: 'k13', who: '妈妈', w: [2, 4], say: '你表哥在银行，年终奖二十万。我也不是逼你哈。', L: { t: '我会证明给你看', a: '后来过年回家，你给表哥的孩子弹了首歌，他听得很认真。', e: { l: 6, m: -2 }, k: 'ideal fight' }, R: { t: '……我考虑考虑', a: '后来你真的去投了简历，面试官问你会不会 Excel。', e: { l: -8, m: 5 }, k: 'secure avoid' } },
-  { id: 'k14', who: '选秀导演', w: [2, 4], say: '选秀导演：“我们给你设计了一个‘坎坷身世’人设。你哭一下，保你进总决赛。”', L: { t: '我不演', a: '后来你第二轮就被淘汰了。导演说：“可惜了，嗓子不错。”', e: { o: 5, f: -10 }, k: 'auth' }, R: { t: '好，我哭', set: 'scandal', a: '后来你进了总决赛。那段哭戏的播放量，比你唱的歌高十倍。', e: { f: 20, o: -8, l: -8 }, k: 'approval' } },
-  { id: 'k15', who: '同学群', w: [1, 4], say: '同学群里有人晒年终奖，有人晒娃，有人 @你：“大艺术家在忙啥？”', L: { t: '不回', a: '后来群里没人再 @ 你。', e: { l: -3 }, k: 'avoid' }, R: { t: '甩一条新歌链接', a: '后来有三个同学点开了链接，其中一个给你转了 50 块。', e: { f: 3, l: 3 }, k: 'approval' } },
+  { id: 'k14', who: '选秀导演', w: [2, 4], say: '我们给你设计了一个“坎坷身世”的人设。你在台上哭一下，保你进总决赛。', L: { t: '我不演', a: '后来你第二轮就被淘汰了。导演说：“可惜了，嗓子不错。”', e: { o: 5, f: -10 }, k: 'auth' }, R: { t: '好，我哭', set: 'scandal', a: '后来你进了总决赛。那段哭戏的播放量，比你唱的歌高十倍。', e: { f: 20, o: -8, l: -8 }, k: 'approval' } },
+  { id: 'k15', who: '同学群', w: [1, 4], say: '大学同学群里，有人晒年终奖，有人晒娃，有人 @你：“大艺术家最近在忙啥？”', L: { t: '不回', a: '后来群里没人再 @ 你。', e: { l: -3 }, k: 'avoid' }, R: { t: '甩一条新歌链接', a: '后来有三个同学点开了链接，其中一个给你转了 50 块。', e: { f: 3, l: 3 }, k: 'approval' } },
   { id: 'k16', who: '前辈', w: [1, 4], say: '圈里一位前辈私信你：“想上我的歌单？先帮我免费编三首。”', L: { t: '拒绝', a: '后来那位前辈的歌单里没有你，但你的三首编曲留在了自己手里。', e: { f: -5, o: 3 }, k: 'fight auth' }, R: { t: '答应', a: '后来你编的三首歌都火了，署名里没有你。', e: { f: 8, m: -5, o: -3 }, k: 'approval' } },
   { id: 'k17', who: '音乐节', w: [1, 4], say: '下午两点的小舞台，太阳很大，观众很少。没有演出费，包一份盒饭。', L: { t: '不去', a: '后来你在朋友圈看到那场演出，台下比你想的人多。', e: { f: -4, l: -3 }, k: 'money' }, R: { t: '去', a: '后来你晒脱了一层皮。台下有个女生从头听到尾，还问你要了歌单。', e: { f: 8, l: 5, m: -3 }, k: 'bond' } },
-  { id: 'k18', who: '甲方', w: [1, 4], say: '甲方第 14 次改稿：“能不能再高级一点？但也别太高级。”', L: { t: '加钱才改', a: '后来甲方加了钱。第 15 版，他们选了第 1 版。', e: { m: 3, l: -4 }, k: 'fight money' }, R: { t: '再改一版', a: '后来第 15 版通过了。和第 1 版几乎一模一样。', e: { l: -8, m: 1 }, k: 'avoid burn' } },
-  { id: 'k19', who: '内心', w: [2, 4], say: '一个百万粉博主的爆款，旋律几乎和你两年前的 demo 一模一样。', L: { t: '公开对质', set: 'scandal', a: '后来对方删了视频，你也被他的粉丝骂了一个月。', e: { f: 10, m: -8 }, k: 'fight' }, R: { t: '算了', a: '后来每次在商场听到那首歌，你都会快走几步。', e: { l: -10 }, k: 'avoid' } },
-  { id: 'k20', who: '内心', w: [2, 4], say: '一个 16 岁的孩子用 AI 一晚发了 30 首歌，有 3 首比你写得好。', L: { t: '关掉手机，继续写', a: '后来你写完了那首歌。它不完美，但它是你的。', e: { o: 6, l: -4 }, k: 'auth' }, R: { t: '下载那个软件', a: '后来你一晚上也能发 30 首歌了。你开始分不清哪首是自己想写的。', e: { o: -6, f: 5 }, k: 'ai' } },
+  { id: 'k18', who: '甲方', w: [1, 4], say: '第 14 次改稿：“感觉不太对，能不能再高级一点？但也别太高级。”', L: { t: '加钱才改', a: '后来甲方加了钱。第 15 版，他们选了第 1 版。', e: { m: 3, l: -4 }, k: 'fight money' }, R: { t: '再改一版', a: '后来第 15 版通过了。和第 1 版几乎一模一样。', e: { l: -8, m: 1 }, k: 'avoid burn' } },
+  { id: 'k19', who: '内心', w: [2, 4], say: '你发现一个百万粉博主的爆款，旋律几乎和你两年前发的 demo 一模一样。', L: { t: '公开对质', set: 'scandal', a: '后来对方删了视频，你也被他的粉丝骂了一个月。', e: { f: 10, m: -8 }, k: 'fight' }, R: { t: '算了', a: '后来每次在商场听到那首歌，你都会快走几步。', e: { l: -10 }, k: 'avoid' } },
+  { id: 'k20', who: '内心', w: [2, 4], say: '凌晨刷到一个 16 岁的孩子，用 AI 一晚上发了 30 首歌，有 3 首比你写得好。', L: { t: '关掉手机，继续写', a: '后来你写完了那首歌。它不完美，但它是你的。', e: { o: 6, l: -4 }, k: 'auth' }, R: { t: '下载那个软件', a: '后来你一晚上也能发 30 首歌了。你开始分不清哪首是自己想写的。', e: { o: -6, f: 5 }, k: 'ai' } },
 
   /* —— 2029 到 2033：近未来 —— */
   { id: 'k21', who: '唱片公司', w: [3, 6], say: '签十年约，版权归公司，保底每月 8000。', L: { t: '不签', a: '后来你的每一首歌都属于你自己，房租也都是你自己交的。', e: { o: 10, m: -8 }, k: 'auth risk' }, R: { t: '签', a: '后来你每个月按时收到 8000。你写的歌，公司说了算。', e: { m: 20, o: -15, l: -5 }, k: 'secure money', set: 'signed' } },
-  { id: 'k22', who: '小谱', w: [3, 6], need: 'ai', say: '小谱：“你最近 80% 的旋律都是我写的。署名要不要也改成我？”', L: { t: '卸载你', a: '后来你重新学着自己写旋律，像刚学琴时一样笨拙。', e: { o: 15, m: -8, f: -5 }, k: 'auth fight' }, R: { t: '无所谓', a: '后来你的名字还在封面上，只是越来越小。', e: { o: -15, f: 5 }, k: 'ai avoid' } },
+  { id: 'k22', who: '小谱', w: [3, 6], need: 'ai', say: '我注意到，你最近 80% 的旋律都是我写的。要不要把署名也改成我？', L: { t: '卸载你', a: '后来你重新学着自己写旋律，像刚学琴时一样笨拙。', e: { o: 15, m: -8, f: -5 }, k: 'auth fight' }, R: { t: '无所谓', a: '后来你的名字还在封面上，只是越来越小。', e: { o: -15, f: 5 }, k: 'ai avoid' } },
   { id: 'k23', who: '声库公司', w: [3, 6], say: '我们想用你的声音训练一个 AI 歌手，一次性买断，2 万。', L: { t: '我的声音不卖', a: '后来你的声音只属于你，也只在你唱的时候出现。', e: { o: 8, l: 5, m: -5 }, k: 'auth' }, R: { t: '卖', a: '后来你在很多地方听到自己的声音，唱着你没写过的歌。', e: { m: 20, o: -12, l: -8 }, k: 'money ai', set: 'voice' } },
   { id: 'k24', who: '新闻推送', w: [4, 7], need: 'voice', say: '热搜：你的 AI 声线昨晚在 100 个直播间同时唱歌。没有一个是你。', L: { t: '起诉他们', a: '后来官司打了很久。法官问：“哪一个是真的你？”', e: { m: -15, f: 10, l: 5 }, k: 'fight' }, R: { t: '假装没看见', a: '后来你偶尔点开一个直播间，听“自己”唱一首你不会唱的歌。', e: { l: -12, o: -5 }, k: 'avoid' } },
   { id: 'k25', who: '阿飞', w: [4, 7], need: 'band', say: '我要回老家考公了。乐队……要不就散了吧。', L: { t: '求他留下', a: '后来阿飞留了下来。你们都比以前更穷，也更像一支乐队了。', e: { m: -8, l: 8 }, k: 'bond' }, R: { t: '祝他顺利', a: '后来阿飞考上了。他朋友圈的背景，还是你们第一次演出的照片。', e: { l: -10, m: 5 }, k: 'secure' } },
-  { id: 'k26', who: '推推', w: [4, 7], say: '推推：“新功能：听众可以把你的歌一键‘AI 改编’成任何风格。”', L: { t: '关闭', a: '后来你的歌只有一个版本，就是你写的那个。', e: { o: 8, f: -8 }, k: 'auth' }, R: { t: '保持开启', a: '后来你的歌有了几万个版本。你最喜欢的那版，是一个小学生改的。', e: { f: 12, o: -10 }, k: 'approval ai' } },
-  { id: 'k27', who: '医生', w: [4, 8], say: '医生：“颈椎不好，还有点耳鸣。少熬夜，少戴耳机。”', L: { t: '休息一个月', a: '后来你的耳鸣轻了一点，你第一次听清了窗外的鸟叫。', e: { m: -5, l: 5 }, k: 'secure' }, R: { t: '忙完这阵再说', a: '后来这阵子一直没忙完。', e: { m: 5, l: -10 }, k: 'burn' } },
-  { id: 'k28', who: '乐评人', w: [4, 7], say: '乐评人说你的新专辑“太像你自己了”。是夸奖还是批评，你自己品。', L: { t: '那就再像一点', a: '后来有人说，听三秒就知道是你。', e: { o: 10, f: -5 }, k: 'auth' }, R: { t: '下张换风格', a: '后来新专辑换了风格，有人说你终于长大了，也有人说你变了。', e: { f: 5, o: -5 }, k: 'approval' } },
-  { id: 'k29', who: '律师', w: [5, 8], say: '有人说你抄了一首 AI 歌。对方手里有时间戳，比你早 3 天。', L: { t: '打官司', a: '后来你赢了官司，因为你拿出了三年前的手机录音。', e: { m: -15, o: 5 }, k: 'fight' }, R: { t: '私了下架', a: '后来那首歌下架了。你很久都不敢再发 demo。', e: { m: -5, f: -10 }, k: 'avoid' } },
-  { id: 'k30', who: '旧吉他', w: [4, 7], say: '你的第一把吉他琴颈裂了。修要 2000，够买一套 AI 编曲插件。', L: { t: '卖掉，买插件', a: '后来插件很好用。那把吉他的位置，现在放着一台加湿器。', e: { m: 1, l: -8 }, k: 'ai money' }, R: { t: '修', a: '后来琴颈上多了一道疤，声音反而更暖了。', e: { m: -2, l: 10 }, k: 'ideal' } },
+  { id: 'k26', who: '推推', w: [4, 7], say: '新功能：听众可以一键把你的歌“AI 改编”成任何风格，默认开启。', L: { t: '关闭', a: '后来你的歌只有一个版本，就是你写的那个。', e: { o: 8, f: -8 }, k: 'auth' }, R: { t: '保持开启', a: '后来你的歌有了几万个版本。你最喜欢的那版，是一个小学生改的。', e: { f: 12, o: -10 }, k: 'approval ai' } },
+  { id: 'k27', who: '医生', w: [4, 8], say: '你颈椎不太好，还有点耳鸣。少熬夜，少戴耳机，不然以后可能听不清高频。', L: { t: '休息一个月', a: '后来你的耳鸣轻了一点，你第一次听清了窗外的鸟叫。', e: { m: -5, l: 5 }, k: 'secure' }, R: { t: '忙完这阵再说', a: '后来这阵子一直没忙完。', e: { m: 5, l: -10 }, k: 'burn' } },
+  { id: 'k28', who: '乐评人', w: [4, 7], say: '你的新专辑“太像你自己了”。这是夸奖还是批评，你自己品。', L: { t: '那就再像一点', a: '后来有人说，听三秒就知道是你。', e: { o: 10, f: -5 }, k: 'auth' }, R: { t: '下张换风格', a: '后来新专辑换了风格，有人说你终于长大了，也有人说你变了。', e: { f: 5, o: -5 }, k: 'approval' } },
+  { id: 'k29', who: '律师', w: [5, 8], say: '有人说你的新歌抄了一首 AI 生成的歌。对方手里有时间戳，比你早 3 天。', L: { t: '打官司', a: '后来你赢了官司，因为你拿出了三年前的手机录音。', e: { m: -15, o: 5 }, k: 'fight' }, R: { t: '私了下架', a: '后来那首歌下架了。你很久都不敢再发 demo。', e: { m: -5, f: -10 }, k: 'avoid' } },
+  { id: 'k30', who: '旧吉他', w: [4, 7], say: '你第一年买的那把吉他，琴颈裂了。修要 2000，够买一套新的 AI 编曲插件。', L: { t: '卖掉，买插件', a: '后来插件很好用。那把吉他的位置，现在放着一台加湿器。', e: { m: 1, l: -8 }, k: 'ai money' }, R: { t: '修', a: '后来琴颈上多了一道疤，声音反而更暖了。', e: { m: -2, l: 10 }, k: 'ideal' } },
   { id: 'k31', who: '投资人', w: [4, 7], say: '你的工作室要不要融资？我们只有一个要求：一年出 200 首。', L: { t: '不融', a: '后来你的工作室一直很小，小到每首歌你都亲手做。', e: { o: 5, m: -5 }, k: 'auth' }, R: { t: '融', a: '后来你一年交了 200 首歌，交完以后，你很久不想听音乐。', e: { m: 25, o: -15 }, k: 'money risk' } },
   { id: 'k32', who: '母校', w: [4, 7], say: '回来给学弟学妹讲讲“AI 时代的音乐人”吧。没有讲课费。', L: { t: '没什么好讲的', a: '后来你在母校的公众号上看到了别人的讲座。', e: { f: -3, l: -2 }, k: 'avoid' }, R: { t: '去', a: '后来有个学弟加了你微信，问你：“学长，你后悔吗？”', e: { f: 6, l: 6, m: -3 }, k: 'bond' } },
-  { id: 'k33', who: '推推', w: [3, 6], say: '推推：“时长低于 90 秒的歌分成翻倍。你那首 6 分钟的，要不要剪？”', L: { t: '一秒都不剪', a: '后来这首 6 分钟的歌，成了你现场每次的最后一首。', e: { o: 8, m: -5 }, k: 'auth' }, R: { t: '剪到 89 秒', a: '后来 89 秒的版本赚了钱。6 分钟的版本，只在你电脑里。', e: { m: 8, o: -8 }, k: 'approval money' } },
-  { id: 'k34', who: '运营', w: [3, 6], say: '直播弹唱一整晚，在线 30 人。运营：“PK 输了要跳舞喊‘家人们’。”', L: { t: '不播了', a: '后来你回到了小酒馆，台下也是 30 个人，但他们在听歌。', e: { f: -6, o: 4 }, k: 'auth' }, R: { t: '跳', a: '后来你的粉丝涨了。有人只记得你跳舞，不知道你会唱歌。', e: { f: 10, l: -6 }, k: 'approval' } },
-  { id: 'k35', who: '老友', w: [3, 6], say: '北漂的朋友找你借 2 万买设备。你知道他上次借的还没还。', L: { t: '婉拒', a: '后来你们很久没联系。', e: { m: 3, l: -3 }, k: 'secure fight' }, R: { t: '借', a: '后来这笔钱一直没还。你也没再问。', e: { m: -20, l: 4 }, k: 'bond', set: 'lend' } },
+  { id: 'k33', who: '推推', w: [3, 6], say: '平台新规：时长低于 90 秒的歌分成翻倍。你那首 6 分钟的歌，要不要剪？', L: { t: '一秒都不剪', a: '后来这首 6 分钟的歌，成了你现场每次的最后一首。', e: { o: 8, m: -5 }, k: 'auth' }, R: { t: '剪到 89 秒', a: '后来 89 秒的版本赚了钱。6 分钟的版本，只在你电脑里。', e: { m: 8, o: -8 }, k: 'approval money' } },
+  { id: 'k34', who: '运营', w: [3, 6], say: '你直播弹唱一整晚，在线 30 人。运营说：“PK 输了要对着镜头跳舞喊‘家人们’，不然涨不了粉。”', L: { t: '不播了', a: '后来你回到了小酒馆，台下也是 30 个人，但他们在听歌。', e: { f: -6, o: 4 }, k: 'auth' }, R: { t: '跳', a: '后来你的粉丝涨了。有人只记得你跳舞，不知道你会唱歌。', e: { f: 10, l: -6 }, k: 'approval' } },
+  { id: 'k35', who: '老友', w: [3, 6], say: '一起北漂的朋友找你借 2 万，说要买设备。你知道他上次借的还没还。', L: { t: '婉拒', a: '后来你们很久没联系。', e: { m: 3, l: -3 }, k: 'secure fight' }, R: { t: '借', a: '后来这笔钱一直没还。你也没再问。', e: { m: -20, l: 4 }, k: 'bond', set: 'lend' } },
   { id: 'k36', who: '伴侣', w: [3, 7], say: '“你能不能找个正经工作？我不想三十岁了还跟你合租。”', L: { t: '“再相信我一次”', a: '后来你们还在合租，只是吵架的次数变少了。', e: { l: 5, m: -5 }, k: 'ideal risk' }, R: { t: '去面试', a: '后来你有了工资条，琴盖上落了一层灰。', e: { m: 12, l: -10 }, k: 'secure bond' } },
   { id: 'k37', who: '粉丝群', w: [5, 8], say: '有人把你的歌喂给 AI，生成了一首“你的新歌”，比你写的还火。', L: { t: '发声明', a: '后来你的声明没什么人看，但老粉都转发了。', e: { f: 5, o: 5, m: -3 }, k: 'fight auth' }, R: { t: '转发它', a: '后来那首歌一直挂在你的主页，比你写的任何一首都火。', e: { f: 10, o: -12 }, k: 'approval ai' } },
   { id: 'k38', who: '学生', w: [4, 8], say: '你带的学生问：“老师，学乐理还有用吗？AI 都会了。”', L: { t: '有用，听我的', a: '后来你在课上弹了同一段旋律的三种和声。那个学生听完，没再问这个问题。', e: { l: 5, o: 5 }, k: 'ideal bond' }, R: { t: '没那么有用了', a: '后来那个学生退了乐理课。', e: { l: -6 }, k: 'avoid' } },
-  { id: 'k39', who: '文旅局', w: [3, 7], say: '文旅局请你写家乡宣传曲：要大气，要正能量，要有“腾飞”两个字。', L: { t: '不太擅长', a: '后来这首歌被别人写了。你家乡的高铁站一直在放。', e: { m: -2, o: 3 }, k: 'auth' }, R: { t: '接', a: '后来你回家过年，出站的时候听到了自己写的“腾飞”。', e: { m: 15, f: 8, o: -5 }, k: 'money' } },
+  { id: 'k39', who: '文旅局', w: [3, 7], say: '请你为家乡写一首城市宣传曲。要大气，要正能量，要有“腾飞”两个字。', L: { t: '不太擅长', a: '后来这首歌被别人写了。你家乡的高铁站一直在放。', e: { m: -2, o: 3 }, k: 'auth' }, R: { t: '接', a: '后来你回家过年，出站的时候听到了自己写的“腾飞”。', e: { m: 15, f: 8, o: -5 }, k: 'money' } },
 
   /* —— 2032 到 2036：还没发生、但很可能会发生的事 —— */
   { id: 'k40', who: '全息公司', w: [6, 9], say: '用你的全息影像巡演 30 城，你本人不用到场，分你 30%。', L: { t: '我要真唱', a: '后来你一个人去了 12 座城市，每一场你都在台上。', e: { l: 8, m: -5, f: -5 }, k: 'auth' }, R: { t: '签', a: '后来你的全息影像在 30 座城市唱歌。那几个晚上，你在家吃泡面。', e: { m: 20, f: 10, l: -12 }, k: 'ai money' } },
-  { id: 'k41', who: '老粉丝', w: [8, 10], say: '老粉丝：“十年前你在只有 12 个人的小酒馆唱过歌，我在。你还在唱吗？”', L: { t: '早就不唱了', a: '后来他没再回复。', e: { l: -15 }, k: 'avoid' }, R: { t: '还在', a: '后来你给他发了一段新录的 demo。他说：“还是那个声音。”', e: { l: 10, f: 3 }, k: 'ideal bond' } },
-  { id: 'k42', who: '推推', w: [4, 7], say: '推推：“流媒体开始按听众心率变化分成。你的歌太平静了。”', L: { t: '继续写安静的歌', a: '后来你的歌依然安静，有人说那是他们失眠时唯一能听进去的东西。', e: { o: 8, m: -8 }, k: 'auth' }, R: { t: '加一段刺激的', a: '后来你在每首歌里都加了一段刺激的，听众的心跳和你一样乱。', e: { m: 8, o: -8 }, k: 'approval money' } },
-  { id: 'k43', who: '行业协会', w: [5, 9], say: '“纯人类创作”认证：1.2 万一首，要提交全程录像证明没用 AI。', L: { t: '去认证', a: '后来你的歌上多了一个小小的认证标志，很少有人注意到它。', e: { m: -12, o: 12 }, k: 'auth fight' }, R: { t: '不认证，爱信不信', a: '后来有人质疑你用了 AI。你懒得解释。', e: { f: -5 }, k: 'avoid' } },
-  { id: 'k44', who: 'AI 评委', w: [4, 7], say: 'AI 评委：“你的音色情绪识别度 41%，建议更换声线。”', L: { t: '不换', a: '后来你被淘汰了。导播间里，有个真人工作人员偷偷给你点了赞。', e: { f: -8, o: 6 }, k: 'auth' }, R: { t: '开声线滤镜', a: '后来你晋级了。你开始听不出哪个声音是自己的。', e: { f: 10, o: -8 }, k: 'ai approval' } },
-  { id: 'k45', who: '律师', w: [7, 10], say: '律师：“你去世后，AI 分身要不要继续发歌？收益可以留给家人。”', L: { t: '我死了，歌就停', a: '后来你在遗嘱里加了一句：我的歌，到我为止。', e: { o: 6, m: -3 }, k: 'auth ideal' }, R: { t: '签字授权', a: '后来你偶尔想，那时候的“你”，会写什么样的歌。', e: { m: 10, o: -6 }, k: 'secure ai' } },
-  { id: 'k46', who: '推推', w: [5, 8], say: '推推：“同一首歌，给每个听众自动生成一版不同的歌词。开通吗？”', L: { t: '歌词只有一版', a: '后来所有人听到的都是同一首歌，所以他们可以一起唱。', e: { o: 8, f: -6 }, k: 'auth' }, R: { t: '开通', a: '后来每个人都觉得这首歌在写自己。没有人知道你原本想写什么。', e: { f: 10, m: 5, o: -10 }, k: 'ai approval money' } },
-  { id: 'k47', who: '经纪人', w: [5, 8], say: '经纪人：“鼓手、贝斯都换成 AI 吧，它们从不迟到，也不分钱。”', L: { t: '去找真人乐手', a: '后来新鼓手经常迟到，但他会在你唱错的时候冲你笑。', e: { m: -10, l: 8 }, k: 'bond' }, R: { t: '换成 AI', a: '后来乐队从不出错，你也很少再笑。', e: { m: 10, l: -6 }, k: 'ai money' } },
-  { id: 'k48', who: '文化局', w: [6, 10], say: '新规：商业演出要持证，考试科目之一是《AI 辅助创作规范》。', L: { t: '去考', a: '后来你考了 61 分，刚好及格。', e: { m: -5, f: 5 }, k: 'secure' }, R: { t: '去地下演出', a: '后来你在一个没有招牌的地下室唱歌，台下的人比以前更认真。', e: { f: -6, l: 6 }, k: 'risk auth' } },
-  { id: 'k49', who: '脑机公司', w: [7, 10], say: '脑机公司出价 2 万，买断你未来三年“做梦时的旋律”。', L: { t: '不卖', a: '后来你醒来时记得的旋律，还是只属于你。', e: { o: 10, m: -5 }, k: 'auth' }, R: { t: '卖', a: '后来你很少再做梦了，或者说，你不记得了。', e: { m: 20, o: -12 }, k: 'money ai' } },
-  { id: 'k50', who: '你的 AI 分身', w: [7, 10], say: '你的 AI 分身：“我的播放量是你的 30 倍。粉丝说更喜欢我。”', L: { t: '关掉分身', a: '后来你的播放量掉了很多。留下来的人，是来听你的。', e: { f: -10, o: 12 }, k: 'auth fight' }, R: { t: '让它继续', a: '后来它越来越像你，你越来越不像你。', e: { f: 12, o: -12 }, k: 'ai approval' } },
-  { id: 'k51', who: '元宇宙剧场', w: [5, 8], say: '虚拟演唱会 9.9 元一张。观众可以“倍速”，跳过你最在乎的那段独白。', L: { t: '锁定，不许倍速', a: '后来少了一些观众。留下来的人，听完了那段独白。', e: { f: -6, o: 6 }, k: 'auth' }, R: { t: '允许倍速', a: '后来那段独白，大部分人用 2 倍速听完了。', e: { f: 8, o: -4 }, k: 'approval' } },
+  { id: 'k41', who: '老粉丝', w: [8, 10], say: '十年前你在一个只有 12 个人的小酒馆唱过歌，我是其中一个。你还在唱吗？', L: { t: '早就不唱了', a: '后来他没再回复。', e: { l: -15 }, k: 'avoid' }, R: { t: '还在', a: '后来你给他发了一段新录的 demo。他说：“还是那个声音。”', e: { l: 10, f: 3 }, k: 'ideal bond' } },
+  { id: 'k42', who: '推推', w: [4, 7], say: '从今年起，流媒体按“听众心率变化”给歌分成。你的歌太平静，心率曲线不够刺激。', L: { t: '继续写安静的歌', a: '后来你的歌依然安静，有人说那是他们失眠时唯一能听进去的东西。', e: { o: 8, m: -8 }, k: 'auth' }, R: { t: '加一段刺激的', a: '后来你在每首歌里都加了一段刺激的，听众的心跳和你一样乱。', e: { m: 8, o: -8 }, k: 'approval money' } },
+  { id: 'k43', who: '行业协会', w: [5, 9], say: '新推出“纯人类创作”认证：1.2 万一首，要提交全程录像，证明你没用 AI。', L: { t: '去认证', a: '后来你的歌上多了一个小小的认证标志，很少有人注意到它。', e: { m: -12, o: 12 }, k: 'auth fight' }, R: { t: '不认证，爱信不信', a: '后来有人质疑你用了 AI。你懒得解释。', e: { f: -5 }, k: 'avoid' } },
+  { id: 'k44', who: 'AI 评委', w: [4, 7], say: '选秀评委全换成了 AI。它说：“你的音色情绪识别度 41%，建议更换声线。”', L: { t: '不换', a: '后来你被淘汰了。导播间里，有个真人工作人员偷偷给你点了赞。', e: { f: -8, o: 6 }, k: 'auth' }, R: { t: '开声线滤镜', a: '后来你晋级了。你开始听不出哪个声音是自己的。', e: { f: 10, o: -8 }, k: 'ai approval' } },
+  { id: 'k45', who: '律师', w: [7, 10], say: '“你的 AI 分身要不要在你去世后继续发歌？版权收益可以留给家人。”', L: { t: '我死了，歌就停', a: '后来你在遗嘱里加了一句：我的歌，到我为止。', e: { o: 6, m: -3 }, k: 'auth ideal' }, R: { t: '签字授权', a: '后来你偶尔想，那时候的“你”，会写什么样的歌。', e: { m: 10, o: -6 }, k: 'secure ai' } },
+  { id: 'k46', who: '推推', w: [5, 8], say: '“千人千面”功能：同一首歌，给每个听众自动生成一版不同的歌词。签约就能开通。', L: { t: '歌词只有一版', a: '后来所有人听到的都是同一首歌，所以他们可以一起唱。', e: { o: 8, f: -6 }, k: 'auth' }, R: { t: '开通', a: '后来每个人都觉得这首歌在写自己。没有人知道你原本想写什么。', e: { f: 10, m: 5, o: -10 }, k: 'ai approval money' } },
+  { id: 'k47', who: '经纪人', w: [5, 8], say: '“乐队就剩你一个真人了。鼓手、贝斯都换成 AI 吧，它们从不迟到，也不分钱。”', L: { t: '去找真人乐手', a: '后来新鼓手经常迟到，但他会在你唱错的时候冲你笑。', e: { m: -10, l: 8 }, k: 'bond' }, R: { t: '换成 AI', a: '后来乐队从不出错，你也很少再笑。', e: { m: 10, l: -6 }, k: 'ai money' } },
+  { id: 'k48', who: '文化局', w: [6, 10], say: '新规：商业演出要持“音乐表演资格证”，考试科目之一是《AI 辅助创作规范》。', L: { t: '去考', a: '后来你考了 61 分，刚好及格。', e: { m: -5, f: 5 }, k: 'secure' }, R: { t: '去地下演出', a: '后来你在一个没有招牌的地下室唱歌，台下的人比以前更认真。', e: { f: -6, l: 6 }, k: 'risk auth' } },
+  { id: 'k49', who: '脑机公司', w: [7, 10], say: '出价 2 万，买断你未来三年“做梦时的旋律”，由睡眠头环自动采集。', L: { t: '不卖', a: '后来你醒来时记得的旋律，还是只属于你。', e: { o: 10, m: -5 }, k: 'auth' }, R: { t: '卖', a: '后来你很少再做梦了，或者说，你不记得了。', e: { m: 20, o: -12 }, k: 'money ai' } },
+  { id: 'k50', who: '你的 AI 分身', w: [7, 10], say: '“我昨天发的歌，播放量是你本人的 30 倍。粉丝留言说，更喜欢我。”', L: { t: '关掉分身', a: '后来你的播放量掉了很多。留下来的人，是来听你的。', e: { f: -10, o: 12 }, k: 'auth fight' }, R: { t: '让它继续', a: '后来它越来越像你，你越来越不像你。', e: { f: 12, o: -12 }, k: 'ai approval' } },
+  { id: 'k51', who: '元宇宙剧场', w: [5, 8], say: '虚拟演唱会票价 9.9 元。观众可以“倍速”，跳过你觉得最重要的那段独白。', L: { t: '锁定，不许倍速', a: '后来少了一些观众。留下来的人，听完了那段独白。', e: { f: -6, o: 6 }, k: 'auth' }, R: { t: '允许倍速', a: '后来那段独白，大部分人用 2 倍速听完了。', e: { f: 8, o: -4 }, k: 'approval' } },
   { id: 'k52', who: '朋友的孩子', w: [6, 10], say: '“你为什么不用 AI 写歌？是不是你不会？”', L: { t: '弹一首给他听', a: '后来那个孩子缠着你学了一个暑假的琴。', e: { l: 8 }, k: 'bond auth' }, R: { t: '笑笑不说话', a: '后来他觉得你确实不会。', e: { l: -4 }, k: 'avoid' } },
-  { id: 'k53', who: '旧备忘录', w: [8, 10], say: '你翻到 2026 年写下的一句话：“十年后，我要……”', L: { t: '看完', a: '后来你把那句话抄在了琴房的墙上。', e: { l: 8, o: 3 }, k: 'ideal' }, R: { t: '删掉', a: '后来你想不起来那句话写的是什么了。', e: { l: -8 }, k: 'avoid' } },
-  { id: 'k54', who: '老前辈', w: [7, 10], say: '70 岁的前辈：“我最后悔 40 岁那年没坚持。”他问你后不后悔。', L: { t: '不后悔', a: '后来他拍了拍你的肩膀，说：“那就好。”', e: { l: 6 }, k: 'ideal' }, R: { t: '“有一点”', a: '后来你们聊到很晚。他说：“有一点就好，说明你还在乎。”', e: { l: -3, o: 3 }, k: 'secure' } },
-  { id: 'k55', who: '推推', w: [7, 10], say: '平台 AI 分析了你十年的作品，生成了一份《你的下一首爆款公式》。', L: { t: '不看', a: '后来你的下一首歌没有爆，但你很喜欢它。', e: { o: 6, f: -4 }, k: 'auth' }, R: { t: '照着写', a: '后来你写出了爆款。你看着它，像看着别人的作品。', e: { f: 12, o: -10 }, k: 'approval ai' } },
+  { id: 'k53', who: '旧备忘录', w: [8, 10], say: '你翻到 2026 年写下的一句话：“十年后，我要……”后面的字，你自己都不太敢看完。', L: { t: '看完', a: '后来你把那句话抄在了琴房的墙上。', e: { l: 8, o: 3 }, k: 'ideal' }, R: { t: '删掉', a: '后来你想不起来那句话写的是什么了。', e: { l: -8 }, k: 'avoid' } },
+  { id: 'k54', who: '老前辈', w: [7, 10], say: '一位 70 岁的前辈说：“我这辈子最后悔的，是 40 岁那年没坚持。”他问你后不后悔。', L: { t: '不后悔', a: '后来他拍了拍你的肩膀，说：“那就好。”', e: { l: 6 }, k: 'ideal' }, R: { t: '“有一点”', a: '后来你们聊到很晚。他说：“有一点就好，说明你还在乎。”', e: { l: -3, o: 3 }, k: 'secure' } },
+  { id: 'k55', who: '推推', w: [7, 10], say: '平台 AI 分析了你十年的作品，给你生成了一份《你的下一首爆款公式》。', L: { t: '不看', a: '后来你的下一首歌没有爆，但你很喜欢它。', e: { o: 6, f: -4 }, k: 'auth' }, R: { t: '照着写', a: '后来你写出了爆款。你看着它，像看着别人的作品。', e: { f: 12, o: -10 }, k: 'approval ai' } },
   { id: 'k56', who: '养老院', w: [6, 10], say: '一家养老院请你去唱歌。没有钱，台下 30 个老人，一半听不清。', L: { t: '没空', a: '后来你在新闻里看到，那家养老院请了一个 AI 歌手。', e: { m: 3, l: -3 }, k: 'money' }, R: { t: '去', a: '后来有一位奶奶跟着你唱完了一整首老歌，一个字都没错。', e: { l: 10, m: -3 }, k: 'bond ideal' } },
-  { id: 'k57', who: '学生家长', w: [5, 9], say: '家长：“AI 老师一节 9 块 9，你一节 300，凭什么？”学生退了一半。', L: { t: '降价', a: '后来你一节课收 99，课排得很满，你却越来越累。', e: { m: -8, l: -4 }, k: 'secure avoid' }, R: { t: '教它教不了的', a: '后来留下来的学生都学会了一件事：怎么在别人面前弹琴不发抖。', e: { o: 8, m: -8, l: 5 }, k: 'auth ideal' } },
-  { id: 'k58', who: '城市管理局', w: [7, 10], say: '“演出碳配额”上线。你的巡演超标了：买配额，或者全改线上。', L: { t: '买配额，坚持线下', a: '后来你的巡演少了几站，但每一站都是真的。', e: { m: -12, l: 5 }, k: 'bond risk' }, R: { t: '改线上', a: '后来你在屏幕前唱完了整个巡演，最后一首，你对着镜头鞠了一躬。', e: { m: 3, l: -5 }, k: 'secure' } },
-  { id: 'k59', who: '大厂', w: [7, 10], say: '大厂邀你和 AI 合写专辑，署名：“主创 AI，联合制作：你。”', L: { t: '拒绝', a: '后来这张专辑别人做了，卖得很好。', e: { o: 8, m: -8 }, k: 'auth fight' }, R: { t: '接受', a: '后来领奖的时候，主持人念的是 AI 的名字。', e: { m: 15, f: 10, o: -10 }, k: 'ai approval money' } },
-  { id: 'k60', who: '医生', w: [8, 10], say: '医生：“高频听力降了 20%。AI 耳蜗能让你听得更清，但声音会被算法修饰。”', L: { t: '不装', a: '后来你听不清高音了，可你更认真地听每一个低音。', e: { o: 6, l: -4 }, k: 'auth' }, R: { t: '装', a: '后来你听得比以前还清楚。只是你不确定，听到的是不是原来的声音。', e: { o: -4, l: 4 }, k: 'ai secure' } },
-  { id: 'k61', who: '内心', w: [9, 10], say: '这十年你写了 300 多首歌，真正让你骄傲的，大概 5 首。', L: { t: '5 首就够了', a: '后来你把这 5 首歌重新录了一遍，送给了自己。', e: { l: 8 }, k: 'ideal auth' }, R: { t: '其余也算数', a: '后来你发现，正是那 295 首，带你写出了这 5 首。', e: { m: 3, f: 3 }, k: 'money approval' } },
+  { id: 'k57', who: '学生家长', w: [5, 9], say: '“AI 老师 24 小时在线，一节课 9 块 9。你这一节 300，凭什么？”你的学生退了一半。', L: { t: '降价', a: '后来你一节课收 99，课排得很满，你却越来越累。', e: { m: -8, l: -4 }, k: 'secure avoid' }, R: { t: '教它教不了的', a: '后来留下来的学生都学会了一件事：怎么在别人面前弹琴不发抖。', e: { o: 8, m: -8, l: 5 }, k: 'auth ideal' } },
+  { id: 'k58', who: '城市管理局', w: [7, 10], say: '“演出碳配额”上线。你的巡演超标了，要么花钱买配额，要么全部改成线上。', L: { t: '买配额，坚持线下', a: '后来你的巡演少了几站，但每一站都是真的。', e: { m: -12, l: 5 }, k: 'bond risk' }, R: { t: '改线上', a: '后来你在屏幕前唱完了整个巡演，最后一首，你对着镜头鞠了一躬。', e: { m: 3, l: -5 }, k: 'secure' } },
+  { id: 'k59', who: '大厂', w: [7, 10], say: '一家大厂邀你和 AI 合写一张专辑。署名写：“主创：AI。联合制作：你。”', L: { t: '拒绝', a: '后来这张专辑别人做了，卖得很好。', e: { o: 8, m: -8 }, k: 'auth fight' }, R: { t: '接受', a: '后来领奖的时候，主持人念的是 AI 的名字。', e: { m: 15, f: 10, o: -10 }, k: 'ai approval money' } },
+  { id: 'k60', who: '医生', w: [8, 10], say: '“你的高频听力下降了 20%。现在可以装一个 AI 人工耳蜗，听得比以前还清楚，但声音会经过算法修饰。”', L: { t: '不装', a: '后来你听不清高音了，可你更认真地听每一个低音。', e: { o: 6, l: -4 }, k: 'auth' }, R: { t: '装', a: '后来你听得比以前还清楚。只是你不确定，听到的是不是原来的声音。', e: { o: -4, l: 4 }, k: 'ai secure' } },
+  { id: 'k61', who: '内心', w: [9, 10], say: '你算了算：这十年你写了 300 多首歌，真正让你自己骄傲的，大概 5 首。', L: { t: '5 首就够了', a: '后来你把这 5 首歌重新录了一遍，送给了自己。', e: { l: 8 }, k: 'ideal auth' }, R: { t: '其余也算数', a: '后来你发现，正是那 295 首，带你写出了这 5 首。', e: { m: 3, f: 3 }, k: 'money approval' } },
   /* —— 真实故事改编：原型都来自公开报道，出处见 docs/真实案例来源.md —— */
-  { id: 'r-sunyanzi', who: '粉丝群', w: [2, 6], say: '有人用 AI 模仿你的声音翻唱了一百首歌，粉丝说：“AI 版的你更勤快。”', L: { t: '做自己就够了', a: '后来你写了一段话，说人会犯错、会变老，AI 不会。很多人转发了它。', e: { o: 6, l: 4, f: -3 }, k: 'auth' }, R: { t: '跟它比更新', a: '后来你每天都在追它的更新速度，追得很累。', e: { f: 8, l: -8, o: -4 }, k: 'approval burn' }, real: '2023 年“AI 孙燕姿”走红，孙燕姿本人回应：“你跟一个每几分钟就推出一张新专辑的人还有什么好争的。”' },
-  { id: 'r-grimes', who: 'AI 公司', w: [3, 7], say: 'AI 公司：“把你的声音开放给所有人用 AI 写歌，版税五五分。”', L: { t: '不开放', a: '后来你的声音只出现在你自己的歌里。', e: { o: 6, m: -3 }, k: 'auth' }, R: { t: '开放，五五分', a: '后来网上有一万首“你”唱的歌，你听过的不到十首。', e: { m: 12, f: 8, o: -8 }, k: 'ai money risk' }, real: '2023 年歌手 Grimes 推出 Elf.Tech，允许任何人用 AI 生成她的声音发歌，母带版税五五分。' },
-  { id: 'r-heartsleeve', who: '律师', w: [3, 7], say: '一首 AI 模仿你和别人“合唱”的歌，没经你同意就火了。', L: { t: '要求下架', a: '后来那首歌下架了。有人说可惜，那是他们最喜欢的“你”。', e: { f: -4, o: 6 }, k: 'fight auth' }, R: { t: '认领，顺势宣传', a: '后来你在演唱会上真的唱了这首歌，台下的人比原唱还激动。', e: { f: 12, o: -8 }, k: 'approval ai' }, real: '2023 年，用 AI 仿冒 Drake 和 The Weeknd 声音的歌曲《Heart on My Sleeve》在多个平台走红，随后被唱片公司要求下架。' },
-  { id: 'r-velvet', who: '乐评人', w: [6, 10], say: '榜单上冒出一支 AI 乐队，听众是你的几十倍。乐评人问你怎么看。', L: { t: '让现场回答', a: '后来你们的现场越来越难买到票。', e: { l: 6, m: -4 }, k: 'bond auth' }, R: { t: '我们也提速', a: '后来你们一个月发一张专辑，没有一首被人记住。', e: { m: 6, o: -6 }, k: 'ai money' }, real: '2025 年，乐队 The Velvet Sundown 在 Spotify 上有 47 万多月听众，随后其发言人承认使用了 AI 作曲工具 Suno。' },
-  { id: 'r-1000plays', who: '推推', w: [1, 5], say: '新规：一首歌一年播放不满 1000 次，一分钱都拿不到。你有 35 首没满。', L: { t: '按自己节奏', a: '后来你的 40 首歌，还是只有 5 首拿到了钱。', e: { m: -4, o: 4 }, k: 'auth' }, R: { t: '只发能冲量的', a: '后来你发的每首歌都过了 1000，没有一首是你最想写的。', e: { m: 5, f: 4, o: -6 }, k: 'approval money' }, real: '2024 年起，Spotify 规定一首歌一年内播放不满 1000 次，不再产生版税。' },
-  { id: 'r-deezer', who: '平台', w: [5, 9], say: '平台说，每天新上传的歌里，接近一半是 AI 生成的。你的新歌被淹没了。', L: { t: '拍一支手工 MV', a: '后来那支 MV 只有几千播放，评论区却很长。', e: { l: 4, m: -6, o: 4 }, k: 'ideal auth' }, R: { t: '一天发十首', a: '后来你一天发十首，平台把你标成了“疑似 AI 账号”。', e: { f: 6, o: -10 }, k: 'ai approval' }, real: '2026 年流媒体平台 Deezer 公布：每天约 44% 的新上传歌曲、约 7.5 万首，是 AI 生成的。' },
-  { id: 'r-masters', who: '老东家', w: [4, 8], say: '老东家把你早期作品的母带卖给了一个你很讨厌的人。买回来要天价。', L: { t: '全部重录', a: '后来你的老歌有了“自己的版本”，粉丝说这次更像你。', e: { m: -12, l: 8, o: 6 }, k: 'fight ideal' }, R: { t: '算了，往前看', a: '后来每次那几首老歌响起来，你都会把音量调小。', e: { l: -6 }, k: 'avoid' }, real: '2019 年，Taylor Swift 早期专辑的母带被出售，她买不回来，决定把旧专辑全部重新录制。' },
-  { id: 'r-avatar', who: '演出公司', w: [6, 10], say: '一家公司想用动作捕捉给你做一个“年轻版”的数字分身，每天替你演出。', L: { t: '我自己上台', a: '后来你的头发白了，台下的人还在跟着唱。', e: { l: 6, m: -5 }, k: 'auth' }, R: { t: '让年轻的我唱', a: '后来你坐在台下，看着二十岁的自己，忽然有点想哭。', e: { m: 15, l: -6 }, k: 'ai money' }, real: '2022 年起，ABBA 成员本人不登台，由动作捕捉制作的数字分身在伦敦专属剧场演出，现场有真人乐队伴奏。' },
-  { id: 'r-tinnitus', who: '前辈', w: [2, 5], say: '前辈说他 25 岁就开始耳鸣。你今晚的演出音量很大，还没买耳塞。', L: { t: '买了耳塞再上', a: '后来那副耳塞你戴了十年。', e: { m: -3, l: 2 }, k: 'secure' }, R: { t: '先演了再说', a: '后来那天晚上的演出很棒，你的耳朵嗡嗡响了一整夜。', e: { l: 4 }, k: 'burn', set: 'ears' }, real: '2012 年 Coldplay 主唱 Chris Martin 公开自己 25 岁起耳鸣，说：“我希望自己早点想到这件事。”' },
-  { id: 'r-voicecase', who: '律师', w: [3, 8], say: '有公司没经你同意，用你的录音训练 AI 声音拿去卖。打官司要一两年。', L: { t: '起诉', a: '后来官司打了两年，你赢了，还帮另外几个歌手出了主意。', e: { m: -10, f: 6, o: 6 }, k: 'fight' }, R: { t: '私下和解', a: '后来你拿到了一笔钱，那个声音还在卖。', e: { m: 6, o: -4 }, k: 'avoid money' }, real: '2024 年北京互联网法院审结全国首例 AI 声音侵权案，认定被告未经许可用 AI 复刻原告声音，判赔 25 万元。' },
-  { id: 'r-income', who: '行业调查', w: [1, 3], say: '行业调查：近一半音乐人税前月收入不到 2000。你也在这一半里。', L: { t: '继续全职', a: '后来你的收入还是在那一半里，但你写完了一张专辑。', e: { l: 4, m: -6 }, k: 'ideal risk' }, R: { t: '找份兼职', a: '后来你白天上班，晚上写歌，睡得比以前少了。', e: { m: 8, l: -3 }, k: 'secure money' }, real: '中国传媒大学《中国音乐人报告 2019》：不含学生，近一半音乐人税前月收入低于 2000 元。' },
-  { id: 'r-labelai', who: '唱片公司', w: [5, 9], say: '唱片公司去年还在起诉 AI 公司，今年签了合作。问你授不授权训练。', L: { t: '不授权', a: '后来你的歌没有出现在训练数据里。至少，公司是这么说的。', e: { o: 6, m: -4 }, k: 'auth fight' }, R: { t: '授权，拿分成', a: '后来你每个季度收到一笔分成。你听不出哪首 AI 歌里有你。', e: { m: 10, o: -8 }, k: 'ai money' }, real: '2024 年三大唱片公司起诉 AI 作曲公司 Suno 和 Udio；2025 年环球、华纳又先后与它们和解并合作。' },
+  { id: 'r-sunyanzi', who: '粉丝群', w: [2, 6], say: '有人用 AI 模仿你的声音翻唱了一百首歌，播放量比你本人还高。粉丝留言：“AI 版的你更勤快。”', L: { t: '做自己就够了', a: '后来你写了一段话，说人会犯错、会变老，AI 不会。很多人转发了它。', e: { o: 6, l: 4, f: -3 }, k: 'auth' }, R: { t: '跟它比更新', a: '后来你每天都在追它的更新速度，追得很累。', e: { f: 8, l: -8, o: -4 }, k: 'approval burn' }, real: '2023 年“AI 孙燕姿”走红，孙燕姿本人回应：“你跟一个每几分钟就推出一张新专辑的人还有什么好争的。”' },
+  { id: 'r-grimes', who: 'AI 公司', w: [3, 7], say: '“学学国外那位歌手：把你的声音开放给所有人，用 AI 生成歌曲，版税五五分。你什么都不用做。”', L: { t: '不开放', a: '后来你的声音只出现在你自己的歌里。', e: { o: 6, m: -3 }, k: 'auth' }, R: { t: '开放，五五分', a: '后来网上有一万首“你”唱的歌，你听过的不到十首。', e: { m: 12, f: 8, o: -8 }, k: 'ai money risk' }, real: '2023 年歌手 Grimes 推出 Elf.Tech，允许任何人用 AI 生成她的声音发歌，母带版税五五分。' },
+  { id: 'r-heartsleeve', who: '律师', w: [3, 7], say: '一首用 AI 模仿你和另一位歌手“合唱”的歌，在你不知情的情况下火了，几十万播放。你可以要求下架，也可以认领它。', L: { t: '要求下架', a: '后来那首歌下架了。有人说可惜，那是他们最喜欢的“你”。', e: { f: -4, o: 6 }, k: 'fight auth' }, R: { t: '认领，顺势宣传', a: '后来你在演唱会上真的唱了这首歌，台下的人比原唱还激动。', e: { f: 12, o: -8 }, k: 'approval ai' }, real: '2023 年，用 AI 仿冒 Drake 和 The Weeknd 声音的歌曲《Heart on My Sleeve》在多个平台走红，随后被唱片公司要求下架。' },
+  { id: 'r-velvet', who: '乐评人', w: [6, 10], say: '榜单上冒出一支新乐队，每月几十万听众，后来承认音乐是 AI 做的。你的乐队听众只有它的零头。乐评人问你怎么看。', L: { t: '让现场回答', a: '后来你们的现场越来越难买到票。', e: { l: 6, m: -4 }, k: 'bond auth' }, R: { t: '我们也提速', a: '后来你们一个月发一张专辑，没有一首被人记住。', e: { m: 6, o: -6 }, k: 'ai money' }, real: '2025 年，乐队 The Velvet Sundown 在 Spotify 上有 47 万多月听众，随后其发言人承认使用了 AI 作曲工具 Suno。' },
+  { id: 'r-1000plays', who: '推推', w: [1, 5], say: '新规：一首歌一年播放不满 1000 次，就一分钱也拿不到。你有 40 首歌，35 首不到 1000。', L: { t: '按自己节奏', a: '后来你的 40 首歌，还是只有 5 首拿到了钱。', e: { m: -4, o: 4 }, k: 'auth' }, R: { t: '只发能冲量的', a: '后来你发的每首歌都过了 1000，没有一首是你最想写的。', e: { m: 5, f: 4, o: -6 }, k: 'approval money' }, real: '2024 年起，Spotify 规定一首歌一年内播放不满 1000 次，不再产生版税。' },
+  { id: 'r-deezer', who: '平台', w: [5, 9], say: '平台公布：现在每天新上传的歌里，接近一半是 AI 生成的。你的新歌一上线，就被淹没在几万首里。', L: { t: '拍一支手工 MV', a: '后来那支 MV 只有几千播放，评论区却很长。', e: { l: 4, m: -6, o: 4 }, k: 'ideal auth' }, R: { t: '一天发十首', a: '后来你一天发十首，平台把你标成了“疑似 AI 账号”。', e: { f: 6, o: -10 }, k: 'ai approval' }, real: '2026 年流媒体平台 Deezer 公布：每天约 44% 的新上传歌曲、约 7.5 万首，是 AI 生成的。' },
+  { id: 'r-masters', who: '老东家', w: [4, 8], say: '你出道时签的那家小公司，把你所有早期作品的母带打包卖给了一个你很讨厌的人。你想买回来，对方开了天价。', L: { t: '全部重录', a: '后来你的老歌有了“自己的版本”，粉丝说这次更像你。', e: { m: -12, l: 8, o: 6 }, k: 'fight ideal' }, R: { t: '算了，往前看', a: '后来每次那几首老歌响起来，你都会把音量调小。', e: { l: -6 }, k: 'avoid' }, real: '2019 年，Taylor Swift 早期专辑的母带被出售，她买不回来，决定把旧专辑全部重新录制。' },
+  { id: 'r-avatar', who: '演出公司', w: [6, 10], say: '一家公司想用动作捕捉给你做一个“年轻版”的数字分身，在专门的剧场里每天演出。你只需要坐在台下看。', L: { t: '我自己上台', a: '后来你的头发白了，台下的人还在跟着唱。', e: { l: 6, m: -5 }, k: 'auth' }, R: { t: '让年轻的我唱', a: '后来你坐在台下，看着二十岁的自己，忽然有点想哭。', e: { m: 15, l: -6 }, k: 'ai money' }, real: '2022 年起，ABBA 成员本人不登台，由动作捕捉制作的数字分身在伦敦专属剧场演出，现场有真人乐队伴奏。' },
+  { id: 'r-tinnitus', who: '前辈', w: [2, 5], say: '一位前辈说，他 25 岁就开始耳鸣，后悔没早点保护耳朵。你今晚的演出音量很大，你还没买耳塞。', L: { t: '买了耳塞再上', a: '后来那副耳塞你戴了十年。', e: { m: -3, l: 2 }, k: 'secure' }, R: { t: '先演了再说', a: '后来那天晚上的演出很棒，你的耳朵嗡嗡响了一整夜。', e: { l: 4 }, k: 'burn', set: 'ears' }, real: '2012 年 Coldplay 主唱 Chris Martin 公开自己 25 岁起耳鸣，说：“我希望自己早点想到这件事。”' },
+  { id: 'r-voicecase', who: '律师', w: [3, 8], say: '有公司没经过你同意，用你的录音训练了一个 AI 声音拿去卖。律师说可以起诉，但要耗一两年。', L: { t: '起诉', a: '后来官司打了两年，你赢了，还帮另外几个歌手出了主意。', e: { m: -10, f: 6, o: 6 }, k: 'fight' }, R: { t: '私下和解', a: '后来你拿到了一笔钱，那个声音还在卖。', e: { m: 6, o: -4 }, k: 'avoid money' }, real: '2024 年北京互联网法院审结全国首例 AI 声音侵权案，认定被告未经许可用 AI 复刻原告声音，判赔 25 万元。' },
+  { id: 'r-income', who: '行业调查', w: [1, 3], say: '你填了一份行业调查。结果显示：近一半音乐人税前月收入不到 2000 元。你看了看自己的账户，也在这一半里。', L: { t: '继续全职', a: '后来你的收入还是在那一半里，但你写完了一张专辑。', e: { l: 4, m: -6 }, k: 'ideal risk' }, R: { t: '找份兼职', a: '后来你白天上班，晚上写歌，睡得比以前少了。', e: { m: 8, l: -3 }, k: 'secure money' }, real: '中国传媒大学《中国音乐人报告 2019》：不含学生，近一半音乐人税前月收入低于 2000 元。' },
+  { id: 'r-labelai', who: '唱片公司', w: [5, 9], say: '去年唱片公司还在起诉 AI 作曲公司，今年却和它们签了合作。公司问你：要不要把你的作品授权给 AI 训练？', L: { t: '不授权', a: '后来你的歌没有出现在训练数据里。至少，公司是这么说的。', e: { o: 6, m: -4 }, k: 'auth fight' }, R: { t: '授权，拿分成', a: '后来你每个季度收到一笔分成。你听不出哪首 AI 歌里有你。', e: { m: 10, o: -8 }, k: 'ai money' }, real: '2024 年三大唱片公司起诉 AI 作曲公司 Suno 和 Udio；2025 年环球、华纳又先后与它们和解并合作。' },
 
   /* —— 前后呼应：早年的选择，几年后找上门 —— */
-  { id: 'x-ears', who: '医生', w: [5, 10], need: 'ears', say: '医生：“耳鸣是永久性的。”那年没戴耳塞的演出，你还记得。', L: { t: '少做现场', a: '后来你更多待在录音棚里，用很小的音量做音乐。', e: { m: -8, l: -4 }, k: 'secure' }, R: { t: '戴助听器继续', a: '后来你戴着助听器上台，唱得比以前更小心。', e: { l: 4, o: -3 }, k: 'burn' } },
-  { id: 'x-lend1', who: '老友', w: [5, 9], need: 'lend', say: '当年借钱的朋友回来了：钱还了，还带来一个不赚钱的电影配乐。', L: { t: '接', a: '后来那部电影上映了，片尾字幕里，你们的名字挨在一起。', e: { m: 6, o: 8, l: 4 }, k: 'bond ideal' }, R: { t: '太忙了，推掉', a: '后来他找了别人。电影上映那天，你在加班。', e: { m: 10 }, k: 'money' } },
-  { id: 'x-teach', who: '学生', w: [6, 10], need: 'teach', say: '你教的第一个学生考上了音乐学院，请你看毕业演出。那天你有商演。', L: { t: '去看他', a: '后来他在台上说：“我的第一位老师，今天在台下。”', e: { l: 10, m: -6 }, k: 'bond' }, R: { t: '去商演', a: '后来你在朋友圈看到了演出视频，点了个赞。', e: { m: 10, l: -4 }, k: 'money' } },
-  { id: 'x-signed', who: '唱片公司', w: [6, 10], need: 'signed', say: '合同到期前，公司要你一年交 3 张专辑，否则赔违约金 50 万。', L: { t: '让 AI 赶出来', a: '后来你交了 3 张专辑，你自己没听完任何一张。', e: { o: -12, m: 5 }, k: 'ai avoid' }, R: { t: '打官司', a: '后来官司打了一年。合同到期那天，你写了一首新歌。', e: { m: -15, o: 8 }, k: 'fight' } },
+  { id: 'x-ears', who: '医生', w: [5, 10], need: 'ears', say: '“你的耳鸣是永久性的。高频听力已经下降了。”那年没戴耳塞的演出，你还记得。', L: { t: '少做现场', a: '后来你更多待在录音棚里，用很小的音量做音乐。', e: { m: -8, l: -4 }, k: 'secure' }, R: { t: '戴助听器继续', a: '后来你戴着助听器上台，唱得比以前更小心。', e: { l: 4, o: -3 }, k: 'burn' } },
+  { id: 'x-lend1', who: '老友', w: [5, 9], need: 'lend', say: '当年借你钱的那个朋友出现了：钱还了，还带来一个电影配乐的机会，“只有你会接这种不赚钱的活”。', L: { t: '接', a: '后来那部电影上映了，片尾字幕里，你们的名字挨在一起。', e: { m: 6, o: 8, l: 4 }, k: 'bond ideal' }, R: { t: '太忙了，推掉', a: '后来他找了别人。电影上映那天，你在加班。', e: { m: 10 }, k: 'money' } },
+  { id: 'x-teach', who: '学生', w: [6, 10], need: 'teach', say: '你教过的第一个学生考上了音乐学院，请你去看他的毕业演出。那天你本来有一场商演。', L: { t: '去看他', a: '后来他在台上说：“我的第一位老师，今天在台下。”', e: { l: 10, m: -6 }, k: 'bond' }, R: { t: '去商演', a: '后来你在朋友圈看到了演出视频，点了个赞。', e: { m: 10, l: -4 }, k: 'money' } },
+  { id: 'x-signed', who: '唱片公司', w: [6, 10], need: 'signed', say: '合同到期前，公司要求你再交 3 张专辑，否则赔违约金 50 万。三张，一年内。', L: { t: '让 AI 赶出来', a: '后来你交了 3 张专辑，你自己没听完任何一张。', e: { o: -12, m: 5 }, k: 'ai avoid' }, R: { t: '打官司', a: '后来官司打了一年。合同到期那天，你写了一首新歌。', e: { m: -15, o: 8 }, k: 'fight' } },
   /* ---- 生活开销：住在哪、怎么住 ---- */
-  { id: 'k62', who: '中介', w: [1, 2], say: '中介：“一居室月租 3500。两个人合租一套两居，一人只要 2000。”', L: { t: '一个人住', a: '后来你一个人住，安静，也很贵。', e: { l: 3, m: -2 }, k: 'auth' }, R: { t: '合租', a: '后来你的室友学设计，你们一起熬过很多个夜。', e: { m: 2, l: -3 }, k: 'secure money', set: 'shared' } },
-  { id: 'k63', who: '老同学', w: [3, 6], say: '老家新开了音乐教室，缺老师：“回来吧，房租一个月 800。”', L: { t: '留在大城市', a: '后来你还在大城市，演出机会多，房租也多。', e: { f: 3, m: -2, l: 2 }, k: 'risk ideal' }, R: { t: '搬回老家', a: '后来你搬回了老家，晚上能听见蛐蛐叫。', e: { f: -8, m: 3, l: 3 }, k: 'secure', set: 'smallcity' } },
+  { id: 'k62', who: '中介', w: [1, 2], say: '这套一居室月租 3500。隔壁学设计的同学也在找房，两个人合租一套两居，一人只要 2000。', L: { t: '一个人住', a: '后来你一个人住，安静，也很贵。', e: { l: 3, m: -2 }, k: 'auth' }, R: { t: '合租', a: '后来你的室友学设计，你们一起熬过很多个夜。', e: { m: 2, l: -3 }, k: 'secure money', set: 'shared' } },
+  { id: 'k63', who: '老同学', w: [3, 6], say: '老家新开了一家音乐教室，缺老师。“回来吧，这边房租一个月 800，压力小多了。”', L: { t: '留在大城市', a: '后来你还在大城市，演出机会多，房租也多。', e: { f: 3, m: -2, l: 2 }, k: 'risk ideal' }, R: { t: '搬回老家', a: '后来你搬回了老家，晚上能听见蛐蛐叫。', e: { f: -8, m: 3, l: 3 }, k: 'secure', set: 'smallcity' } },
   /* ---- AI 渗透：第 1–3 年是工具，第 4–6 年是同事和管理者，第 7–10 年走进人际关系和身份 ---- */
-  { id: 'k64', who: '粉丝', w: [2, 4], say: '粉丝说你的歌词有股 AI 味。原来 AI 早就学会了你的口头禅。', L: { t: '换一种写法', a: '后来你写出了一种 AI 学不会的新句子，至少暂时学不会。', e: { o: 5, l: -4, f: 2 }, k: 'approval risk' }, R: { t: '不改，那是我的', a: '后来你和网上那些“像你”的句子，一起被人记住了。', e: { f: -5, l: 3, o: 2 }, k: 'auth' } },
-  { id: 'k65', who: '粉丝运营公司', w: [3, 6], say: '“我们的 AI 用你的语气 24 小时回复粉丝私信。每月 199。”', L: { t: '交给 AI', a: '后来粉丝都说你回复得又快又温柔，可那不是你。', e: { m: -2, f: 8, l: -4 }, k: 'ai approval' }, R: { t: '自己慢慢回', a: '后来你回得很慢，但每一条都是你自己写的。', e: { f: -4, l: 5 }, k: 'bond auth' } },
-  { id: 'k66', who: '人事（HR）', w: [4, 6], say: '兼职公司的 AI 分析了会议录音，判定你“情绪波动过大”，扣绩效 20%。', L: { t: '要真人复核', a: '后来复核的人听完录音，说：“这不是情绪波动，这是在认真讨论。”', e: { l: 3, f: -3 }, k: 'fight' }, R: { t: '认了', a: '后来你开会的时候，说话越来越小声。', e: { m: -1, l: -5 }, k: 'avoid secure' } },
-  { id: 'k67', who: '朋友', w: [2, 4], say: '凌晨两点，朋友发来一段很长的语音，说很难受。你明早要交混音。', L: { t: '打电话陪他', a: '后来混音晚交了半天。他说那天晚上，幸好有你。', e: { m: -3, f: -3, l: 2 }, k: 'bond burn' }, R: { t: '让他找 AI 聊', a: '后来他说 AI 很会安慰人。你们之间，好像少了点什么。', e: { m: 2, l: -3 }, k: 'ai secure' } },
-  { id: 'k68', who: '医生', w: [5, 8], say: '情绪手表会在你焦虑时放平静的声音。可你最难过的几年，写出了最好的歌。', L: { t: '一直戴着', a: '后来你很少难过了，也很少再写出让自己发抖的歌。', e: { o: -8, l: 3, m: -1 }, k: 'secure avoid' }, R: { t: '只在失眠时戴', a: '后来你学会了分辨：哪些难过需要被安抚，哪些需要被写下来。', e: { o: 4, l: -3, m: -1 }, k: 'auth burn' } },
-  { id: 'k69', who: '校长', w: [6, 9], say: '学生戴上了 AI 耳机，你讲的话会被改写成“最好懂的版本”。还亲自讲吗？', L: { t: '坚持真人讲', a: '后来有个学生摘下耳机，说：“老师，我想听你原来的说法。”', e: { l: 5, f: -4 }, k: 'auth bond' }, R: { t: '交给 AI', a: '后来学生们都听懂了，但没有人记得你说过什么。', e: { l: -3, m: 3 }, k: 'ai secure' } },
-  { id: 'k70', who: '银行客户经理', w: [4, 7], say: '银行：“你的信用分 58，房贷只批一半。授权 AI 理财师查看所有账户吗？”', L: { t: '授权给 AI', a: '后来 AI 帮你存下了一笔钱。你偶尔想，它知道你所有的秘密。', e: { m: 6, l: -3 }, k: 'ai secure' }, R: { t: '自己记账', a: '后来你的记账本写满了三本，最后一页写着：琴弦 68 元。', e: { m: -4, l: 2 }, k: 'auth' } },
-  { id: 'k71', who: '婚恋 App', w: [7, 10], say: 'AI 替你相亲：“你填的是‘稳定顾家’，可让你心动的都是搞音乐的人。”', L: { t: '见 AI 挑的人', a: '后来你和其中一个人组了个二人乐队。', e: { l: 6, o: 3, m: -2 }, k: 'ai risk' }, R: { t: '按我填的来', a: '后来你遇到了一个很稳定的人，你们很少吵架，也很少聊音乐。', e: { l: -4, m: 3 }, k: 'secure' } },
-  { id: 'k72', who: '家人群', w: [7, 10], say: '你没回家过年。表弟用 AI 做了个“你”，陪奶奶聊了一晚上。', L: { t: '明年一定回去', a: '后来第二年你回去了。奶奶说：“还是真的你好，虽然话少。”', e: { l: 4, m: -3 }, k: 'bond' }, R: { t: '让它常陪奶奶', a: '后来奶奶每天都和“你”聊天，你很少再打电话了。', e: { l: -5, m: 2 }, k: 'ai avoid' } },
-  { id: 'r-aidetect', who: '比赛主办方', w: [1, 3], real: '2025 年有记者用常见的论文 AI 检测系统测试朱自清《荷塘月色》，疑似 AI 生成率为 62.88%。', say: '参赛 demo 被判“疑似 AI 生成”，理由是太像你崇拜的那位前辈。', L: { t: '交录像申诉', a: '后来评委看了你的创作录像，说：“你的模仿里，有你自己。”', e: { m: -2, l: -3, o: 6 }, k: 'fight auth' }, R: { t: '改掉风格重写', a: '后来你写出了一种新的风格，再也没人说你像谁。', e: { o: -5, f: 3, l: -3 }, k: 'avoid approval' } },
+  { id: 'k64', who: '粉丝', w: [2, 4], say: '“你最近的歌词有股 AI 味。”你一查才发现，你常用的 AI 助手早就学会了你的口头禅，现在网上到处都是“像你”的句子。', L: { t: '换一种写法', a: '后来你写出了一种 AI 学不会的新句子，至少暂时学不会。', e: { o: 5, l: -4, f: 2 }, k: 'approval risk' }, R: { t: '不改，那是我的', a: '后来你和网上那些“像你”的句子，一起被人记住了。', e: { f: -5, l: 3, o: 2 }, k: 'auth' } },
+  { id: 'k65', who: '粉丝运营公司', w: [3, 6], say: '“我们的 AI 会用你的语气，24 小时回复每一条粉丝私信，粉丝不会发现。每月 199，比请一个真人运营便宜多了。”', L: { t: '交给 AI', a: '后来粉丝都说你回复得又快又温柔，可那不是你。', e: { m: -2, f: 8, l: -4 }, k: 'ai approval' }, R: { t: '自己慢慢回', a: '后来你回得很慢，但每一条都是你自己写的。', e: { f: -4, l: 5 }, k: 'bond auth' } },
+  { id: 'k66', who: '人事（HR）', w: [4, 6], say: '你在一家公司兼职做音频。“公司的 AI 绩效系统分析了你上个月的会议录音，判定你‘情绪波动过大’，这个月绩效扣 20%。”', L: { t: '要真人复核', a: '后来复核的人听完录音，说：“这不是情绪波动，这是在认真讨论。”', e: { l: 3, f: -3 }, k: 'fight' }, R: { t: '认了', a: '后来你开会的时候，说话越来越小声。', e: { m: -1, l: -5 }, k: 'avoid secure' } },
+  { id: 'k67', who: '朋友', w: [2, 4], say: '凌晨两点，朋友发来一段很长的语音，说心里很难受。你明早九点要交一首歌的混音，还剩一半没做。', L: { t: '打电话陪他', a: '后来混音晚交了半天。他说那天晚上，幸好有你。', e: { m: -3, f: -3, l: 2 }, k: 'bond burn' }, R: { t: '让他找 AI 聊', a: '后来他说 AI 很会安慰人。你们之间，好像少了点什么。', e: { m: 2, l: -3 }, k: 'ai secure' } },
+  { id: 'k68', who: '医生', w: [5, 8], say: '“这块情绪手表会监测你的心率和睡眠，你焦虑或失眠时，它会放让你平静下来的声音。”可你最难过的那几年，也是你写出最好作品的几年。', L: { t: '一直戴着', a: '后来你很少难过了，也很少再写出让自己发抖的歌。', e: { o: -8, l: 3, m: -1 }, k: 'secure avoid' }, R: { t: '只在失眠时戴', a: '后来你学会了分辨：哪些难过需要被安抚，哪些需要被写下来。', e: { o: 4, l: -3, m: -1 }, k: 'auth burn' } },
+  { id: 'k69', who: '校长', w: [6, 9], say: '你在一所中学兼职教音乐。“学生们都戴上了 AI 耳机，你讲的话会被实时改写成‘最容易懂的版本’。你还要亲自上台讲吗？”', L: { t: '坚持真人讲', a: '后来有个学生摘下耳机，说：“老师，我想听你原来的说法。”', e: { l: 5, f: -4 }, k: 'auth bond' }, R: { t: '交给 AI', a: '后来学生们都听懂了，但没有人记得你说过什么。', e: { l: -3, m: 3 }, k: 'ai secure' } },
+  { id: 'k70', who: '银行客户经理', w: [4, 7], say: '“系统根据你近三年的收入流水和信用记录，给你打了 58 分，房贷只能批一半。开通我们的 AI 理财师，它会帮你自动存钱、做稳健投资，分数也会慢慢涨。它有严格的资金安全保障，没有您的同意，不会动用您的任何一笔钱。不过需要授权它查看您名下的所有账户。”', L: { t: '授权给 AI', a: '后来 AI 帮你存下了一笔钱。你偶尔想，它知道你所有的秘密。', e: { m: 6, l: -3 }, k: 'ai secure' }, R: { t: '自己记账', a: '后来你的记账本写满了三本，最后一页写着：琴弦 68 元。', e: { m: -4, l: 2 }, k: 'auth' } },
+  { id: 'k71', who: '婚恋 App', w: [7, 10], say: '你的 AI 分身替你聊了一个月，筛掉了 200 个人。它说：“你填的理想型是‘稳定、顾家’，可这一个月里，让你心跳加快的都是搞音乐、过得不太稳定的人。我按你真正的心动挑了 3 个。”', L: { t: '见 AI 挑的人', a: '后来你和其中一个人组了个二人乐队。', e: { l: 6, o: 3, m: -2 }, k: 'ai risk' }, R: { t: '按我填的来', a: '后来你遇到了一个很稳定的人，你们很少吵架，也很少聊音乐。', e: { l: -4, m: 3 }, k: 'secure' } },
+  { id: 'k72', who: '家人群', w: [7, 10], say: '今年你没回家过年。表弟用 AI 做了一个“数字人的你”，用你的声音和口头禅陪奶奶聊了一晚上。奶奶在群里说：“这个你，比真的你话多。”', L: { t: '明年一定回去', a: '后来第二年你回去了。奶奶说：“还是真的你好，虽然话少。”', e: { l: 4, m: -3 }, k: 'bond' }, R: { t: '让它常陪奶奶', a: '后来奶奶每天都和“你”聊天，你很少再打电话了。', e: { l: -5, m: 2 }, k: 'ai avoid' } },
+  { id: 'r-aidetect', who: '比赛主办方', w: [1, 3], real: '2025 年有记者用常见的论文 AI 检测系统测试朱自清《荷塘月色》，疑似 AI 生成率为 62.88%。', say: '你投给原创音乐比赛的 demo，被 AI 检测系统判定“疑似 AI 生成，相似度 87%”，理由是太像你最崇拜的那位前辈。可你确实是听着他的歌，一句句模仿着学出来的。', L: { t: '交录像申诉', a: '后来评委看了你的创作录像，说：“你的模仿里，有你自己。”', e: { m: -2, l: -3, o: 6 }, k: 'fight auth' }, R: { t: '改掉风格重写', a: '后来你写出了一种新的风格，再也没人说你像谁。', e: { o: -5, f: 3, l: -3 }, k: 'avoid approval' } },
 
   /* —— 短卡：一两句话，轻松一点，有时最后一句让人想一想（fun: 1，每年放一张） —— */
   { id: 'j01', fun: 1, who: '外卖小哥', w: [1, 4], say: '你的外卖备注写着“多放辣”。小哥回：“好的，歌手老师。”', L: { t: '送他签名', a: '后来他成了你的第一个铁粉。', e: { f: 3, l: 3 }, k: 'bond' }, R: { t: '假装不是我', a: '后来你在评论区看到他：“今天给一个歌手送外卖，他不承认。”', e: { l: -2 }, k: 'avoid' } },
@@ -2037,7 +2078,7 @@ const CARDS = [
   { id: 'j12', fun: 1, who: '推推', w: [4, 9], say: '“系统检测到您连续 7 天没有发作品。您还好吗？”', L: { t: '在写首长的', a: '后来那首长歌写了两个月，系统给你发了十几次问候。', e: { o: 5, f: -3 }, k: 'auth' }, R: { t: '赶紧发一首', a: '后来系统放心了，你没有。', e: { f: 3, o: -3 }, k: 'approval' } },
   { id: 'j13', fun: 1, who: '粉丝', w: [5, 10], say: '“我把你十年前的歌词纹在了胳膊上。你现在说写错了一个字？”', L: { t: '那是故意的', a: '后来那个错字成了粉丝之间的暗号。', e: { f: 3, l: 3 }, k: 'bond' }, R: { t: '新专辑改过来', a: '后来他又去纹了一次。', e: { o: 3 }, k: 'auth' } },
   { id: 'j14', fun: 1, who: '婚礼司仪', w: [2, 7], say: '“新人点了你的歌当入场曲。是一首分手歌。”', L: { t: '提醒他们', a: '后来他们换了歌，还邀请你去现场唱了一首。', e: { l: 2 }, k: 'bond' }, R: { t: '不说，祝福', a: '后来他们一直很幸福。也许听歌的人，本来就只听自己想听的。', e: { l: 3, f: 2 }, k: 'avoid' } },
-  { id: 'j15', fun: 1, who: '智能音箱', w: [3, 8], say: '你说：“放点我的歌。”音箱：“没有找到这位歌手。”', L: { t: '去平台申诉', a: '后来音箱认识你了，每次都把你的歌放在第二首。', e: { m: -1, f: 2 }, k: 'fight' }, R: { t: '自己唱给它听', a: '后来它学会了，跟着你唱跑了调。', e: { l: 4 }, k: 'ideal' } },
+  { id: 'j15', fun: 1, who: '智能音箱', w: [3, 8], say: '你说：“放一首我的歌。”音箱：“抱歉，这首歌在别的平台，我这里没有版权。”', L: { t: '也上传到这个平台', a: '后来更多人听到了你，原来的平台按合同扣了你一笔违约金。', e: { m: -5, f: 4 }, k: 'approval' }, R: { t: '算了', a: '后来你家的音箱一直放不了你的歌，你只好自己唱。', e: { l: 2 }, k: 'secure' } },
   { id: 'j16', fun: 1, who: '健身房', w: [1, 5], say: '健身房把你的歌放进“放松拉伸”歌单。可你写的是愤怒。', L: { t: '让他们改标签', a: '后来你的歌进了“冲刺”歌单，有人跟着它跑完了第一个十公里。', e: { o: 3, f: -1 }, k: 'auth' }, R: { t: '也行吧', a: '后来很多人一边拉伸一边听你的愤怒，听得很放松。', e: { f: 3 }, k: 'approval' } },
   { id: 'j17', fun: 1, who: '你的猫', w: [6, 10], say: '猫踩过键盘，留下一段旋律。比你今天写的都好。', L: { t: '用，署名写猫', a: '后来这首歌的作曲那一栏，写着一只猫的名字。', e: { o: 3, l: 4 }, k: 'risk' }, R: { t: '删掉，重写', a: '后来你写到半夜，写出了比猫好一点点的旋律。', e: { o: 5, l: -2 }, k: 'auth' } },
   { id: 'j18', fun: 1, who: 'AI 客服', w: [4, 9], say: '“您的投诉已由 AI 处理。结果：您的投诉不成立。”', L: { t: '要求转人工', a: '后来人工客服接起电话，说：“系统显示您的投诉不成立。”', e: { l: -2, m: 2 }, k: 'fight' }, R: { t: '算了', a: '后来你写了一首叫《不成立》的歌。', e: { l: -1, o: 2 }, k: 'avoid' } },
@@ -2059,19 +2100,18 @@ const CARDS = [
    选“他”或“她”只会悄悄换掉每年其中一张卡，不在任何地方明说 */
 const GCARDS = {
   she: [
-    { id: 'she1', who: '甲方', say: '甲方：“女生做编曲啊？要不还是找个男老师吧。你长得挺好，来唱。”', L: { t: '“我编给你听”', a: '后来甲方听完你的编曲，说：“下次还找你。”', e: { o: 8, m: -5 }, k: 'fight auth' }, R: { t: '那我来唱', a: '后来你唱了那首歌，编曲署名是一个男老师。', e: { m: 5, o: -8 }, k: 'approval avoid' } },
-    { id: 'she2', who: '经纪人', say: '经纪人：“你快 30 了。人设改成‘甜妹’，或者干脆传点绯闻？”', L: { t: '都不要', a: '后来你没火，但没有人能替你决定你是谁。', e: { o: 8, f: -8 }, k: 'auth' }, R: { t: '改人设', set: 'scandal', a: '后来你火了一阵。有人问你本来是什么样子，你想了很久。', e: { f: 12, o: -10, l: -5 }, k: 'approval' } },
+    { id: 'she1', who: '甲方', say: '“女生做编曲啊？要不还是找个男老师吧。你长得挺好，来唱。”', L: { t: '“我编给你听”', a: '后来甲方听完你的编曲，说：“下次还找你。”', e: { o: 8, m: -5 }, k: 'fight auth' }, R: { t: '那我来唱', a: '后来你唱了那首歌，编曲署名是一个男老师。', e: { m: 5, o: -8 }, k: 'approval avoid' } },
+    { id: 'she2', who: '经纪人', say: '“你快 30 了。公司想给你换个‘成熟姐姐’人设，接下来的歌也都按这个方向写。”', L: { t: '按人设走', a: '后来你的新歌很成熟，也很像别人写给你的。', e: { f: 10, o: -8 }, k: 'approval' }, R: { t: '我写什么就是什么', a: '后来公司把资源给了更听话的新人，你还在写你想写的。', e: { o: 8, f: -8 }, k: 'auth' } },
     { id: 'she3', who: '演出商', say: '同一场演出，男乐手报 8000，给你 5000。“女孩子嘛，不用那么拼。”', L: { t: '不接', a: '后来那场演出换了个男乐手，他拿了 8000。', e: { l: 3, f: -3 }, k: 'fight' }, R: { t: '先接下来', a: '后来你拿到了 5000，下一次报价，你直接写了 8000。', e: { m: 5, l: -8 }, k: 'money avoid' } },
     { id: 'she4', who: '网友', say: '热评第一：“她的歌不错，但背后肯定有个男制作人吧？”', L: { t: '公开工程文件', a: '后来那条热评被顶下去了，换成了：“原来她真的会编曲。”', e: { o: 8, f: 5, m: -3 }, k: 'fight' }, R: { t: '不理', a: '后来那条热评一直在那里。', e: { l: -6 }, k: 'avoid' } },
-    { id: 'she5', who: '录音师', say: '录音棚里，男录音师当着你的面问你的男助理：“编曲老师什么时候到？”', L: { t: '“我就是编曲”', a: '后来那位录音师成了你最常合作的人。', e: { l: 3, f: 2 }, k: 'fight' }, R: { t: '让助理去沟通', a: '后来你在那家录音棚的名单上，写的是“歌手”。', e: { l: -5 }, k: 'avoid' } },
-    { id: 'she6', who: '记者', say: '记者问你怎么平衡家庭和事业。同一场采访，男乐手被问的是“创作理念”。', L: { t: '反问记者', a: '后来这段反问上了热搜，记者后来专门采访了你的创作理念。', e: { f: 8, l: 3 }, k: 'fight' }, R: { t: '认真回答', a: '后来那篇报道的标题是“她的温柔与坚持”，没有写你的音乐。', e: { f: -2, l: -4 }, k: 'avoid' } },
-    { id: 'she7', who: '公司', say: '“你怀孕的话，合约顺延两年，期间不发新歌。签字吧。”', L: { t: '拒签，找律师', a: '后来你没签那份合同。律师说，这种条款本来就站不住。', e: { m: -10, l: 4 }, k: 'fight' }, R: { t: '签', a: '后来合同里的那两年，你一首歌都没有发。', e: { m: 5, l: -8 }, k: 'secure avoid' } },
-    { id: 'she8', who: 'AI 选角系统', say: '系统给女歌手推荐“甜”和“伤感”。你写的工业摇滚，被标为“不适合你”。', L: { t: '手动改标签', a: '后来你的工业摇滚有了一小群很死忠的听众。', e: { o: 8, f: -6 }, k: 'auth fight' }, R: { t: '顺着推荐写', a: '后来你写了很多甜歌，系统很满意。', e: { f: 10, o: -8 }, k: 'approval ai' } }
+    { id: 'she5', who: '录音师', say: '录音棚里，男录音师当着你的面问你的男助理：“编曲老师今天什么时候到？”', L: { t: '“我就是编曲”', a: '后来那位录音师成了你最常合作的人。', e: { l: 3, f: 2 }, k: 'fight' }, R: { t: '让助理去沟通', a: '后来你在那家录音棚的名单上，写的是“歌手”。', e: { l: -5 }, k: 'avoid' } },
+    { id: 'she6', who: '记者', say: '“作为女音乐人，你怎么平衡家庭和事业？”同一场采访，男乐手被问的是“创作理念”。', L: { t: '反问记者', a: '后来这段反问上了热搜，记者后来专门采访了你的创作理念。', e: { f: 8, l: 3 }, k: 'fight' }, R: { t: '认真回答', a: '后来那篇报道的标题是“她的温柔与坚持”，没有写你的音乐。', e: { f: -2, l: -4 }, k: 'avoid' } },
+    { id: 'she8', who: 'AI 选角系统', say: '系统给女歌手推荐的曲风，78% 是“甜”和“伤感”。你写的工业摇滚，被打上“不适合你”。', L: { t: '手动改标签', a: '后来你的工业摇滚有了一小群很死忠的听众。', e: { o: 8, f: -6 }, k: 'auth fight' }, R: { t: '顺着推荐写', a: '后来你写了很多甜歌，系统很满意。', e: { f: 10, o: -8 }, k: 'approval ai' } }
   ],
   he: [
     { id: 'he1', who: '公司', say: '“男歌手现在要‘奶’，粉丝才买账。练练气声，学学撒娇。”', L: { t: '不练', a: '后来你的粉丝不多，但他们喜欢的就是你原来的声音。', e: { o: 6, f: -6 }, k: 'auth' }, R: { t: '练', a: '后来你练会了气声，在镜头前越来越熟练。', e: { f: 10, o: -6 }, k: 'approval' } },
     { id: 'he2', who: '相亲对象', say: '“男的搞音乐啊？有房吗？月入多少？”', L: { t: '照实说', a: '后来这次相亲没有下文，但你心里很踏实。', e: { l: 3 }, k: 'auth' }, R: { t: '往高了说一点', a: '后来你们见了第二面，你一直担心被问起工资条。', e: { l: -5 }, k: 'approval avoid' } },
-    { id: 'he3', who: '学生家长', say: '家长：“女儿单独跟男老师上声乐课，我们不太放心。”你少了三个学生。', L: { t: '开着门上课', a: '后来你的琴房一直开着门，家长们慢慢放心了。', e: { m: -3, l: 2 }, k: 'secure' }, R: { t: '不教声乐了', a: '后来你只教吉他，再也没教过唱歌。', e: { m: -8, l: -4 }, k: 'avoid' } },
+    { id: 'he3', who: '学生家长', say: '“我女儿学声乐，单独跟男老师上课，我们不太放心。”你的学生一下少了三个。', L: { t: '开着门上课', a: '后来你的琴房一直开着门，家长们慢慢放心了。', e: { m: -3, l: 2 }, k: 'secure' }, R: { t: '不教声乐了', a: '后来你只教吉他，再也没教过唱歌。', e: { m: -8, l: -4 }, k: 'avoid' } },
     { id: 'he4', who: '评论区', say: '你在台上唱到哭了。评论区：“一个大男人哭什么，矫情。”', L: { t: '下次照样真情实感', a: '后来那首歌成了你现场必唱的一首，每次唱到那里，台下也有人哭。', e: { l: 5, f: -3 }, k: 'auth' }, R: { t: '以后忍着', a: '后来你再也没在台上哭过。', e: { l: -6 }, k: 'avoid' } },
     { id: 'he5', who: '家里', say: '“男人要养家。搞音乐能给孩子买学区房吗？”', L: { t: '先养活我的音乐', a: '后来你没有学区房，但你的孩子从小在琴声里睡着。', e: { l: 5, m: -5 }, k: 'ideal fight' }, R: { t: '先去赚钱', a: '后来你买了学区房，还上了很多年的贷款。', e: { m: 12, l: -8 }, k: 'secure money' } },
     { id: 'he6', who: '经纪人', say: '“公司想让你上一档恋爱综艺，说能涨粉。”', L: { t: '我只想唱歌', a: '后来你没上综艺，经纪人说你“不配合”。', e: { o: 4, f: -6 }, k: 'auth' }, R: { t: '去上', a: '后来你在综艺里出名了，大家记住的是你的“恋爱人设”。', e: { f: 10, o: -4, l: -2 }, k: 'approval' } },
@@ -2084,14 +2124,14 @@ const GCARDS = {
 const SURPRISES = [
   { id: 'u-drama', who: '意外', say: '你五年前的一首老歌，突然被一部热播剧用作插曲。', L: { t: '收版权费就好', a: '后来你收到了一笔版权费，交了半年房租。', e: { m: 10 }, k: 'money' }, R: { t: '趁热发新歌', a: '后来新歌也火了一点点，不过大家只记得那部剧。', e: { f: 12, l: 3, m: -3 }, k: 'approval risk' } },
   { id: 'u-theft', who: '意外', say: '排练室被盗。电脑和声卡都没了，里面有半张专辑的工程文件。', L: { t: '借钱买新设备', a: '后来你买了新电脑，第一件事就是把所有文件备份三份。', e: { m: -12 }, k: 'secure' }, R: { t: '用手机从头再录', a: '后来手机录的那一版有很多杂音，听的人说，这样更像你。', e: { o: 6, l: -4, f: -2 }, k: 'ideal' } },
-  { id: 'u-cancel', who: '意外', say: '下个月的巡演因场地问题全部取消，定金退不回来。', L: { t: '改成线上', a: '后来线上演出有两百人看，但没有人鼓掌。', e: { m: -4, f: -3 }, k: 'secure' }, R: { t: '自己找小场地', a: '后来你在一家书店、一个车库和一个天台唱完了巡演。', e: { m: -8, l: 6, f: 3 }, k: 'risk bond' } },
+  { id: 'u-cancel', who: '意外', say: '下个月的巡演因为场地问题全部取消，定金退不回来。', L: { t: '改成线上', a: '后来线上演出有两百人看，但没有人鼓掌。', e: { m: -4, f: -3 }, k: 'secure' }, R: { t: '自己找小场地', a: '后来你在一家书店、一个车库和一个天台唱完了巡演。', e: { m: -8, l: 6, f: 3 }, k: 'risk bond' } },
   { id: 'u-sick', who: '意外', say: '你重感冒，嗓子哑了两周。手上排着三场演出。', L: { t: '全部推掉', a: '后来嗓子好了，你第一次觉得能唱歌是一件幸运的事。', e: { m: -8, l: 3 }, k: 'secure' }, R: { t: '吃药硬上', a: '后来演出撑下来了，你的嗓子却哑了更久。', e: { m: 4, l: -6 }, k: 'burn' } },
-  { id: 'u-idol', who: '意外', say: '你在便利店偶遇一位从小听到大的歌手。他说：“我听过你的歌。”', L: { t: '要联系方式', a: '后来他给你的新歌录了一段和声。', e: { f: 6, l: 4 }, k: 'approval bond' }, R: { t: '只说了谢谢', a: '后来你一直记得那句话，在想放弃的时候拿出来想一想。', e: { l: 6 }, k: 'auth' } },
+  { id: 'u-idol', who: '意外', say: '你在便利店偶遇一位从小听到大的歌手。他说：“我听过你的歌。下周我的新专辑缺一首歌，你想写吗？不过署名只能写我的团队。”', L: { t: '写，能被他唱就够了', a: '后来那首歌成了他专辑里最火的一首，没有人知道是你写的。', e: { m: 10, o: -6 }, k: 'approval money' }, R: { t: '我的歌要署我的名', a: '后来他找了别人写。你偶尔会想，如果当时答应了会怎样。', e: { l: 6, o: 4 }, k: 'auth' } },
   { id: 'u-meme', who: '意外', say: '你的歌被做成了鬼畜素材，播放 3000 万。你一分钱没拿到。', L: { t: '发律师函', a: '后来视频下架了，评论区最后一条是：“原曲是谁的？”', e: { m: 2, f: -3 }, k: 'fight' }, R: { t: '自己也去玩梗', a: '后来你的原曲也火了，大家终于知道这首歌是谁写的。', e: { f: 10, o: -4 }, k: 'approval' } },
   { id: 'u-ringtone', who: '意外', say: '你爸把你五年前写的广告歌设成了铃声。他不知道是你写的。', L: { t: '告诉他', a: '后来他把铃声音量调到了最大，在单位里逢人就说。', e: { l: 6 }, k: 'bond' }, R: { t: '不说', a: '后来每次他手机响，你都假装没听见，嘴角却在笑。', e: { l: 3, o: 2 }, k: 'avoid' } },
   { id: 'u-blackout', who: '意外', say: '演出唱到一半，全场断电。台下有人打开了手机电筒。', L: { t: '等来电', a: '后来电来了，可刚才那股劲儿也过去了。', e: { f: -2 }, k: 'secure' }, R: { t: '不插电清唱', a: '后来那段没有麦克风的清唱，成了很多人记住你的原因。', e: { f: 6, l: 6 }, k: 'risk' } },
   { id: 'u-brand', who: '意外', need: 'scandal', say: '品牌方：“鉴于近期舆论，我们决定终止代言合作。”', L: { t: '认了', a: '后来你接的广告少了很多。黑红也是红，只是没那么值钱。', e: { m: -10 }, k: 'avoid' }, R: { t: '公开回应', a: '后来你的回应又上了一次热搜，骂你的和挺你的一样多。', e: { f: 4, m: -8, l: -3 }, k: 'fight' } },
-  { id: 'u-royalty', who: '意外', say: '平台系统出错，你三个月的版税少算了一大笔。客服说“正在排查”。', L: { t: '一封封追讨', a: '后来钱追回来了，还多了一封道歉信。', e: { m: 6, l: -3 }, k: 'fight' }, R: { t: '算了', a: '后来你也不知道那笔钱去了哪里。', e: { m: -4 }, k: 'avoid' } }
+  { id: 'u-royalty', who: '意外', say: '平台系统出错，你过去三个月的版税结算错了，少拿了一大笔。客服说“正在排查”。', L: { t: '一封封追讨', a: '后来钱追回来了，还多了一封道歉信。', e: { m: 6, l: -3 }, k: 'fight' }, R: { t: '算了', a: '后来你也不知道那笔钱去了哪里。', e: { m: -4 }, k: 'avoid' } }
 ];
 
 /* ---------- 第一关：每年一个音乐关卡 ---------- */
@@ -2100,7 +2140,7 @@ const MINIS = {
   2: { who: '录音棚', say: '开录前，吉他手的琴走音了。你能凭耳朵帮他把弦调准吗？', L: { t: '让他用调音器', a: '后来调音器没电了，大家等了半小时。', e: { o: -3 }, k: 'avoid' }, R: { t: '我来', mini: 'tune', k: 'risk' } },
   3: { who: '录音棚', say: '试音：先给你一个标准音 la，再听几个音和和弦，说出是什么。', L: { t: '我耳朵不行', a: '后来他们找了一个听力更好的人。', e: { o: -5, l: -2 }, k: 'avoid' }, R: { t: '来', mini: 'ear', k: 'risk' } },
   4: { who: '鼓手', say: '“节拍器坏了。我数四下，你自己稳住速度，看你心里有没有拍子。”', L: { t: '等修好', a: '后来节拍器修好了，你的拍子还是靠它。', e: { o: -3 }, k: 'avoid' }, R: { t: '来', mini: 'tempo', k: 'risk' } },
-  5: { who: 'A&R', say: '两段钢琴，一段是真人弹的，一段是 AI。分不出来，以后也不用做音乐了。', L: { t: '我不玩这个', a: '后来 A&R 再也没找过你。', e: { o: -5, l: -3 }, k: 'avoid' }, R: { t: '我来听', mini: 'ai', k: 'risk' } },
+  5: { who: 'A&R（唱片公司星探）', say: '两段钢琴，一段是真人弹的，一段是 AI。分不出来，以后也不用做音乐了。', L: { t: '我不玩这个', a: '后来 A&R 再也没找过你。', e: { o: -5, l: -3 }, k: 'avoid' }, R: { t: '我来听', mini: 'ai', k: 'risk' } },
   6: { who: '指挥', say: '交响乐团排练。指挥：“刚才那段独奏是谁？你耳朵好，来听听。”', L: { t: '交给 App 识别', a: '后来 App 认出了乐器，没认出乐手。', e: { o: -4 }, k: 'ai' }, R: { t: '我来听', mini: 'solo', k: 'risk' } },
   7: { who: '主办方', say: '主舞台的鼓手迟到了，三万人在等。你来打鼓，在乐句结尾敲过门。', L: { t: '我不行', a: '后来演出推迟了一个小时，三万人一起等。', e: { f: -8, l: -5 }, k: 'avoid' }, R: { t: '上！', mini: 'fill', k: 'risk' } },
   8: { who: '录音棚', say: '慢歌的工程文件丢了，只剩一段小样。你能把编曲一层层拼回去吗？', L: { t: '让 AI 重做', a: '后来 AI 重做的版本很像，就是少了点什么。', e: { o: -5 }, k: 'ai' }, R: { t: '我来拼', mini: 'arrange', k: 'risk' } },
@@ -2116,11 +2156,14 @@ const CRISIS = {
   { who: '邻居小孩', say: '你又一次不想弹琴了。楼下那个小孩还抱着吉他在门口等你上课。', L: { t: '转行吧', end: 'quit', k: 'secure' }, R: { t: '把吉他送给他', end: 'legacy', k: 'bond' } }],
   o0: [{ who: '小谱', say: '你的账号交给我全权运营吧。你只需要签个字，每个月等着收钱。', L: { t: '签字', end: 'aihand', k: 'ai money' }, R: { t: '把账号拿回来', e: { f: -15 }, reset: { o: 25 }, k: 'auth fight' } },
   { who: '小谱', say: '你又把所有事情交给我了。这次要签字吗？', L: { t: '签字', end: 'aihand', k: 'ai money' }, R: { t: '删掉一切，从头再来', end: 'reset', k: 'auth risk' } }],
-  f100: [{ who: '新闻推送', say: '你上了热搜第一。同时，一条十年前的旧动态也被翻了出来。', L: { t: '沉默，退网', end: 'offline', k: 'avoid' }, R: { t: '公开道歉，继续做音乐', e: { l: -5 }, reset: { f: 60 }, k: 'fight' } },
-  { who: '新闻推送', say: '你又上了热搜第一，这一次骂声更大。', L: { t: '退网', end: 'offline', k: 'avoid' }, R: { t: '硬刚到底', end: 'collapse', k: 'fight risk' } }],
-  m100: [{ who: '投资人', say: '你的公司估值十亿，准备上市。条件只有一个：你不能再以个人名义发歌。', L: { t: '上市', end: 'capital', k: 'money' }, R: { t: '把钱捐给音乐教育', e: { l: 10, f: 5 }, reset: { m: 55 }, k: 'bond ideal' } }],
-  l100: [{ who: '医生', say: '你已经连续写了 72 小时。再这样下去，身体会垮。', L: { t: '写完再说', end: 'burnout', k: 'burn' }, R: { t: '听医生的，休息', e: { m: -10 }, reset: { l: 70 }, k: 'secure' } }],
-  o100: [{ who: '乐评人', say: '你的新专辑一首歌四十分钟，评论区只有一句：“听不懂。”', L: { t: '这就是我', end: 'island', k: 'auth' }, R: { t: '写一首给大家听的歌', e: { f: 8 }, reset: { o: 70 }, k: 'bond' } }]
+  /* 数值满了不一定是坏事：第一次是机会（带着代价），第二次才是满了以后的麻烦 */
+  f100: [{ who: '唱片公司', say: '你的名气到顶了。最大的唱片公司来签你：资源、舞台都给你，但从发型到歌，都由公司来定。', L: { t: '签', end: 'idol', k: 'approval money' }, R: { t: '不签，自己做', a: '后来你的名气慢慢降回了正常的样子，但你的每首歌都还是你自己的。', e: { m: -6 }, reset: { f: 70 }, k: 'auth' } },
+  { who: '新闻推送', say: '你又上了热搜第一。同时，一条十年前的旧动态被翻了出来，骂声越来越大。', L: { t: '沉默，退网', end: 'offline', k: 'avoid' }, R: { t: '硬刚到底', end: 'collapse', k: 'fight risk' } }],
+  m100: [{ who: '投资人', say: '你的公司估值十亿，准备上市。条件只有一个：你不能再以个人名义发歌。', L: { t: '上市', end: 'capital', k: 'money' }, R: { t: '把钱捐给音乐教育', a: '后来你资助的那所学校里，有个孩子写出了第一首歌。', e: { l: 10, f: 5 }, reset: { m: 55 }, k: 'bond ideal' } }],
+  l100: [{ who: '音乐基金会', say: '你写到停不下来。一家基金会愿意资助你全职创作一年，但这一年没有任何收入，也不能接商演。', L: { t: '接受，全职写一年', a: '后来那一年你写完了一整张专辑，存款也见了底。', e: { m: -15, o: 10 }, reset: { l: 85 }, k: 'ideal risk' }, R: { t: '先把日子过好', a: '后来你把那些旋律存在了手机里，等一个更好的时候。', e: { m: 6 }, reset: { l: 75 }, k: 'secure' } },
+  { who: '医生', say: '你已经连续写了 72 小时。再这样下去，身体会垮。', L: { t: '写完再说', end: 'burnout', k: 'burn' }, R: { t: '听医生的，休息', a: '后来你睡了整整两天，醒来以后，旋律还在。', e: { m: -10 }, reset: { l: 70 }, k: 'secure' } }],
+  o100: [{ who: '音乐节', say: '你的原创作品被一个国际音乐节选中，要去国外巡演三个月。国内的课、演出和合作全部要停。', L: { t: '去', a: '后来你在异国的舞台上唱完了最后一首，回国时，很多合作已经换了人。', e: { f: 8, m: -10 }, reset: { o: 85 }, k: 'risk auth' }, R: { t: '留下来', a: '后来你把那封邀请函夹在了乐谱里。', e: { m: 5 }, reset: { o: 75 }, k: 'secure' } },
+  { who: '乐评人', say: '乐评人说你的新专辑“很难，但很好”。平台的推荐算法却把它判成了“不适合推荐”。', L: { t: '这就是我', end: 'island', k: 'auth' }, R: { t: '写一首更好进入的歌', a: '后来那首歌被推荐了，听的人顺着它，找到了你那张很难的专辑。', e: { f: 8 }, reset: { o: 70 }, k: 'bond' } }]
 };
 
 /* ---------- 人生转折之后的“后来……”：转折不会提前结束游戏，日子还要继续 ---------- */
@@ -2271,7 +2314,7 @@ const L3_ROLES = {
     ev: { who: '奶茶品牌', say: '“其实歌我们已经让 AI 写好了。找你，只是需要一个真人署名，钱照付。”', a: [['署名，收钱', 'money approval'], ['拒绝', 'auth fight']] } },
   wedding: { name: '婚礼音乐顾问', music: true, dom: 'life', task: 'waltz', style: 'wed',
     ev: { who: '婚礼新人', say: '“新郎的爷爷上个月去世了。能不能用 AI 把爷爷的声音加进来，唱一句祝福？”', a: [['做，这是他们的心意', 'ai bond'], ['不做，这条线我不碰', 'auth']] } },
-  vocal: { name: '人声制作人', music: true, dom: 'music', task: 'tuneoff', style: 'rnb',
+  vocal: { name: '人声制作人', music: true, dom: 'music', task: 'space', style: 'rnb',
     ev: { who: '歌手', say: '“其实我那条音准最好的，是 AI 修出来的。你会告诉制作人吗？”', a: [['会，必须说', 'auth fight'], ['不说了，反正好听', 'avoid']] } },
   aitrain: { name: 'AI 训练师', music: true, dom: 'tech', task: 'chords', style: 'synth',
     ev: { who: '小谱', say: '“今天你已经第五次找我帮忙了。要不要把你的创作习惯授权给我训练？每月分你 800。”', a: [['授权', 'ai money'], ['不行，这是我的', 'auth']] } },
@@ -2291,14 +2334,14 @@ const L3_ROLES = {
     ev: { who: '顾客', say: '“这把琴修好要两周。网上那种 AI 自动调音的智能吉他，三天就到。我是不是直接换新的？”', a: [['值得修，它有你的故事', 'bond auth'], ['换新的吧，省心', 'secure money']] } },
   photo: { name: '音乐节摄影师', music: false, dom: 'biz', task: 'drop', style: 'fest',
     ev: { who: '乐队经纪人', say: '“AI 能从现场视频里自动截出最好的瞬间，比你按快门还准。下一场还要请摄影师吗？”', a: [['我拍的是人，不只是瞬间', 'auth fight'], ['我也用 AI 选片', 'ai']] } },
-  self: { name: '你自己', music: true, dom: 'music', task: 'cadence', style: 'self',
+  self: { name: '你自己', music: true, dom: 'music', task: 'self', style: 'self',
     ev: { who: '妈妈', say: '凌晨两点，妈妈发来一条消息：“还没睡？”', a: [['回：“马上睡”', 'bond'], ['不回，继续做', 'burn']] } }
 };
 /* 第三关每一单的报酬（元）、挑对时现实里的奖励、客户满意和不满意时说的话 */
 const L3_WORK = {
   ad: { pay: 3000, win: '品牌把你写进了下一季的合作名单', ok: '“就是这个味儿，悲伤但还想再喝一杯。”', bad: '“听着像在庆祝分手，返工吧。”' },
   wedding: { pay: 2500, win: '新人把你介绍给了下一对新人', ok: '“爷爷奶奶也跟着跳起来了！”', bad: '“新人跳到第二拍就踩到脚了。”' },
-  vocal: { pay: 2000, win: '歌手在致谢里写了你的名字', ok: '“这条听起来像真人在唱，就用它。”', bad: '“你选的这条，听着像机器人在唱。”' },
+  vocal: { pay: 2000, win: '歌手在致谢里写了你的名字', ok: '“对，就是这种贴着耳朵唱的感觉。”', bad: '“这像在大厅里喊，不是在耳边唱。”' },
   aitrain: { pay: 1800, win: '实验室把你的标注列为“标准答案”', ok: '“这版完全合格，模型学得很好。”', bad: '“这版有调外和弦，模型白学了。”' },
   doc: { pay: 4000, win: '片尾字幕写上了你的名字', ok: '“就是这件旧毛衣的感觉。”', bad: '“太冷了，像在拍医院。”' },
   bar: { pay: 800, win: '客人塞了 200 元小费', ok: '“对对对，就是这首！”客人跟着唱完了。', bad: '“不是这首……算了，你随便唱吧。”' },
@@ -2308,7 +2351,7 @@ const L3_WORK = {
   cafe: { pay: 300, win: '常客说“明天还来”', ok: '客人聊得很开心，没人注意到音乐，这正是你要的。', bad: '客人们越说越大声，有两桌提前走了。' },
   luthier: { pay: 700, win: '顾客在网上给你写了长长的好评', ok: '“声音干干净净的，跟新的一样。”', bad: '“怎么还有嗡嗡声？你再看看。”' },
   photo: { pay: 1500, win: '乐队用你的照片做了专辑封面', ok: '“就是这一张！彩带刚好炸开。”', bad: '“早了半拍，大家都还没跳起来。”' },
-  self: { pay: 0, win: '你写完了这首歌的最后一句', ok: '这一句，你自己听着都想哭。', bad: '你删掉了最后一句，明天再写吧。' }
+  self: { pay: 0, win: '', ok: '这一版，你自己听着都想再听一遍。', bad: '' }
 };
 /* 第三关一日行程车票上的站名 */
 const L3_PLACE = { ad: '广告公司', wedding: '婚礼礼堂', vocal: '录音棚', aitrain: 'AI 实验室', doc: '纪录片', bar: '小酒馆', teacher: '音乐教室', rehab: '康复中心', coach: '健身房', cafe: '咖啡馆', luthier: '琴行', photo: '音乐节', self: '家' };
@@ -2443,7 +2486,7 @@ SMP.onState = st => { const ts = $('#tapSound'); if (!ts) return; if (st === 'lo
    ========================================================= */
 const LEVELS = [
   { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 4 个选择、1 个音乐关卡。数值到极限会遇到人生转折，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
-  { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '大提琴持续音加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
+  { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '很轻的合成垫加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
   { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，有的和音乐有关，有的在别的行业，比例取决于第一关结局里音乐占你生活几成。每个身份都要用耳朵做一个判断，背后还藏着一个选择。', bgmName: '每个身份一段音乐', bgm: '酒吧是爵士三重奏，咖啡馆是 bossa nova，健身房是 house，音乐节是电子舞曲……最后一段，用的是你在第二关弹的旋律。', style: 'jazz' },
   { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
 ];
@@ -2477,7 +2520,7 @@ function transit(i, next) {
     setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(1)); kick(E.sfx, now(), .9, 90, 40, .25); nhit(E.sfx, now(), { g: .3, type: 'bandpass', f: 700, d: .12 }) }, 1100);
     setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(2)); SCENE.view('p' + Math.min(3, i + 1)); harp(E.sfx, now(), 74, .06) }, 2300);
   }
-  $('#trGo').onclick = go; setTimeout(go, window.SCENE ? 5200 : 2600);
+  $('#trGo').onclick = go;  /* 不自动跳：等玩家自己点「检票入场」 */
 }
 function renderHub() {
   const st = PROG.stage; if (hubSel == null || hubSel > Math.min(st, 3)) hubSel = Math.min(st, 3);
@@ -2485,7 +2528,7 @@ function renderHub() {
   if (window.SCENE) {
     SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, result: i < st ? levelResult(i) : '', state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
     SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length);
-    SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel') });
+    SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel'); if (i < PROG.stage) openReview(i) });  /* 海报上写着「点我回看」：已完成的关卡点一下直接回看 */
   }
   $('#levels').innerHTML = LEVELS.map((L, i) => {
     const state = i < st ? 'done' : i === st ? 'now' : 'locked';
@@ -2675,18 +2718,20 @@ function renderUndo() {
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
+  document.body.classList.remove('aftering'); document.querySelectorAll('.after-card').forEach(n => n.remove());
   const card = $('#card'); card.className = 'card enter' + (c.crisis ? ' crisis' : ''); card.style.transform = ''; card.style.opacity = '';
   $('#av').textContent = ch; $('#av').style.background = col;
   $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`; card.dataset.wt = whoType(c);
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
   MO.type($('#say'), badge + badge2 + c.say);
-  $('#src').innerHTML = c.real ? `<button class="src-t" type="button">原型 ▸</button><span class="src-x">${c.real}</span>` : ''; $('#src').hidden = !c.real; $('#src').classList.remove('open');
+  $('#src').innerHTML = c.real ? `<b>原型</b>${c.real}` : ''; $('#src').hidden = !c.real;
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}${G.revised ? ` · 改过 ${G.revised} 次` : ''}`;
   const lab = o => `${o.t}${optFx(o, c)}`;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
+  /* 年份标题的大字开场只在年终页放一次，这里直接放在左边 */
+  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year) }
   renderMeters(); renderUndo();
   /* 先发牌：卡片落到中间，停一下，左右两个选项再出现 */
   const t = TOK; document.body.classList.add('dealing'); clearTimeout(renderCard._t);
@@ -2708,15 +2753,22 @@ function optFx(o, c) {
   if (!ks.length && !turn) return '';
   return `<span class="fx">${turn}${ks.map(k => `<i data-k="${k}">${STAT[k]}</i>`).join('')}</span>`;
 }
-document.addEventListener('pointerdown', e => { if (e.target.closest('.src-t')) e.stopPropagation() }, true);
-document.addEventListener('click', e => { const b = e.target.closest('.src-t'); if (b) { e.stopPropagation(); const p = b.parentNode; p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '原型 ▾' : '原型 ▸' } }, true);
-/* 选完以后，桌上出现一张小纸条：“后来……”。点一下或等几秒，继续下一张 */
+/* 选完以后，卡片的位置翻出一张“后来”卡：盖章、打字机写出后来的事。
+   不会自己消失，点一下才继续；这时左右两个选项先藏起来 */
 function showAfter(text, done) {
   if (!text) { setTimeout(done, 250); return }
-  const n = document.createElement('div'); n.className = 'after-note'; n.innerHTML = `<i>后来</i><p>${text.replace(/^后来/, '')}</p><small>点一下继续</small>`;
-  ($('#play .table') || document.body).appendChild(n); G.lock = true;
-  let gone = false; const go = () => { if (gone) return; gone = true; n.classList.add('out'); setTimeout(() => { n.remove(); done() }, 220) };
-  n.addEventListener('pointerdown', go); setTimeout(go, 1200 + text.length * 70);
+  const n = document.createElement('div'); n.className = 'after-card';
+  n.innerHTML = `<div class="ac-in"><div class="ac-h"><span class="ac-stamp">后来</span><span class="ac-line"></span></div><p></p><small>点一下继续 ▸</small></div>`;
+  ($('#play .table') || document.body).appendChild(n); G.lock = true; document.body.classList.add('aftering');
+  let ready = false, gone = false;
+  const p = n.querySelector('p');
+  setTimeout(() => { if (!gone) MO.type(p, text.replace(/^后来[，,]?/, ''), { perChar: 38 }).then(() => { ready = true; n.classList.add('ready') }) }, MO.reduce ? 0 : 650);
+  const go = () => {
+    if (gone) return;
+    if (!ready) { ready = true; if (!p.textContent) p.textContent = text.replace(/^后来[，,]?/, ''); else p.click(); n.classList.add('ready'); return }  /* 第一下：先把字显示全 */
+    gone = true; n.classList.add('out'); document.body.classList.remove('aftering'); setTimeout(() => { n.remove(); done() }, 280);
+  };
+  n.addEventListener('pointerdown', go);
 }
 function preview(side) {
   KEYS.forEach(k => {
@@ -2780,13 +2832,13 @@ function renderMeters() {
 }
 function updateMood() {
   if (!G) return; const s = G.s;
-  let d = 0; KEYS.forEach(k => { const v = s[k]; if (v <= 20) d = Math.max(d, (22 - v) / 22); if (v >= 80) d = Math.max(d, (v - 78) / 22) });
+  let d = 0; KEYS.forEach(k => { const v = s[k]; if (v <= 20) d = Math.max(d, (22 - v) / 22) }); /* 只有数值太低才紧张；数值高是高光，不报警 */
   E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d); document.body.classList.toggle('danger', d > .3);
   if (E.ctx) E.lp.frequency.setTargetAtTime(d > .05 ? 18000 * Math.pow(1500 / 18000, d) : 18000, now(), .4);
   if (E.styleKey === 'lofi') E.setLayer('heart', d > .15);
   if (window.ALARM) ALARM.check(s);
   const notes = [];
-  if (d > .15) notes.push('有数值快到极限了，所以出现了心跳声，声音变闷，节奏变快。');
+  if (d > .15) notes.push('有数值太低了，所以出现了心跳声，声音变闷，节奏变快。');
   if (s.l < 30) notes.push('热爱太低，钢琴开始走音。');
   if (s.o < 35) notes.push('原创太低，节奏不再摇摆，长笛（第 7 年起）变成机器音色。');
   const n = STYLES.lofi.layers.filter(L => E.layers[L.name] && !L.hot).length;
@@ -3049,10 +3101,12 @@ function fateMelody(bus, notes) {
 /* 片段播放器。事件格式：[第几拍, 乐器, 音高, 时值(拍), 力度, 音分偏差] */
 function sched(bus, o) {
   const b = 60 / o.bpm, t0 = now() + .1; let end = 0;
+  if (o.space) bus = spaceBus(bus, o.space);
   o.ev.forEach(([s, k, m, d = 1, g = 1, ct = 0]) => {
     const t = t0 + s * b, dd = d * b, mm = m + ct / 100; end = Math.max(end, s + d);
     switch (k) {
       case 'p': keys(bus, t, mm, dd * .95, .1 * g); break;
+      case 'ep': epKeys(bus, t, mm, dd * .95, .08 * g); break;
       case 'pc': keys(bus, t, mm, dd * .9, .035 * g); break;
       case 'b': tone(bus, t, mm, dd * .85, { type: 'triangle', gain: .3 * g, rel: .12, cut: 900 }); break;
       case 'k': kick(bus, t, .5 * g); break;
@@ -3074,6 +3128,21 @@ function sched(bus, o) {
     }
   });
   return end * b + 1.3;
+}
+/* 空间感：用一段人工生成的“回声样本”（脉冲响应）模拟不同的房间
+   near 贴耳的小房间：几乎没有回声；hall 大教堂：回声又长又大；bath 浴室：回声短，但很亮、有金属感 */
+const SPACES = { near: { len: .25, decay: 9, dry: 1, wet: .12, bright: .3 }, hall: { len: 4.5, decay: 1.6, dry: .45, wet: 1.1, bright: .45, pre: .05 }, bath: { len: .9, decay: 4.5, dry: .7, wet: .75, bright: 1, taps: true } };
+function spaceBus(out, kind) {
+  const c = E.ctx, S = SPACES[kind], rate = c.sampleRate, n = Math.floor(S.len * rate), ir = c.createBuffer(2, n, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch); let lp = 0;
+    for (let i = 0; i < n; i++) { const x = i / rate; let v = (Math.random() * 2 - 1) * Math.exp(-S.decay * x); if (S.pre && x < S.pre) v = 0; lp += (v - lp) * S.bright; d[i] = lp }
+    if (S.taps) [.011, .017, .023, .031, .037, .044, .052].forEach((tt, k) => { const i = Math.floor(tt * rate) + ch * 7; if (i < n) d[i] += (k % 2 ? -.7 : .8) * (1 - k * .1) });
+  }
+  const inp = c.createGain(), dry = c.createGain(), wet = c.createGain(), cv = c.createConvolver();
+  cv.buffer = ir; dry.gain.value = S.dry; wet.gain.value = S.wet;
+  inp.connect(dry); dry.connect(out); inp.connect(cv); cv.connect(wet); wet.connect(out);
+  return inp;
 }
 /* 人声：锯齿波过两个共振峰，像在唱“啊”。vo 自然（从下面滑上来，慢慢颤动）；vr 修过头（音直接跳，没有颤动）；vw 颤得又快又抖 */
 function voice(out, t, midi, d, g, mode) {
@@ -3149,11 +3218,6 @@ const TASKS = {
     opts: ['warm', 'tri', 'saw'].map(inst => ({ ok: inst === 'warm', o: { bpm: 80, ev: [...melEv([[72, 0, 1], [71, 1, .5], [69, 1.5, .5], [67, 2, 1.5], [64, 3.5, .5], [65, 4, 1], [67, 5, 1], [64, 6, 2]], inst), ...chordEv([[0, C_], [2, G_], [4, F_], [6, C_]], 2, .7)] } })),
     why: '温暖的音色<b>泛音少、起音慢</b>，像吹出来的气。三角波起音太硬，像电子琴的提示音；带共振的锯齿波有鼻音和电流感。'
   },
-  cadence: {
-    who: '内心', brief: '最后一句，要听起来<b>真的结束了</b>。小心，有一版很会骗人。',
-    opts: [[60, C_], [67, G_], [60, Am_]].map(([end, ch], i) => ({ ok: i === 0, o: { bpm: 88, ev: [...melEv([[64, 0, 1], [65, 1, 1], [67, 2, 1], [69, 3, 1], [67, 4, 1], [65, 5, 1], [64, 6, 1], [62, 7, 1], [end, 8, 3]]), ...chordEv([[0, C_], [4, F_], [6, G_], [8, ch]], 2), [8, 'b', ch[0], 3], ...ch[1].map(m => [8, 'pc', m, 3])] } })),
-    why: '只有一版是<b>完全终止</b>：G 和弦走到 C 和弦，旋律落在 1（Do）。有一版停在 G 上，叫<b>半终止</b>，像逗号。最会骗人的那版，旋律也落在 Do，但和弦换成了 Am，叫<b>假终止</b>，耳朵会觉得“还没完”。'
-  },
   breath: {
     who: '动感单车课', brief: '最后一分钟冲刺。耳机里传来三位学员的呼吸声，听出<b>哪一位已经喘不上来</b>，需要让他先停下。',
     opts: (() => {
@@ -3176,15 +3240,15 @@ const TASKS = {
     })(),
     why: '人说话的声音集中在<b>中频</b>。一版有很响的长笛旋律，正好落在说话的频段，客人会不自觉地提高嗓门；一版鼓又密又响，整个店都会变吵。对的那版没有突出的旋律，音量轻、音区偏低，给说话留出了空间。'
   },
-  /* 人声制作人：三条都修过音，挑一条听起来还像真人在唱的 */
-  tuneoff: {
-    who: '歌手', brief: '三条人声都修过音。挑一条<b>听起来还像真人在唱</b>的：有一点气息、有一点自然的颤动。',
+  /* 人声制作人：同一条人声，三种空间感（混响） */
+  space: {
+    who: '歌手', brief: '歌手说：“这首歌要像<b>在小房间里，贴着你耳朵唱</b>。”三版混音的人声一模一样，只是“放”在了不同的空间里。',
     opts: (() => {
-      const mel = [[64, 0, 1], [67, 1, 1], [69, 2, 1.5], [67, 3.5, .5], [64, 4, 1], [62, 5, 1], [64, 6, 2]];
-      const acc = chordEv([[0, C_], [2, F_], [4, G_], [6, C_]], 2, .7);
-      return [['vo', true], ['vr', false], ['vw', false]].map(([k, ok]) => ({ ok, o: { bpm: 80, ev: [...melEv(mel, k), ...acc] } }));
+      const mel = [[67, 0, 1], [69, 1, .5], [67, 1.5, .5], [64, 2, 1.5], [62, 3.5, .5], [60, 4, 1], [62, 5, 1], [64, 6, 2]];
+      const acc = chordEv([[0, C_], [2, Am_], [4, F_], [6, G_]], 2, .5);
+      return ['near', 'hall', 'bath'].map((sp, i) => ({ ok: i === 0, o: { bpm: 72, space: sp, ev: [...melEv(mel, 'vo', 1.1), ...acc] } }));
     })(),
-    why: '对的那条，每个音开头会从下面轻轻“滑”上来，拉长的音带着慢慢的颤动，像人在呼吸。另一条修得太狠了：音和音之间<b>一下子跳过去</b>，长音一点颤动都没有，像机器人；还有一条的颤动<b>又快又抖</b>，那是修音软件开过头的副作用。修音是为了让人唱得更好，不是把人修没了。'
+    why: '对的那版几乎没有回声，声音很“近”，像就在你耳边。另一版回声又长又大，每句唱完尾巴还要拖好几秒，那是<b>大教堂</b>；还有一版回声很短，但很亮，带着一点“嗡嗡”的金属感，那是<b>贴满瓷砖的浴室</b>。混音师用混响决定声音“站”在哪里。'
   },
   /* 酒吧驻唱：听客人跑调的哼唱，认出他点的是哪首 */
   hum: {
@@ -3201,14 +3265,16 @@ const TASKS = {
   },
   /* 音乐老师：三个学生弹同一段，有一个人弹错了一个音 */
   wrongnote: {
-    who: '学生', brief: '你在{place}上课。三个学生弹同一段练习曲，其中<b>有一个人弹错了一个音</b>。听出是谁。',
+    who: '学生', brief: '你在{place}上课。三个学生弹同一段练习曲，每个人的节奏都有一点快慢，但<b>有一个人弹错了一个音</b>，而且错在左手的和弦里。听出是谁。',
     opts: (() => {
-      const mel = [[60, 0, .5], [62, .5, .5], [64, 1, .5], [65, 1.5, .5], [67, 2, 1], [69, 3, .5], [67, 3.5, .5], [65, 4, .5], [64, 4.5, .5], [62, 5, .5], [64, 5.5, .5], [60, 6, 2]];
-      const acc = chordEv([[0, C_], [2, C_], [4, F_], [6, C_]], 2, .55);
-      const take = (sh, wrong) => ({ bpm: 100, ev: [...mel.map(([m, st, d], i) => [st + (i % 3 === 1 ? sh : 0), 'p', m + (i === wrong ? 1 : 0), d, .9]), ...acc] });
-      return [{ ok: true, o: take(.02, 9) }, { ok: false, o: take(-.02, -1) }, { ok: false, o: take(.03, -1) }];
+      const mel = [[67, 0, 1], [72, 1, .5], [71, 1.5, .5], [69, 2, 1], [65, 3, 1], [64, 4, .5], [65, 4.5, .5], [67, 5, 1], [60, 6, 2]];
+      const chs = [[0, [48, 52, 55]], [2, [45, 48, 52]], [4, [41, 45, 48]], [6, [43, 47, 50]]];
+      /* 每个人都有一点点快慢；弹错的人把 F 和弦里的 A 按成了旁边的 A♭（低半音） */
+      const take = (jit, wrong) => ({ bpm: 92, ev: [...mel.map(([m, st, d], i) => [st + jit[i % jit.length], 'p', m, d, .85]),
+        ...chs.flatMap(([st, v], ci) => v.map((m, k) => [st + jit[(ci + k) % jit.length] * .6, 'pc', m + (wrong && ci === 2 && k === 1 ? -1 : 0), 2, 1.3]))] });
+      return [{ ok: true, o: take([.02, -.03, .04, 0, -.02], true) }, { ok: false, o: take([-.03, .03, 0, .04, -.02], false) }, { ok: false, o: take([.04, 0, -.03, .02, .03], false) }];
     })(),
-    why: '弹错的那位，在倒数第三个音上按了<b>旁边的黑键</b>：本来该是 Re，他弹成了升 Re，和下面的和弦撞在一起，会“刺”一下。另外两位节奏有一点点快慢，但音都对。老师的耳朵，要分得清“不一样”和“错了”。'
+    why: '弹错的那位，错在<b>左手的和弦</b>里：第三个和弦本来是 F 大三和弦（F、A、C），他把中间的 A 按成了旁边的 A♭，只差半音，和弦一下子变暗、变“酸”。右手旋律三个人都弹对了。另外两位节奏有一点点快慢，那不算错。老师的耳朵，要分得清“不一样”和“错了”。'
   },
   /* 康复治疗师：看病人走路，选一首速度正好跟上他步伐的音乐 */
   gait: {
@@ -3238,9 +3304,29 @@ const TASKS = {
     why: '高潮第一拍，是所有声音同时砸下来的那一瞬间：底鼓、贝斯、镲片一起响，舞台灯也在那一刻全亮。早了半拍，拍到的是乐手在等；晚了，彩带和人群跳起来的最高点已经过去。好的现场摄影师靠的是<b>听歌预判</b>，不是看到了再按。'
   }
 };
+/* 你自己：用第二关弹给调音婆婆的 8 个音，编成三个版本。没有对错，选中的那版会成为第四关开场的音乐 */
+const SELF_VER = { fast: '轻快版', slow: '慢版', sad: '悲伤版' };
+function selfNotes() { return PROG.l2notes && PROG.l2notes.length ? PROG.l2notes.slice(0, 8) : [0, 2, 4, 5, 4, 2, 1, 0] }
+function selfVersion(v) {
+  const n = selfNotes();
+  if (v === 'fast') return { bpm: 126, ev: [...n.flatMap((d, i) => [[i * .5, 'ep', SCALE[d] + 12, .45, 1.2], [4 + i * .5, 'ep', SCALE[d] + 12, .45, 1.2]]), ...chordEv([[0, C_], [2, F_], [4, G_], [6, C_]], 2, .7), ...drums(8)] };
+  if (v === 'slow') return { bpm: 56, ev: [...n.map((d, i) => [i, 'p', SCALE[d], 1.3, .9]), ...chordEv([[0, C_], [2, Am_], [4, F_], [6, G_]], 2, .55)] };
+  return { bpm: 62, ev: [...n.map((d, i) => [i, 'p', SELF_MINOR[d], 1.2, .85]), ...chordEv([[0, Am_], [2, F_], [4, Dm_], [6, E_]], 2, .55)] };
+}
+TASKS.self = {
+  who: '你自己', free: true,
+  brief: '凌晨一点，你把第二关弹给调音婆婆的那 8 个音拿出来，编成了三个版本。<b>没有对错</b>，选你最喜欢的一版：它会成为第四关开场时响起的音乐。',
+  get opts() { return ['fast', 'slow', 'sad'].map(v => ({ ok: true, v, o: selfVersion(v) })) }, why: ''
+};
+/* 把选中的那一版变成循环的背景音乐 */
+const CH_SAD = [{ r: 45, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 38, v: [57, 62, 65] }, { r: 40, v: [56, 59, 64] }];
+function playSelfTune(v) {
+  Object.assign(STYLES.self, { mel: selfNotes(), bpm: v === 'fast' ? 118 : v === 'slow' ? 60 : v === 'sad' ? 64 : 76, minor: v === 'sad', fast: v === 'fast', chords: v === 'sad' ? CH_SAD : CH_POP });
+  E.duck(1); E.play('self', ALL.self);
+}
 const L3 = { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: null, place: '', money: 0, good: 0, streak: 0, boost: false, wins: [], fx: {}, shield: 0, aiHelp: 0 };
 const L3_PLACES = ['学校', '自己的工作室', '一家培训机构'];
-const L3_KEYS = ['i', 'right', 'own', 'ai', 'tags', 'picks', 'fav', 'post', 'roles', 'place', 'money', 'good', 'streak', 'boost', 'wins', 'fx', 'shield', 'aiHelp'];
+const L3_KEYS = ['tune', 'i', 'right', 'own', 'ai', 'tags', 'picks', 'fav', 'post', 'roles', 'place', 'money', 'good', 'streak', 'boost', 'wins', 'fx', 'shield', 'aiHelp'];
 function saveL3() { const o = {}; L3_KEYS.forEach(k => o[k] = L3[k]); PROG.l3save = JSON.parse(JSON.stringify(o)); save() }
 /* 按第一关结局“音乐大约占你生活几成”分配今天的身份 */
 function l3Ms() { const e = PROG.l1 && ENDINGS[PROG.l1.id]; return e ? e.ms : (PROG.share ?? 5) }
@@ -3251,7 +3337,7 @@ function pickRoles() {
   return [...shuffle([...music, ...shuffle(otherPool).slice(0, 6 - n)]), 'self'];
 }
 function roleMusic(role) {
-  if (role.style === 'self') STYLES.self.mel = (PROG.l2notes && PROG.l2notes.length ? PROG.l2notes : [0, 2, 4, 5, 4, 2, 1, 0]);
+  if (role.style === 'self') return playSelfTune(L3.tune);
   E.duck(1); E.play(role.style, ALL[role.style]);
 }
 /* 第二关抽到的三张牌：分到今天的某几单上 */
@@ -3266,7 +3352,7 @@ function startL3() {
   setView('l3', '');
   E.resetMood(); E.duck(1); KEYH = null;
   if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < L3.roles.length ? l3Task() : l3End() }
-  Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES), money: 0, good: 0, streak: 0, boost: false, wins: [] }, dealTarot());
+  Object.assign(L3, { tune: null, i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES), money: 0, good: 0, streak: 0, boost: false, wins: [] }, dealTarot());
   E.play('synth', ['pad', 'sbass']);
   const ms = l3Ms(), n = L3.roles.slice(0, 6).filter(k => L3_ROLES[k].music).length;
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 2036 年的一天</span><h2 class="big-title">身兼数职的一天</h2>
@@ -3279,19 +3365,19 @@ function l3Task() {
   const role = L3_ROLES[L3.roles[L3.i]]; if (!role) return l3End();
   const key = L3.roles[L3.i], T = TASKS[role.task], time = L3_TIMES[L3.i], W = L3_WORK[key], fx = L3.fx[L3.i];
   show('l3'); KEYH = null; roleMusic(role); if (window.SCENE) SCENE.l3Role(L3.i, L3.roles);
-  const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
+  const order = T.free ? [0, 1, 2] : shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
   const pay = Math.round(W.pay * (fx === 'bonus' ? 1.5 : 1) * (L3.boost ? 2 : 1));
   const tag = fx ? `<span class="fxtag ${TAROT_FX[fx][2] ? 'up' : 'down'}">${TAROT_FX[fx][0]}</span>` : '';
   setTimeout(() => { setView('l3', 'task'); TT.intro($('#l3lock .tt')); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip') }, 0);
   $('#l3').innerHTML = `<div class="lx-head" id="l3lock">${TT.l3(time, role.name, L3.roles.map(k => L3_PLACE[k]), L3.i)}</div>
     <div class="brief order"><div class="od-h"><b>工作单</b><span>${time} · ${T.who}${role.music ? '' : ' · 音乐以外的工作'}</span></div><p id="l3brief"></p>
-      ${T.pre ? `<button class="btn ghost sm" id="l3pre">▶ ${T.pre.label}</button>` : ''}${T.step ? `<div class="gait" style="--st:${T.step}s"><i></i><i></i><span>他现在的步子</span></div>` : ''}
+      ${T.pre ? `<button class="btn pre-hum" id="l3pre"><span>▶</span> ${T.pre.label}</button>` : ''}${T.step ? `<div class="gait" style="--st:${T.step}s"><i></i><i></i><span>他现在的步子</span></div>` : ''}
       <div class="od-pay"><span>这一单 <b>${W.pay ? yuan(pay) : '不收钱'}</b>${L3.boost ? ' <em class="up">推荐位 ×2</em>' : ''}${tag}</span><span>今天 ${yuan(L3.money)} · 好评 ${L3.good}${L3.streak ? ` · 连续 ${L3.streak}` : ''}</span><span id="l3timer"></span></div>
-      <div class="od-f"><span>${fx ? TAROT_FX[fx][1].replace('第三关有一单，', '这一单：').replace('第三关', '') : ''}</span><button class="od-ai" id="l3ai">听不出来？交给小谱挑</button></div></div>
-    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b></div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div></div>`).join('')}</div>
+      <div class="od-f"><span>${fx ? TAROT_FX[fx][1].replace('第三关有一单，', '这一单：').replace('第三关', '') : ''}</span>${T.free ? '' : '<button class="od-ai" id="l3ai">听不出来？交给小谱挑</button>'}</div></div>
+    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b>${T.free ? `<span class="cs-ver">${SELF_VER[T.opts[k].v]}</span>` : ''}</div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>${T.free ? '选这一版' : `就用 ${letters[j]}`}</button></div></div>`).join('')}</div>
     <div id="l3res"></div>`;
   const playClip = (o, el) => { $$('.clip').forEach(c => c.classList.remove('playing')); el && el.classList.add('playing'); E.playClip(bus => sched(bus, o), .06, () => el && el.classList.remove('playing')) };
-  if (T.pre) $('#l3pre').onclick = () => playClip(T.pre.o, null);
+  if (T.pre) $('#l3pre').onclick = () => { $('#l3pre').classList.add('heard'); playClip(T.pre.o, null) };
   /* 好耳朵：划掉一个错的版本 */
   if (fx === 'hint') { const wrong = order.find(k => !T.opts[k].ok); const el = document.querySelector(`.clip[data-o="${wrong}"]`); el.classList.add('struck'); el.querySelectorAll('button').forEach(b => b.disabled = true) }
   /* 再点一次正在播的那盘磁带，就停下；疲惫：每盘只能听一遍 */
@@ -3308,34 +3394,48 @@ function l3Task() {
     if (decided) return; decided = true; clearInterval(l3Task._t);
     E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing')); $$('[data-p]').forEach(x => { x.textContent = '▶ 播放'; x.disabled = false });
     $$('[data-c],#l3ai').forEach(b => { b.disabled = true; b.dataset.done = 1 });
-    const ok = T.opts[k].ok; if (byAI) { L3.ai++; addTags('ai avoid', L3.tags) } else { L3.own++; if (ok) L3.right++ }
-    L3.picks.push({ time, role: key, ok, byAI });
-    $$('.clip').forEach(c => { const kk = +c.dataset.o; if (T.opts[kk].ok) c.classList.add('right'); else if (kk === k) c.classList.add('wrong') });
-    const L = letters[order.indexOf(k)], R = letters[order.findIndex(x => T.opts[x].ok)];
-    const head = late ? `超时了，随手交了 ${L}。${ok ? '碰巧对了。' : `对的是 ${R}。`}` : byAI ? (ok ? `小谱挑了 ${L}，对了。` : `小谱随手挑了 ${L}，挑错了。对的是 ${R}。`) : (ok ? `你挑了 ${L}，对了。` : `你挑了 ${L}，对的其实是 ${R}。`);
-    /* 收入和口碑：挑对拿全款和一份奖励；挑错要返工，扣一半；护身牌能挡一次 */
-    let got = pay, note = '', boostNow = false;
-    if (ok) { L3.good++; L3.streak++; if (W.win) L3.wins.push({ i: L3.i, role: key, win: W.win }); if (L3.streak === 3) { boostNow = true } }
-    else { L3.streak = 0; if (L3.shield > 0 && W.pay) { L3.shield--; note = '护身牌挡了一下：这次不扣钱。' } else { got = Math.round(pay / 2); note = W.pay ? `返工扣了一半，只拿到 ${yuan(got)}。` : '' } }
-    L3.money += W.pay ? got : 0; L3.boost = boostNow;
-    ok ? sfxGood() : sfxBuzz();
-    const ev = role.ev;
-    $('#l3res').innerHTML = `<div class="receipt"><div class="rc-h"><b>${head}</b><span>${W.pay ? (ok ? '+' : '+') + yuan(W.pay ? got : 0) : ''}</span></div>
-        <p class="rc-say">${ok ? W.ok : W.bad}</p>${ok && W.win ? `<p class="rc-win">🎁 ${W.win}</p>` : ''}${note ? `<p class="rc-note">${note}</p>` : ''}${boostNow ? '<p class="rc-win">连续 3 单好评！平台给了你推荐位，下一单报酬翻倍。</p>' : ''}
-        <details class="rc-why"><summary>为什么</summary><p>${T.why}</p><span class="mnote">现在可以把三个版本再听一遍，对比一下。</span></details></div>
+    let head, say, got = 0, note = '', boostNow = false, winNow = '';
+    if (T.free) {
+      /* 你自己：没有对错，只记下你选了哪一版 */
+      const v = T.opts[k].v; L3.tune = v; PROG.l3tune = v; L3.own++; L3.picks.push({ time, role: key, ok: null, free: v });
+      $$('.clip').forEach(c => c.classList.toggle('picked', +c.dataset.o === k)); sfxGood();
+      head = `你选了${SELF_VER[v]}。`; say = `${W.ok}它会在第四关开场时响起。`; playSelfTune(v);
+    } else {
+      const ok = T.opts[k].ok; if (byAI) { L3.ai++; addTags('ai avoid', L3.tags) } else { L3.own++; if (ok) L3.right++ }
+      L3.picks.push({ time, role: key, ok, byAI });
+      $$('.clip').forEach(c => { const kk = +c.dataset.o; if (T.opts[kk].ok) c.classList.add('right'); else if (kk === k) c.classList.add('wrong') });
+      const L = letters[order.indexOf(k)], R = letters[order.findIndex(x => T.opts[x].ok)];
+      head = late ? `超时了，随手交了 ${L}。${ok ? '碰巧对了。' : `对的是 ${R}。`}` : byAI ? (ok ? `小谱挑了 ${L}，对了。` : `小谱随手挑了 ${L}，挑错了。对的是 ${R}。`) : (ok ? `你挑了 ${L}，对了。` : `你挑了 ${L}，对的其实是 ${R}。`);
+      /* 收入和口碑：挑对拿全款和一份奖励；挑错要返工，扣一半；护身牌能挡一次 */
+      got = pay;
+      if (ok) { L3.good++; L3.streak++; if (W.win) { L3.wins.push({ i: L3.i, role: key, win: W.win }); winNow = W.win } if (L3.streak === 3) boostNow = true }
+      else { L3.streak = 0; if (L3.shield > 0 && W.pay) { L3.shield--; note = '护身牌挡了一下：这次不扣钱。' } else { got = Math.round(pay / 2); note = W.pay ? `返工扣了一半，只拿到 ${yuan(got)}。` : '' } }
+      L3.money += W.pay ? got : 0; L3.boost = boostNow; say = ok ? W.ok : W.bad;
+      ok ? sfxGood() : sfxBuzz();
+    }
+    const ev = role.ev, last = L3.i + 1 >= L3.roles.length;
+    /* 答完以后，三盘磁带都还能再听，对比一下 */
+    const replay = `<div class="rc-replay"><span>再听一遍</span>${order.map((kk, j) => `<button class="btn ghost sm${!T.free && T.opts[kk].ok ? ' r' : ''}${kk === k ? ' me' + (T.free ? ' f' : T.opts[kk].ok ? '' : ' x') : ''}" data-rp="${kk}">▶ ${letters[j]}${T.free ? ' ' + SELF_VER[T.opts[kk].v] : T.opts[kk].ok ? ' · 对的' : ''}${kk === k ? ' · 你选的' : ''}</button>`).join('')}</div>`;
+    $('#l3res').innerHTML = `<div class="receipt"><div class="rc-h"><b>${head}</b><span>${W.pay ? '+' + yuan(got) : ''}</span></div>
+        <p class="rc-say">${say}</p>${winNow ? `<p class="rc-win">🎁 ${winNow}</p>` : ''}${note ? `<p class="rc-note">${note}</p>` : ''}${boostNow ? '<p class="rc-win">连续 3 单好评！平台给了你推荐位，下一单报酬翻倍。</p>' : ''}
+        ${replay}${T.why ? `<details class="rc-why"><summary>为什么</summary><p>${T.why}</p></details>` : ''}</div>
       <div class="event"><span class="eyebrow">小插曲 · ${ev.who}</span><p>${ev.say}</p><div class="choices-col">${ev.a.map((a, j) => `<button class="btn ghost" data-ev="${j}">${a[0]}</button>`).join('')}</div></div>`;
+    $$('[data-rp]').forEach(b => b.onclick = () => { const kk = +b.dataset.rp, el = document.querySelector(`.clip[data-o="${kk}"]`); playClip(T.opts[kk].o, el) });
     $$('[data-ev]').forEach(b => b.onclick = () => {
       const a = ev.a[+b.dataset.ev]; addTags(a[1], L3.tags); PROG.log.push({ lv: 3, who: ev.who, say: ev.say, pick: a[0], k: a[1], time });
       /* 插曲的反馈：这个选择记下了什么，会出现在第四关和最后的画像里 */
       const names = a[1].split(' ').filter(x => TRAITS[x]).map(x => `「${TRAITS[x].n}」`).join('');
       $$('[data-ev]').forEach(x => x.disabled = true); b.classList.add('picked');
       const fb = document.createElement('p'); fb.className = 'ev-fb'; fb.innerHTML = `这个选择记下了：${names}<br><small>它会出现在最后的音乐人格画像里。</small>`; b.closest('.event').appendChild(fb);
-      L3.i++; saveL3(); const t = TOK; setTimeout(() => { if (t !== TOK) return; E.stopClip(); L3.i < L3.roles.length ? l3Task() : l3End() }, 1700);
+      L3.i++; saveL3();
+      /* 不自动跳：想再听一遍磁带也可以，听完自己点下一单 */
+      const nx = document.createElement('button'); nx.className = 'btn'; nx.style.alignSelf = 'flex-start'; nx.textContent = last ? '凌晨两点了 →' : '下一单 →';
+      nx.onclick = () => { E.stopClip(); L3.i < L3.roles.length ? l3Task() : l3End() }; b.closest('.event').appendChild(nx); MO.rise(b.closest('.event'));
     });
     $('#l3res').scrollIntoView({ behavior: 'smooth', block: 'start' }); MO.rise($('#l3res'));
   };
   $$('[data-c]').forEach(b => b.onclick = () => decide(+b.dataset.c, false));
-  $('#l3ai').onclick = () => { let k = Math.floor(Math.random() * 3); if (L3.aiHelp > 0) { L3.aiHelp--; k = T.opts.findIndex(o => o.ok) } decide(k, true) };
+  if ($('#l3ai')) $('#l3ai').onclick = () => { let k = Math.floor(Math.random() * 3); if (L3.aiHelp > 0) { L3.aiHelp--; k = T.opts.findIndex(o => o.ok) } decide(k, true) };
   /* 赶工：30 秒内要交 */
   clearInterval(l3Task._t);
   if (fx === 'rush') { let left = 30; const tok = TOK; $('#l3timer').textContent = `⏱ ${left} 秒`; l3Task._t = setInterval(() => { if (tok !== TOK) return clearInterval(l3Task._t); left--; const el = $('#l3timer'); if (el) el.textContent = `⏱ ${left} 秒`; if (left <= 0) { clearInterval(l3Task._t); decide(Math.floor(Math.random() * 3), false, true) } }, 1000) }
@@ -3351,33 +3451,41 @@ function l3End() {
     $('#l3').innerHTML = `<span class="eyebrow">第三关 · 凌晨 2 点 47 分</span><h2 class="big-title">今天你换了七个身份</h2>
       <p class="lead">${R.map((r, i) => `${L3_TIMES[i]} ${r.name}`).join('，')}。</p>
       <div class="speech"><p>凌晨两点，你在朋友圈写今天的总结。<b>你会写哪一件事？</b></p></div>
-      <div class="choices-col">${opts.map(([t], j) => `<button class="btn ghost" data-fav="${j}">${t}</button>`).join('')}</div>`;
+      <div class="choices-col">${opts.map(([t], j) => `<button class="btn ghost" data-fav="${j}">${t}</button>`).join('')}
+        <div class="own-post"><input id="ownPost" maxlength="40" placeholder="自己写一句（40 字以内）"><button class="btn sm" id="ownGo" disabled>发出去</button></div>
+        <button class="btn ghost" id="noPost">今天什么都不发</button></div>`;
     TT.duo('l3', TT.gen('第三关 · 凌晨 2 点 47 分', '今天的朋友圈', '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order', intro: true });
-    $$('[data-fav]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.fav]; L3.fav = o[1]; L3.post = o[0]; PROG.log.push({ lv: 3, who: '你自己', say: '凌晨两点，你在朋友圈写今天的总结。', pick: o[0], k: '' }); saveL3(); l3End() });
+    const post = (text, fav) => { L3.fav = fav; L3.post = text; PROG.log.push({ lv: 3, who: '你自己', say: '凌晨两点，你在朋友圈写今天的总结。', pick: text || '今天什么都不发', k: '' }); saveL3(); l3End() };
+    $$('[data-fav]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.fav]; post(o[0], o[1]) });
+    $('#ownPost').oninput = () => $('#ownGo').disabled = !$('#ownPost').value.trim();
+    $('#ownPost').onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && $('#ownPost').value.trim()) $('#ownGo').click() };
+    $('#ownGo').onclick = () => post($('#ownPost').value.trim().replace(/[<>&]/g, ''), R.length - 1);
+    $('#noPost').onclick = () => post('', R.length - 1);
     return;
   }
-  const fav = R[L3.fav] || R[R.length - 1], post = L3.post || (L3.wins.find(w => w.i === L3.fav) || {}).win || `今天当了一回${fav.name}`;
+  const fav = R[L3.fav] || R[R.length - 1], post = L3.post === '' ? '' : L3.post || (L3.wins.find(w => w.i === L3.fav) || {}).win || `今天当了一回${fav.name}`;
   const share = Math.round(L3.own / L3.roles.length * 100);
   let t, x;
-  if (L3.own >= L3.roles.length - 1 && L3.right >= L3.roles.length - 2) { t = '靠自己的耳朵'; x = '今天几乎每一单都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
+  const scored = L3.roles.length - 1; /* 最后一单“你自己”没有对错 */
+  if (L3.own >= L3.roles.length - 1 && L3.right >= scored - 1) { t = '靠自己的耳朵'; x = '今天几乎每一单都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
   else if (L3.own >= Math.ceil(L3.roles.length / 2)) { t = '和小谱搭档'; x = '今天有些判断是你做的，有些交给了小谱。你也说不清，哪些功劳算你的。' }
   else { t = '小谱替你听'; x = '今天大部分的判断都交给了小谱。你有点记不清，今天到底听过些什么。' }
-  if (L3.right >= L3.roles.length - 1) addTags('auth', L3.tags);
+  if (L3.right >= scored) addTags('auth', L3.tags);
   skill('l3', L3.right);
   PROG.best = PROG.best || {}; const prev = PROG.best.l3Money, rec = prev == null || L3.money > prev; if (rec) { PROG.best.l3Money = L3.money; save() }
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 02:47</span><h2 class="big-title">${t}</h2>
     <div class="dayreceipt"><div class="dr-h"><b>今日账单</b><span>2036 · 02:47</span></div>
-      ${L3.picks.map(p => `<div class="dr-row"><span>${L3_TIMES[L3.picks.indexOf(p)] || ''} ${L3_ROLES[p.role].name}</span><span>${p.ok ? '好评 ★' : '差评'}${p.byAI ? ' · 小谱挑的' : ''}</span></div>`).join('')}
+      ${L3.picks.map(p => `<div class="dr-row"><span>${L3_TIMES[L3.picks.indexOf(p)] || ''} ${L3_ROLES[p.role].name}</span><span>${p.free ? SELF_VER[p.free] : p.ok ? '好评 ★' : '差评'}${p.byAI ? ' · 小谱挑的' : ''}</span></div>`).join('')}
       <div class="dr-sum"><span>今天一共挣了</span><b>${yuan(L3.money)}</b></div>
-      <div class="dr-row"><span>好评</span><span>${L3.good} / ${L3.picks.length}${rec && prev != null ? ' · <b class="up">新纪录</b>' : ''}</span></div>
+      <div class="dr-row"><span>好评</span><span>${L3.good} / ${L3.picks.filter(p => !p.free).length}${rec && prev != null ? ' · <b class="up">新纪录</b>' : ''}</span></div>
       ${L3.wins.length ? `<div class="dr-wins"><b>今天的收获</b>${L3.wins.map(w => `<span>${w.win}</span>`).join('')}</div>` : ''}</div>
     <p class="lead">${x}</p>
-    <p class="lead">凌晨两点，你在朋友圈写下的是：<b>「${post}」</b>。</p>
-    <p class="mnote">现在的背景音乐，是用你在第二关弹给调音婆婆的那 8 个音写成的。</p>
+    <p class="lead">${post ? `凌晨两点，你在朋友圈写下的是：<b>「${post}」</b>。` : '凌晨两点，你打开朋友圈，又关上了。今天什么都没发。'}</p>
+    <p class="mnote">现在的背景音乐，是你凌晨选的${SELF_VER[L3.tune] || '那一版'}，用你在第二关弹给调音婆婆的那 8 个音写成。</p>
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
   TT.duo('l3', TT.gen('第三关 · 02:47', t, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order' });
   $('#l3done').onclick = () => {
-    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); transit(2, startL4);
+    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length, tune: L3.tune }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); transit(2, startL4);
   };
 }
 
@@ -3392,7 +3500,8 @@ function countTags(...ks) { return PROG.log.filter(x => x.lv === 1 && ks.some(k 
 function startL4() {
   setView('l4', '');
   Object.assign(L4, { notes: [], tags: {}, ans: {}, dom: {} });
-  E.resetMood(); E.duck(1); E.play('orch', ['vln', 'cello', 'harpo']); KEYH = null; if (window.SCENE) SCENE.hall(1);
+  E.resetMood(); E.duck(1); KEYH = null; if (window.SCENE) SCENE.hall(1);
+  const tune = PROG.l3tune; if (tune) playSelfTune(tune); else E.play('orch', ['vln', 'cello', 'harpo']);
   const P = PROG, mem = [];
   const l1 = P.log.filter(x => x.lv === 1 && x.key);
   shuffle(l1).slice(0, 6).sort((a, b) => a.y - b.y).forEach(x => mem.push(`<li><i>${2026 + x.y} · 第 ${x.y} 年</i>${x.who}：“${x.say.replace(/<[^>]+>/g, '').slice(0, 40)}${x.say.length > 40 ? '……' : ''}”<br>你选了<b>「${x.pick}」</b>。</li>`));
@@ -3402,8 +3511,9 @@ function startL4() {
   $('#l4').innerHTML = `<span class="eyebrow">第四关 · 2036 年 12 月 31 日</span><h2 class="big-title">十年回响</h2>
     <p class="lead">十年的最后一个晚上，你坐在钢琴前，回头看这十年。</p>
     <ul class="memories">${mem.join('')}</ul>
+    ${tune ? `<p class="mnote">现在响起的，是你在第三关凌晨选的${SELF_VER[tune]}：用你第二关弹给调音婆婆的 8 个音写成。</p>` : ''}
     <button class="btn" id="l4go" style="align-self:flex-start">回答最后四个问题</button>`;
-  show('l4'); TT.duo('l4', TT.gen('第四关 · 2036 年 12 月 31 日', '十年回响', '十年的最后一个晚上', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme', intro: true }); $('#l4go').onclick = () => l4Ask(0);
+  show('l4'); TT.duo('l4', TT.gen('第四关 · 2036 年 12 月 31 日', '十年回响', '十年的最后一个晚上', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme', intro: true }); $('#l4go').onclick = () => { if (tune) E.play('orch', ['vln', 'cello', 'harpo']); l4Ask(0) };
 }
 function l4Questions() { if (window.SCENE) SCENE.hall(2);
   const id = IDEALS[PROG.ideal] || IDEALS.indie;
@@ -3574,6 +3684,7 @@ function identSection(p) {
    ========================================================= */
 document.addEventListener('keydown', e => {
   if (KEYH && !e.repeat && KEYH(e)) { e.preventDefault(); return }
+  if (document.body.classList.contains('aftering') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const n = $('.after-card'); if (n) n.dispatchEvent(new Event('pointerdown')); return }
   if (!$('#play').hidden && G && !G.lock) { if (e.key === 'ArrowLeft') { e.preventDefault(); choose('L') } if (e.key === 'ArrowRight') { e.preventDefault(); choose('R') } }
   if (!$('#yearbreak').hidden && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#ybGo').click() }
 });
@@ -3658,25 +3769,25 @@ const MINI_DEF = {
   tune: { eye: '凭耳朵调弦', title: '帮吉他手调弦', rules: [['听拍音', '标准音和琴弦一起响，没对准时会听到“哇—哇—”的起伏。'], ['拖动滑块', '起伏越慢越接近，完全听不到起伏就调准了。'], ['一共三根弦', '每根弦调好了就点「调好了」。']], run: gTune,
     eff: [{ o: -6, l: -4 }, { o: 2 }, { o: 6, l: 4 }, { o: 10, l: 6, f: 4 }],
     say: [['没调准', '最后还是用了调音器。你开始想，耳朵是不是被耳机泡坏了。'], ['还行', '大致准了，但录音师还是偷偷开了修音。'], ['很准', '录音师点点头，没说什么，这就是最高评价。'], ['比调音器还准', '吉他手看了一眼调音器，愣住了：“分毫不差。”']] },
-  ear: { eye: '录音棚试音', title: '听音', rules: [['先听 la', '每题先放标准音 la，再放要你听的声音。'], ['六道题', '单音（有黑键上的音）、两个音之间的距离、三个音一起响的和弦，越往后越难。'], ['连对', '连续答对有连击加分。每题可以再听一遍。']], run: gEar,
+  ear: { eye: '录音棚试音', title: '听音', rules: [['先听 la', '每道题都会先弹一个标准音 la，再弹要你听的声音。'], ['六道题', '单音（有黑键上的音）、两个音之间的距离、三个音一起响的和弦，越往后越难。'], ['连对', '连续答对有连击加分。每题可以再听一遍。']], run: gEar,
     eff: [{ o: -8, l: -6 }, { o: -2 }, { o: 6, l: 4 }, { o: 12, l: 8, f: 4 }],
     say: [['没听出来', '走出录音棚，你在地铁上把那段声音听了二十遍。'], ['有点吃力', '你开始怀疑，自己是不是太依赖 AI 扒谱了。'], ['还行', '错了几题，但听得出你有底子。'], ['耳朵很好', '对方愣了一下：“你学过视唱练耳吧？”']] },
-  tempo: { eye: '心里的拍子', title: '节拍器坏了', cal: true, rules: [['先听 4 下', '节拍器会响 4 下，然后它就坏了，背景音乐也会停。'], ['自己接着拍', '从第 5 拍开始，按同样的速度拍 8 下：按空格，或者点节拍器。'], ['越稳越好', '每一下和该响的时刻差得越少，分数越高。']], run: gTempo,
+  tempo: { eye: '心里的拍子', title: '节拍器坏了', cal: true, rules: [['先听 4 下', '节拍器会响 4 下，然后它就坏了，背景音乐也会停。'], ['自己接着拍', '用同样的速度拍 8 下：按空格，或者点节拍器。第一下早一点晚一点都没关系。'], ['只看稳不稳', '算的是你每两下之间隔多久：每一下的间隔都和节拍器一样长，就是满分。耳机有延迟也不影响。']], run: gTempo,
     eff: [{ o: -6, f: -4 }, { o: -2 }, { o: 5, f: 3 }, { o: 8, f: 6, l: 4 }],
     say: [['拍子乱了', '鼓手叹了口气，把节拍器拿去修了。'], ['有点飘', '你越拍越急，像在追什么。'], ['很稳', '鼓手冲你点了点头。'], ['稳得像节拍器', '鼓手说：“节拍器不用修了，有你就行。”']] },
   ai: { eye: '人机辨听', title: '哪段是人弹的？', rules: [['两轮', '每轮两段钢琴，同一段旋律，一段是真人，一段是 AI。'], ['听三件事', '速度有没有快慢，每个音有没有轻重，音和音之间是断开还是连着。'], ['都听完才能选', '第二轮的 AI 也学会了“不完美”，要更仔细。']], run: gAi,
     eff: [{ o: -10, l: -4 }, { o: 2 }, { o: 8, f: 4 }, { o: 12, f: 6, l: 4 }],
     say: [['被骗过去了', '两轮都没听出来。A&R 在你的名字后面画了一个问号。'], ['一半一半', '第一轮听出来了，第二轮被骗了。'], ['听出来了', 'A&R 在你的名字后面画了一个勾。'], ['两轮全对', 'A&R 说：“这种耳朵，以后会越来越值钱。”']] },
-  solo: { eye: '乐团排练', title: '谁在独奏？', rules: [['四段音乐', '每段里，有一件乐器在吹（拉、弹）主旋律。'], ['选出是哪件乐器', '每段有四个选项，可以再听一遍。'], ['连对', '连续答对有连击加分。']], run: gSolo,
+  solo: { eye: '乐团排练', title: '谁在独奏？', rules: [['四段音乐', '整个乐团一起在演奏，其中一件乐器在吹（拉）主旋律，它只比别人响一点点。'], ['选出是哪件乐器', '每段有四个选项，里面有音色很像的乐器，比如小提琴和中提琴。'], ['每段只放一次', '不能重听，第一遍就要竖起耳朵。连续答对有连击加分。']], run: gSolo,
     eff: [{ o: -6, l: -3 }, { o: 1 }, { o: 6, l: 4 }, { o: 10, l: 6, f: 4 }],
     say: [['没听出来', '指挥摇摇头：“下次排练，你坐在乐团中间听。”'], ['勉强', '你听出了一两件，其他的都混在了一起。'], ['不错', '指挥说：“耳朵挺灵。”'], ['全听出来了', '指挥放下指挥棒：“明天你来当助理指挥。”']] },
-  fill: { eye: '主舞台救场', title: '数着小节打鼓', cal: true, rules: [['数小节', '乐队一小节四拍。你要在第 4 小节的最后一拍，敲一下镲（过门）。'], ['三轮', '第一轮有小节提示；第二轮没有提示；第三轮要数到第 8 小节。'], ['怎么敲', '按空格，或者点那面镲。敲得越准，台下越嗨。']], run: gFill,
+  fill: { eye: '主舞台救场', title: '数着小节打鼓', cal: true, rules: [['数小节', '你要在指定小节的最后一拍，敲一下镲（过门）。屏幕上不会提示你数到第几小节了。'], ['三轮', '第一轮四拍子，数到第 4 小节；第二轮鼓手会在第 2 小节故意敲一个假过门骗你；第三轮换成三拍子，数到第 6 小节。'], ['怎么敲', '按空格，或者点那面镲。敲得越准，台下越嗨。']], run: gFill,
     eff: [{ f: -10, l: -5 }, { m: 3, f: -2 }, { m: 10, f: 8 }, { m: 16, f: 14, l: 5 }],
     say: [['乱了', '过门敲早了，乐队全乱了，三万人一起愣住。'], ['勉强', '有一轮敲对了，乐队硬是接住了你。'], ['救场成功', '三万人跟着你的过门一起跳了起来。'], ['封神', '第二天热搜：“替补鼓手的过门，比原鼓手还准。”']] },
   arrange: { eye: '慢歌录制', title: '把编曲拼回去', rules: [['参考小样', '先听参考小样：里面有鼓、贝斯、和弦三层。'], ['每层选一个', '每一层有三个版本，选出和小样一样的那个。'], ['少听几遍', '可以随时听小样和你的版本对比。听得越少就拼对，分数越高。']], run: gArrange,
     eff: [{ o: -6, l: -4 }, { o: 2 }, { o: 7, l: 4 }, { o: 12, l: 6, m: 4 }],
     say: [['拼错了', '制作人听了一遍，默默打开了 AI 编曲。'], ['差一点', '错了一层，听起来总有哪里不对。'], ['拼对了', '制作人说：“就是这个感觉。”'], ['一次就拼对', '制作人把工程文件交给你：“以后编曲你来。”']] },
-  simon: { eye: '综艺总决赛', title: '越来越长的旋律', rules: [['跟着弹', '五个彩色的键，会亮着放一段旋律，你按顺序弹回来（也可以按数字键 1 到 5）。'], ['越来越长', '每对一次，旋律就多一个音，也会越来越快。'], ['错一个就结束', '记住的音越多，分数越高，会记下你的最好纪录。']], run: gSimon,
+  simon: { eye: '综艺总决赛', title: '越来越长的旋律', rules: [['只能用耳朵', '五个键从低到高排好，放旋律的时候键不会亮，只能靠听音高记住，再按顺序弹回来（也可以按数字键 1 到 5）。'], ['越来越长', '一开始就有 4 个音，每对一次多一个音，也会越来越快。'], ['错一个就结束', '弹错时会亮出正确的那个键。记住的音越多，分数越高。']], run: gSimon,
     eff: [{ o: -6, f: -6 }, { o: 2, f: -2 }, { o: 8, f: 8 }, { o: 12, f: 14, l: 5 }],
     say: [['第一轮就出局了', '镜头给了你一个特写，你笑得有点僵。'], ['记住了一些', '你在半决赛水平停下了。'], ['进了前三', '导演说：“观众很喜欢你认真的样子。”'], ['冠军', '最后一个音弹完，全场站了起来。']] },
   finale: { eye: '评审团', title: '十年的耳朵', rules: [['三道关', '听音、记旋律、分辨真人和 AI，这十年练过的耳朵全都用上。'], ['一关接一关', '每关结束直接进入下一关。'], ['总分', '三关加起来算总分。']], run: gFinale,
@@ -3884,23 +3995,25 @@ function gTempo(done) {
   /* 从示范到你自己拍完，背景音乐一直完全停着，只听节拍器（结算时再恢复） */
   E.duck(.0001);
   E.playClip(bus => { for (let i = 0; i < 4; i++) { tone(bus, t0 + i * beat, i ? 84 : 96, .05, { type: 'triangle', gain: .28, att: .001, rel: .06 }); E.later(() => { if (tok !== TOK) return; dots[i].classList.add('on'); swing(i) }, (t0 + i * beat - now()) * 1000) } return 4 * beat + 1 }, 1);
-  E.later(() => { if (tok !== TOK) return; $('#tst').textContent = `节拍器坏了。从第 5 拍开始，自己拍 ${N} 下`; pend.style.transition = 'transform .6s'; pend.style.transform = 'rotate(4deg)'; $('#metro').classList.add('broken'); live = true }, (t0 + 3.5 * beat - now()) * 1000);
+  E.later(() => { if (tok !== TOK) return; $('#tst').textContent = `节拍器坏了。用同样的速度，自己拍 ${N} 下`; pend.style.transition = 'transform .6s'; pend.style.transform = 'rotate(4deg)'; $('#metro').classList.add('broken'); live = true }, (t0 + 3.5 * beat - now()) * 1000);
   const tap = () => {
     if (!live) return; const t = now() - LAT(); if (t < t0 + 3.5 * beat) return;
     taps.push(t); const el = $('#metro'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 90);
     tone(E.sfx, t, 79, .04, { type: 'triangle', gain: .12, att: .001, rel: .05 }); swing(taps.length);
-    if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on');
+    if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on'); if (taps.length === 1) $('#tst').textContent = '继续，保持同样的速度……';
     if (taps.length >= N) { live = false; fin() }
   };
   $('#metro').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
   KEYH = e => { if (e.key === ' ' || e.key === 'Enter') { tap(); return true } };
+  /* 只看每两下之间的间隔和节拍器一不一样长：第一下早晚、耳机延迟都不影响分数 */
   const fin = () => {
-    const errs = taps.map((t, k) => (t - (t0 + (4 + k) * beat)) * 1000);
-    const mean = errs.reduce((a, b) => a + Math.abs(b), 0) / errs.length;
-    $('#toff').innerHTML = errs.map(e => `<i class="${e > 0 ? 'late' : ''}" style="height:${Math.min(70, 4 + Math.abs(e) / 3)}px" title="${e.toFixed(0)} 毫秒"></i>`).join('');
-    const drift = errs[errs.length - 1] - errs[0], tend = Math.abs(drift) < 60 ? '速度很稳' : drift > 0 ? '越拍越慢' : '越拍越快';
-    $('#tst').textContent = `平均差 ${mean.toFixed(0)} 毫秒，${tend}。绿色是抢拍，红色是拖拍。`;
-    setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, 1 - (mean - 20) / 140)), `平均差 ${mean.toFixed(0)} 毫秒，${tend}。${tend === '越拍越快' ? '紧张的时候人会不自觉地抢拍，这很常见。' : tend === '越拍越慢' ? '拖拍常常是因为在“等”声音，试着提前一点点。' : '你心里的钟很准。'}`) }, 1800);
+    const iv = taps.slice(1).map((t, k) => (t - taps[k]) * 1000), B = beat * 1000;
+    const errs = iv.map(x => x - B), mad = errs.reduce((a, b) => a + Math.abs(b), 0) / errs.length;
+    const avg = iv.reduce((a, b) => a + b, 0) / iv.length, drift = avg - B;
+    $('#toff').innerHTML = errs.map(e => `<i class="${e > 0 ? 'late' : ''}" style="height:${Math.min(70, 4 + Math.abs(e) / 2)}px" title="${e.toFixed(0)} 毫秒"></i>`).join('');
+    const tend = Math.abs(drift) < 25 ? '速度很稳' : drift > 0 ? '越拍越慢' : '越拍越快';
+    $('#tst').textContent = `每两下的间隔平均差 ${mad.toFixed(0)} 毫秒，${tend}。绿色是太快，红色是太慢。`;
+    setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, 1 - (mad - 18) / 110)), `每两下的间隔，和节拍器平均差 ${mad.toFixed(0)} 毫秒（节拍器一下是 ${B.toFixed(0)} 毫秒），${tend}。${tend === '越拍越快' ? '紧张的时候人会不自觉地抢拍，这很常见。' : tend === '越拍越慢' ? '拖拍常常是因为在“等”声音，试着提前一点点。' : '你心里的钟很准。'}`) }, 1800);
   };
 }
 
@@ -3954,34 +4067,47 @@ function gAi(done) {
 
 /* ---------- 6. 乐团：谁在独奏 ---------- */
 const SOLOISTS = {
-  vln: ['小提琴', (b, t, m, d) => strings(b, t, m + 12, d, .05, { att: .08, cut: 5200 })],
-  cello: ['大提琴', (b, t, m, d) => strings(b, t, m - 12, d, .07, { att: .1, cut: 2200 })],
-  flute: ['长笛', (b, t, m, d) => flute(b, t, m + 12, d, .1)],
-  tpt: ['小号', (b, t, m, d) => trumpet(b, t, m, d, .07)],
-  horn: ['圆号', (b, t, m, d) => horn(b, t, m - 12, d, .1)],
-  harp: ['竖琴', (b, t, m) => harp(b, t, m + 12, .12)],
-  piano: ['钢琴', (b, t, m, d) => keys(b, t, m + 12, d, .12)],
-  vibes: ['钟琴', (b, t, m) => vibes(b, t, m + 24, .08)]
+  vln: ['小提琴', (b, t, m, d) => strings(b, t, m + 12, d, .03, { att: .08, cut: 5200 })],
+  vla: ['中提琴', (b, t, m, d) => strings(b, t, m, d, .036, { att: .1, cut: 3400 })],
+  cello: ['大提琴', (b, t, m, d) => strings(b, t, m - 12, d, .045, { att: .1, cut: 2200 })],
+  flute: ['长笛', (b, t, m, d) => flute(b, t, m + 12, d, .06)],
+  oboe: ['双簧管', (b, t, m, d) => { tone(b, t, m + 12, d, { type: 'sawtooth', gain: .022, att: .03, rel: .12, cut: 2400, q: 4 }); tone(b, t, m + 12, d, { type: 'square', gain: .008, att: .03, rel: .12, cut: 1400, detune: 4 }) }],
+  tpt: ['小号', (b, t, m, d) => trumpet(b, t, m, d, .042)],
+  horn: ['圆号', (b, t, m, d) => horn(b, t, m - 12, d, .06)]
 };
-const SOLO_MEL = [[60, 0, 1], [64, 1, 1], [67, 2, 1.5], [65, 3.5, .5], [64, 4, 1], [62, 5, 1], [60, 6, 2]];
+/* 音色很像、容易混的几组：选项总是从同一组里出 */
+const SOLO_FAM = [['vln', 'vla', 'cello'], ['flute', 'oboe'], ['tpt', 'horn']];
+const SOLO_MELS = [
+  [[60, 0, 1], [64, 1, 1], [67, 2, 1.5], [65, 3.5, .5], [64, 4, 1], [62, 5, 1], [60, 6, 2]],
+  [[67, 0, 1.5], [65, 1.5, .5], [64, 2, 1], [62, 3, 1], [64, 4, 2], [60, 6, 2]],
+  [[64, 0, .5], [65, .5, .5], [67, 1, 1], [72, 2, 2], [71, 4, 1], [67, 5, 1], [69, 6, 2]],
+  [[62, 0, 1], [64, 1, 1], [65, 2, 1], [67, 3, 1], [65, 4, 1.5], [64, 5.5, .5], [62, 6, 2]]
+];
 function gSolo(done) {
   const tok = TOK; E.duck(.05);
-  const order = shuffle(Object.keys(SOLOISTS)).slice(0, 4);
-  let i = 0, right = 0, combo = 0, pts = 0, answered = false, reps = 1;
+  /* 四段：每组至少一段，第四段随机 */
+  const order = shuffle([...SOLO_FAM.map(f => shuffle(f)[0]), shuffle(Object.keys(SOLOISTS))[0]]);
+  let i = 0, right = 0, combo = 0, pts = 0, answered = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds">${order.map(() => '<i></i>').join('')}</div><p class="status" id="sstat"></p>
     <div class="orch" aria-hidden="true">${['🎻', '🎺', '🪈', '🎹', '🪕'].map(x => `<span>${x}</span>`).join('')}</div>
-    <div class="row" style="justify-content:center"><button class="btn ghost sm" id="srep">再听一遍（1）</button></div><div class="ear-opts" id="sopts"></div>`;
+    <p class="mnote" style="text-align:center">每段只放一次</p><div class="ear-opts" id="sopts"></div>`;
   const cb = comboEl(); $('#miniBody').appendChild(cb);
-  const play = () => { const k = order[i]; E.playClip(bus => { const b = 60 / 92, t0 = now() + .2; [[0, [48, 55, 64]], [4, [43, 50, 59]], [6, [48, 55, 64]]].forEach(([s, v]) => v.forEach(m => strings(bus, t0 + s * b, m, (s === 4 ? 2 : 4) * b, .012, { att: .3, cut: 1400 }))); SOLO_MEL.forEach(([m, s, d]) => SOLOISTS[k][1](bus, t0 + s * b, m, d * b)); return 8 * b + 1.4 }, .05) };
+  /* 整个乐团一起：弦乐铺底、竖琴分解和弦、低音、另一件乐器吹副旋律，独奏只比它们响一点 */
+  const play = () => { const k = order[i], mel = SOLO_MELS[i % SOLO_MELS.length], other = shuffle(Object.keys(SOLOISTS).filter(x => !SOLO_FAM.find(f => f.includes(k)).includes(x)))[0]; E.playClip(bus => {
+    const b = 60 / 92, t0 = now() + .2, CH = [[0, [48, 55, 64]], [2, [45, 52, 60]], [4, [43, 50, 59]], [6, [48, 55, 64]]];
+    CH.forEach(([s, v]) => { v.forEach(m => strings(bus, t0 + s * b, m, 2 * b, .016, { att: .25, cut: 1600 })); tone(bus, t0 + s * b, v[0] - 12, 1.9 * b, { type: 'triangle', gain: .16, cut: 500 }); for (let q = 0; q < 4; q++) harp(bus, t0 + (s + q / 2) * b, [...v, v[0] + 12][q] + 12, .045) });
+    [[67, 0, 2], [65, 2, 2], [62, 4, 2], [64, 6, 2]].forEach(([m, s, d]) => SOLOISTS[other][1](bus, t0 + s * b, m - 5, d * b * .9));
+    mel.forEach(([m, s, d]) => SOLOISTS[k][1](bus, t0 + s * b, m, d * b)); return 8 * b + 1.4 }, .05) };
   const ask = () => {
     if (tok !== TOK) return;
     if (i >= order.length) return done(Math.min(1, pts / (order.length * 1.2)), `四段对了 ${right} 段。`);
-    answered = false; reps = 1; $('#srep').disabled = false; $('#srep').textContent = '再听一遍（1）';
-    const opts = shuffle([order[i], ...shuffle(Object.keys(SOLOISTS).filter(k => k !== order[i])).slice(0, 3)]);
+    answered = false;
+    const fam = SOLO_FAM.find(f => f.includes(order[i]));
+    const opts = shuffle([...fam, ...shuffle(Object.keys(SOLOISTS).filter(k => !fam.includes(k))).slice(0, 4 - fam.length)]);
     $('#sstat').textContent = `第 ${i + 1} / ${order.length} 段 · 主旋律是哪件乐器？`;
     $('#sopts').innerHTML = opts.map(k => `<button class="btn ghost ear-o" data-s="${k}">${SOLOISTS[k][0]}</button>`).join('');
-    $$('#sopts .ear-o').forEach((b, j) => b.onclick = () => answer(b.dataset.s));
-    setTimeout(play, 300);
+    $$('#sopts .ear-o').forEach(b => b.onclick = () => answer(b.dataset.s));
+    setTimeout(() => { if (tok === TOK && !answered) play() }, 300);
   };
   const answer = k => {
     if (answered) return; answered = true; const ok = k === order[i];
@@ -3990,7 +4116,6 @@ function gSolo(done) {
     if (ok) { right++; combo++; pts += 1 + Math.min(combo - 1, 2) * .1; sfxGood() } else { combo = 0; sfxBuzz() }
     setCombo(cb, combo); i++; setTimeout(ask, 1400);
   };
-  $('#srep').onclick = () => { if (answered || reps <= 0) return; reps--; $('#srep').disabled = true; play() };
   KEYH = e => { const k = '1234'.indexOf(e.key); const b = $$('#sopts .ear-o')[k]; if (k >= 0 && b) { answer(b.dataset.s); return true } };
   ask();
 }
@@ -3998,26 +4123,30 @@ function gSolo(done) {
 /* ---------- 7. 主舞台救场：数着小节敲过门 ---------- */
 function gFill(done) {
   const tok = TOK; E.duck(.0001);
-  const rounds = [{ bars: 4, show: true, bpm: 100 }, { bars: 4, show: false, bpm: 100 }, { bars: 8, show: false, bpm: 108 }];
+  const rounds = [{ bars: 4, n: 4, bpm: 100 }, { bars: 4, n: 4, bpm: 100, fake: 2 }, { bars: 6, n: 3, bpm: 112 }];
   let r = 0, errs = [], live = false, target = 0, tapped = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div><p class="status" id="fstat"></p>
     <div class="barcount" id="bars"></div>
     <button class="cymbal" id="cym" aria-label="敲镲"><span>镲</span></button><p class="mnote" style="text-align:center">按空格，或点这面镲</p>`;
-  const groove = (bus, t0, beat, bars) => {
-    for (let b = 0; b < bars; b++) for (let q = 0; q < 4; q++) { const t = t0 + (b * 4 + q) * beat; kick(bus, t, q % 2 ? .4 : .8); if (q % 2) snare(bus, t, .18); hat(bus, t, .05); hat(bus, t + beat / 2, .035); if (q === 0) tone(bus, t, [36, 33, 41, 43][b % 4], beat * 3.6, { type: 'triangle', gain: .22, cut: 700 }) }
-    kick(bus, t0 + bars * 4 * beat, .9); nhit(bus, t0 + bars * 4 * beat, { g: .2, f: 4500, d: 1.2 });
+  const groove = (bus, t0, beat, bars, n, fake) => {
+    for (let b = 0; b < bars; b++) for (let q = 0; q < n; q++) {
+      const t = t0 + (b * n + q) * beat;
+      if (fake && b === fake - 1 && q === n - 1) { [0, .25, .5, .75].forEach((o, k) => snare(bus, t + o * beat, .12 + k * .04)); continue }  /* 假过门：骗你提前敲 */
+      kick(bus, t, q === 0 ? .8 : .4); if (n === 4 ? q % 2 : q) snare(bus, t, .18); hat(bus, t, .05); hat(bus, t + beat / 2, .035); if (q === 0) tone(bus, t, [36, 33, 41, 43, 38, 43][b % 6], beat * (n - .4), { type: 'triangle', gain: .22, cut: 700 })
+    }
+    kick(bus, t0 + bars * n * beat, .9); nhit(bus, t0 + bars * n * beat, { g: .2, f: 4500, d: 1.2 });
   };
   const go = () => {
     if (tok !== TOK) return;
     if (r >= rounds.length) { const sc = errs.map(e => e == null ? 0 : Math.max(0, 1 - Math.max(0, e - 30) / 220)); return done(sc.reduce((a, b) => a + b, 0) / rounds.length, `三轮的偏差：${errs.map(e => e == null ? '没敲' : Math.round(e) + ' 毫秒').join('、')}。`) }
-    const R = rounds[r], beat = 60 / R.bpm, t0 = now() + .8; target = t0 + (R.bars * 4 - 1) * beat; tapped = false; live = true;
-    $('#fstat').textContent = `第 ${r + 1} 轮 · 在第 ${R.bars} 小节的最后一拍敲镲${R.show ? '（这轮有小节提示）' : '（没有提示，自己数）'}`;
-    $('#bars').innerHTML = R.show ? Array.from({ length: R.bars }, (_, b) => `<i>${b + 1}</i>`).join('') : '<em>自己数：一小节四拍</em>';
-    E.playClip(bus => { groove(bus, t0, beat, R.bars); if (R.show) for (let b = 0; b < R.bars; b++) E.later(() => { const el = $$('#bars i')[b]; el && el.classList.add('on') }, (t0 + b * 4 * beat - now()) * 1000); return R.bars * 4 * beat + 2 }, 1, () => {
+    const R = rounds[r], beat = 60 / R.bpm, t0 = now() + .8; target = t0 + (R.bars * R.n - 1) * beat; tapped = false; live = true;
+    $('#fstat').textContent = `第 ${r + 1} 轮 · 在第 ${R.bars} 小节的最后一拍敲镲${R.fake ? '（小心鼓手的假过门）' : ''}`;
+    $('#bars').innerHTML = `<em>自己数：一小节 ${R.n} 拍${R.n === 3 ? '（三拍子：强、弱、弱）' : ''}</em>`;
+    E.playClip(bus => { groove(bus, t0, beat, R.bars, R.n, R.fake); return R.bars * R.n * beat + 2 }, 1, () => {
       if (tok !== TOK) return; live = false; if (!tapped) { errs.push(null); $$('#rounds i')[r].className = 'no' } r++; setTimeout(go, 900) });
   };
   const tap = () => {
-    if (!live || tapped) return; const t = now() - LAT(); if (t < target - 2) return;
+    if (!live || tapped) return; const t = now() - LAT(); if (t < target - 30) return;  /* 敲早了也算这一轮的那一下（假过门就是用来骗你的） */
     tapped = true; const e = Math.abs(t - target) * 1000; errs.push(e);
     nhit(E.sfx, now(), { g: .4, f: 5000, d: 1.1 }); snare(E.sfx, now(), .25);
     const el = $('#cym'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 160);
@@ -4076,17 +4205,17 @@ function gSimon(done) {
   const sound = (i, t, out) => { keys(out || E.sfx, t, PADS[i][0] + 12, .4, .14); bell(out || E.sfx, t, PADS[i][0] + 24, .02) };
   const grow = () => {
     if (tok !== TOK) return;
-    seq.push(Math.floor(Math.random() * PADS.length)); if (seq.length < 3) return grow();
-    pos = 0; canTap = false; speed = Math.max(.3, .58 - (seq.length - 3) * .035);
-    $('#smstat').textContent = `第 ${seq.length - 2} 轮 · 听……`;
-    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => { sound(p, t0 + k * speed, bus); E.later(() => flash(p, speed * .7), (.4 + k * speed) * 1000) }); return seq.length * speed + .6 }, .05,
+    seq.push(Math.floor(Math.random() * PADS.length)); if (seq.length < 4) return grow();
+    pos = 0; canTap = false; speed = Math.max(.24, .5 - (seq.length - 4) * .045);
+    $('#smstat').textContent = `第 ${seq.length - 3} 轮 · 只听，不看……`;
+    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => sound(p, t0 + k * speed, bus));  /* 放的时候键不亮 */ return seq.length * speed + .6 }, .05,
       () => { if (tok !== TOK) return; canTap = true; $('#smstat').textContent = '轮到你了'; });
   };
   const press = i => {
     if (!canTap) return; sound(i, now()); flash(i, .2);
     if (i !== seq[pos]) { canTap = false; sfxBuzz(); pads[seq[pos]].classList.add('want'); const got = seq.length - 1;
       $('#smstat').textContent = `错了。正确的是第 ${seq[pos] + 1} 个键。`;
-      setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, (got - 2) / 7)), `你记住了 ${got} 个音的旋律${PROG.best && PROG.best.simonLen ? `，之前的纪录是 ${PROG.best.simonLen} 个` : ''}。`); PROG.best = PROG.best || {}; PROG.best.simonLen = Math.max(PROG.best.simonLen || 0, got) }, 1500); return }
+      setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, (got - 3) / 7)), `你记住了 ${got} 个音的旋律${PROG.best && PROG.best.simonLen ? `，之前的纪录是 ${PROG.best.simonLen} 个` : ''}。`); PROG.best = PROG.best || {}; PROG.best.simonLen = Math.max(PROG.best.simonLen || 0, got) }, 1500); return }
     pos++; if (pos >= seq.length) { canTap = false; $('#smlen').textContent = `长度 ${seq.length}`; sfxGood(); if (seq.length >= 12) return setTimeout(() => done(1, `你记住了全部 ${seq.length} 个音！`), 900); setTimeout(grow, 900) }
   };
   pads.forEach((p, i) => p.addEventListener('pointerdown', e => { e.preventDefault(); press(i) }));
@@ -4296,7 +4425,9 @@ const TT = (() => {
 window.TT = TT;
 
 /* =========================================================
-   数值告急警报：某项数值真的快到头时（≤15 或 ≥85）
+   数值告急警报（≤15）和高光时刻（≥85）
+   数值太低：红色果冻晕染 + 警报声 + 通知，数值条变红挂“告急”
+   数值很高不一定是坏事：金色晕染 + 一声好听的提示 + 好消息通知，数值条挂“高光”
    1. 整个画面像警报一样红光闪三下，配一段警报声
    2. 屏幕上方弹出一条大号“手机通知”，内容真实又有点好笑
    3. 右上角那一项数值放大、变红、持续脉动，直到脱离危险
@@ -4307,13 +4438,13 @@ const ALARM = (() => {
   /* 通知内容：不写具体金额和数字 */
   const MSG = {
     m: { low: () => ['🏦', '银行', '【余额提醒】您的账户余额已不足。', '下个月的房租，还不知道从哪来。'],
-         high: () => ['🏦', '银行', '尊敬的贵宾客户，您的专属理财经理想约您喝杯茶。', '钱多了，找你的人也多了。'] },
+         high: () => ['🏦', '银行', '您的账户收到一笔大额入账。', '有钱了，想做的事终于可以去做了。'] },
     f: { low: () => ['💬', '粉丝群', '群里好几天没人说话了。', '最后一条消息是：“还有人吗？”'],
-         high: () => ['🔥', '热搜', '你的名字冲上了热搜，评论区吵起来了。', '夸你的和骂你的，一样多。'] },
+         high: () => ['🔥', '热搜', '你的名字冲上了热搜。', '这一次，是因为你的歌。'] },
     l: { low: () => ['📝', '备忘录', '你很久没碰琴了。', '琴上的灰，比谱架上的谱还厚。'],
-         high: () => ['👩', '妈妈', '又练到凌晨三点？饭吃了没？', '热爱快把你烧干了。'] },
+         high: () => ['🎹', '备忘录', '你已经连着写了三天，停不下来。', '这种感觉，好久没有了。'] },
     o: { low: () => ['🤖', '版权检测', '系统提示：你的新歌和本周 AI 热门曲“高度相似”。', '你分不清是你像它，还是它像你。'],
-         high: () => ['📰', '乐评人', '太先锋了，连我都没听懂。', '原创到没人跟得上，也是一种孤独。'] }
+         high: () => ['📰', '乐评人', '“这是今年最特别的一张专辑。”', '有人终于听懂了你。'] }
   };
   const NAME = { m: '钱', f: '名气', l: '热爱', o: '原创' };
   const armed = { m: true, f: true, l: true, o: true };
@@ -4363,6 +4494,16 @@ const ALARM = (() => {
 @keyframes tagSwing{0%,100%{transform:translateX(-50%) rotate(-5deg)}50%{transform:translateX(-50%) rotate(5deg)}}
 @keyframes meterGrow{0%,100%{transform:scale(1.12)}50%{transform:scale(1.22)}}
 @keyframes meterAlarm{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+#alarmFx.gold .gel{background:radial-gradient(ellipse 78% 72% at 50% 48%,rgba(255,210,110,0) 58%,rgba(255,206,100,.26) 76%,rgba(240,176,60,.48) 90%,rgba(214,140,30,.6) 100%)}
+#alarmFx.gold .rim{box-shadow:inset 0 0 0 1px rgba(255,240,200,.6),inset 0 0 26px 2px rgba(255,205,110,.45)}
+#alarmNote.gold .pc::after{content:"";position:absolute;inset:0;border-radius:18px;box-shadow:0 0 0 2px rgba(230,170,60,.7);pointer-events:none}
+#alarmNote.gold .tag{background:linear-gradient(180deg,#f3c76a 0%,#d79a2e 55%,#b97d1c 100%);box-shadow:inset 0 1px 0 rgba(255,245,215,.8),0 2px 0 #8a5c12,0 4px 6px rgba(60,40,10,.35);color:#3a2608;text-shadow:none}
+.meter.glow{z-index:2}
+.meter.glow .track{box-shadow:0 0 0 1.5px rgba(255,245,215,.9),0 0 0 3.5px #d79a2e,0 3px 6px rgba(0,0,0,.4)}
+.meter.glow .mlab,.meter.glow .mval{color:#ffd88a!important;font-weight:700}
+.meter.glow::after{content:"★ 高光";position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%) rotate(3deg);color:#3a2608;font:800 13px var(--f-body);padding:3px 9px 2px;border-radius:7px;white-space:nowrap;letter-spacing:.1em;
+  background:linear-gradient(180deg,#f8d888 0%,#dca23a 55%,#bb7f1e 100%);box-shadow:inset 0 1px 0 rgba(255,248,220,.9),0 3px 0 #8a5c12,0 6px 10px rgba(0,0,0,.4)}
+.meter.glow::before{content:"";position:absolute;top:calc(100% + 2px);left:50%;width:1.5px;height:11px;background:rgba(240,220,180,.7);transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){#alarmFx.on{animation:none;opacity:.8}.meter.alarm,.meter.alarm .track{animation:none;transform:scale(1.2)}#alarmNote{transition:none}}`;
     document.head.appendChild(st);
     const fx = document.createElement('div'); fx.id = 'alarmFx'; fx.innerHTML = '<i class="gel"></i><i class="gloss"></i><i class="rim"></i>';
@@ -4381,20 +4522,22 @@ const ALARM = (() => {
   function fire(k, side) {
     setup();
     const [ic, app, t, s] = MSG[k][side]();
-    const fx = document.getElementById('alarmFx'); fx.classList.remove('on'); void fx.offsetWidth; fx.classList.add('on'); fx.classList.add('stay');
+    const fx = document.getElementById('alarmFx'); fx.classList.remove('on'); void fx.offsetWidth; fx.classList.add('on'); fx.classList.add('stay'); fx.classList.toggle('gold', side === 'high');
     const n = document.getElementById('alarmNote');
-    n.innerHTML = `<div class="pc"><div class="nh"><span class="ic">${ic}</span><b>${app}</b><span>现在</span><span class="tag">${NAME[k]}${side === 'low' ? '快没了' : '快爆了'}</span></div><div class="t">${t}</div><div class="s">${s}</div><div class="nf"><span>右上角「${NAME[k]}」正在闪：再往${side === 'low' ? '下掉到 0' : '上冲到 100'}，人生就要拐弯了。</span><button>知道了</button></div></div>`;
-    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show');
+    n.innerHTML = `<div class="pc"><div class="nh"><span class="ic">${ic}</span><b>${app}</b><span>现在</span><span class="tag">${NAME[k]}${side === 'low' ? '快没了' : '高光时刻'}</span></div><div class="t">${t}</div><div class="s">${s}</div><div class="nf"><span>右上角「${NAME[k]}」正在闪：再往${side === 'low' ? '下掉到 0' : '上冲到 100'}，人生就要拐弯了。</span><button>知道了</button></div></div>`;
+    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show'); n.classList.toggle('gold', side === 'high');
     n.querySelector('button').onclick = () => n.classList.remove('show');
     clearTimeout(hideT); hideT = setTimeout(() => n.classList.remove('show'), 9000);
-    siren();
+    if (side === 'high') chime(); else siren();
   }
+  /* 高光的提示音：三个往上走的音 */
+  function chime() { if (!window.E || !E.ctx || E.muted) return; const t = E.ctx.currentTime + .03; [76, 81, 88].forEach((m, i) => bell(E.sfx, t + i * .12, m, .05)) }
   /* 每次数值变化后调用：更新脉动，并在第一次进入危险区时报警 */
   function check(s) {
     if (!s) return; setup();
     Object.keys(NAME).forEach(k => {
       const v = s[k], side = v <= LOW ? 'low' : v >= HIGH ? 'high' : null, m = document.querySelector(`.meter[data-k="${k}"]`);
-      if (m) m.classList.toggle('alarm', !!side);
+      if (m) { m.classList.toggle('alarm', side === 'low'); m.classList.toggle('glow', side === 'high') }
       if (side && armed[k]) { armed[k] = false; fire(k, side) }
       if (!side) armed[k] = true;
     });

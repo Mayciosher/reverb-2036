@@ -1,5 +1,7 @@
 /* =========================================================
-   数值告急警报：某项数值真的快到头时（≤15 或 ≥85）
+   数值告急警报（≤15）和高光时刻（≥85）
+   数值太低：红色果冻晕染 + 警报声 + 通知，数值条变红挂“告急”
+   数值很高不一定是坏事：金色晕染 + 一声好听的提示 + 好消息通知，数值条挂“高光”
    1. 整个画面像警报一样红光闪三下，配一段警报声
    2. 屏幕上方弹出一条大号“手机通知”，内容真实又有点好笑
    3. 右上角那一项数值放大、变红、持续脉动，直到脱离危险
@@ -10,13 +12,13 @@ const ALARM = (() => {
   /* 通知内容：不写具体金额和数字 */
   const MSG = {
     m: { low: () => ['🏦', '银行', '【余额提醒】您的账户余额已不足。', '下个月的房租，还不知道从哪来。'],
-         high: () => ['🏦', '银行', '尊敬的贵宾客户，您的专属理财经理想约您喝杯茶。', '钱多了，找你的人也多了。'] },
+         high: () => ['🏦', '银行', '您的账户收到一笔大额入账。', '有钱了，想做的事终于可以去做了。'] },
     f: { low: () => ['💬', '粉丝群', '群里好几天没人说话了。', '最后一条消息是：“还有人吗？”'],
-         high: () => ['🔥', '热搜', '你的名字冲上了热搜，评论区吵起来了。', '夸你的和骂你的，一样多。'] },
+         high: () => ['🔥', '热搜', '你的名字冲上了热搜。', '这一次，是因为你的歌。'] },
     l: { low: () => ['📝', '备忘录', '你很久没碰琴了。', '琴上的灰，比谱架上的谱还厚。'],
-         high: () => ['👩', '妈妈', '又练到凌晨三点？饭吃了没？', '热爱快把你烧干了。'] },
+         high: () => ['🎹', '备忘录', '你已经连着写了三天，停不下来。', '这种感觉，好久没有了。'] },
     o: { low: () => ['🤖', '版权检测', '系统提示：你的新歌和本周 AI 热门曲“高度相似”。', '你分不清是你像它，还是它像你。'],
-         high: () => ['📰', '乐评人', '太先锋了，连我都没听懂。', '原创到没人跟得上，也是一种孤独。'] }
+         high: () => ['📰', '乐评人', '“这是今年最特别的一张专辑。”', '有人终于听懂了你。'] }
   };
   const NAME = { m: '钱', f: '名气', l: '热爱', o: '原创' };
   const armed = { m: true, f: true, l: true, o: true };
@@ -66,6 +68,16 @@ const ALARM = (() => {
 @keyframes tagSwing{0%,100%{transform:translateX(-50%) rotate(-5deg)}50%{transform:translateX(-50%) rotate(5deg)}}
 @keyframes meterGrow{0%,100%{transform:scale(1.12)}50%{transform:scale(1.22)}}
 @keyframes meterAlarm{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+#alarmFx.gold .gel{background:radial-gradient(ellipse 78% 72% at 50% 48%,rgba(255,210,110,0) 58%,rgba(255,206,100,.26) 76%,rgba(240,176,60,.48) 90%,rgba(214,140,30,.6) 100%)}
+#alarmFx.gold .rim{box-shadow:inset 0 0 0 1px rgba(255,240,200,.6),inset 0 0 26px 2px rgba(255,205,110,.45)}
+#alarmNote.gold .pc::after{content:"";position:absolute;inset:0;border-radius:18px;box-shadow:0 0 0 2px rgba(230,170,60,.7);pointer-events:none}
+#alarmNote.gold .tag{background:linear-gradient(180deg,#f3c76a 0%,#d79a2e 55%,#b97d1c 100%);box-shadow:inset 0 1px 0 rgba(255,245,215,.8),0 2px 0 #8a5c12,0 4px 6px rgba(60,40,10,.35);color:#3a2608;text-shadow:none}
+.meter.glow{z-index:2}
+.meter.glow .track{box-shadow:0 0 0 1.5px rgba(255,245,215,.9),0 0 0 3.5px #d79a2e,0 3px 6px rgba(0,0,0,.4)}
+.meter.glow .mlab,.meter.glow .mval{color:#ffd88a!important;font-weight:700}
+.meter.glow::after{content:"★ 高光";position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%) rotate(3deg);color:#3a2608;font:800 13px var(--f-body);padding:3px 9px 2px;border-radius:7px;white-space:nowrap;letter-spacing:.1em;
+  background:linear-gradient(180deg,#f8d888 0%,#dca23a 55%,#bb7f1e 100%);box-shadow:inset 0 1px 0 rgba(255,248,220,.9),0 3px 0 #8a5c12,0 6px 10px rgba(0,0,0,.4)}
+.meter.glow::before{content:"";position:absolute;top:calc(100% + 2px);left:50%;width:1.5px;height:11px;background:rgba(240,220,180,.7);transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){#alarmFx.on{animation:none;opacity:.8}.meter.alarm,.meter.alarm .track{animation:none;transform:scale(1.2)}#alarmNote{transition:none}}`;
     document.head.appendChild(st);
     const fx = document.createElement('div'); fx.id = 'alarmFx'; fx.innerHTML = '<i class="gel"></i><i class="gloss"></i><i class="rim"></i>';
@@ -84,20 +96,22 @@ const ALARM = (() => {
   function fire(k, side) {
     setup();
     const [ic, app, t, s] = MSG[k][side]();
-    const fx = document.getElementById('alarmFx'); fx.classList.remove('on'); void fx.offsetWidth; fx.classList.add('on'); fx.classList.add('stay');
+    const fx = document.getElementById('alarmFx'); fx.classList.remove('on'); void fx.offsetWidth; fx.classList.add('on'); fx.classList.add('stay'); fx.classList.toggle('gold', side === 'high');
     const n = document.getElementById('alarmNote');
-    n.innerHTML = `<div class="pc"><div class="nh"><span class="ic">${ic}</span><b>${app}</b><span>现在</span><span class="tag">${NAME[k]}${side === 'low' ? '快没了' : '快爆了'}</span></div><div class="t">${t}</div><div class="s">${s}</div><div class="nf"><span>右上角「${NAME[k]}」正在闪：再往${side === 'low' ? '下掉到 0' : '上冲到 100'}，人生就要拐弯了。</span><button>知道了</button></div></div>`;
-    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show');
+    n.innerHTML = `<div class="pc"><div class="nh"><span class="ic">${ic}</span><b>${app}</b><span>现在</span><span class="tag">${NAME[k]}${side === 'low' ? '快没了' : '高光时刻'}</span></div><div class="t">${t}</div><div class="s">${s}</div><div class="nf"><span>右上角「${NAME[k]}」正在闪：再往${side === 'low' ? '下掉到 0' : '上冲到 100'}，人生就要拐弯了。</span><button>知道了</button></div></div>`;
+    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show'); n.classList.toggle('gold', side === 'high');
     n.querySelector('button').onclick = () => n.classList.remove('show');
     clearTimeout(hideT); hideT = setTimeout(() => n.classList.remove('show'), 9000);
-    siren();
+    if (side === 'high') chime(); else siren();
   }
+  /* 高光的提示音：三个往上走的音 */
+  function chime() { if (!window.E || !E.ctx || E.muted) return; const t = E.ctx.currentTime + .03; [76, 81, 88].forEach((m, i) => bell(E.sfx, t + i * .12, m, .05)) }
   /* 每次数值变化后调用：更新脉动，并在第一次进入危险区时报警 */
   function check(s) {
     if (!s) return; setup();
     Object.keys(NAME).forEach(k => {
       const v = s[k], side = v <= LOW ? 'low' : v >= HIGH ? 'high' : null, m = document.querySelector(`.meter[data-k="${k}"]`);
-      if (m) m.classList.toggle('alarm', !!side);
+      if (m) { m.classList.toggle('alarm', side === 'low'); m.classList.toggle('glow', side === 'high') }
       if (side && armed[k]) { armed[k] = false; fire(k, side) }
       if (!side) armed[k] = true;
     });

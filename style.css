@@ -142,7 +142,6 @@ p{margin:0;line-height:1.65}
   box-shadow:0 18px 40px rgba(0,0,0,.45);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s}
 .card.drag{transition:none;cursor:grabbing}
 .card.enter{transform:translateY(16px) scale(.96);opacity:0}
-.card::after{content:"";position:absolute;left:0;right:0;top:64px;border-top:2px dashed rgba(43,35,51,.18)}
 .card.crisis{box-shadow:0 0 0 3px var(--bad),0 18px 40px rgba(0,0,0,.45)}
 .whois{display:flex;gap:12px;align-items:center;height:48px}
 .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:22px;color:var(--paper);flex:none}
@@ -882,18 +881,18 @@ body.lx [data-view="duo"]:not([data-mat="desk"]) > .lx-main .ideal-btn.on{box-sh
 body.lx #ideal .lx-main{gap:16px}
 body.lx #ideal .ideal-btn{padding:10px 12px}
 /* 卡片：谁发来的，像聊天消息的抬头一样醒目 */
-.card .whois{height:auto;padding:8px 10px;margin:-4px -6px 4px;border-radius:12px;background:var(--wt,rgba(120,100,140,.12))}
+.card .whois{height:auto;padding:12px 18px;margin:-20px -20px 12px;border-radius:18px 18px 0 0;background:var(--wt,#4a3f5c);color:#fff}
+.card .whois small{color:rgba(255,255,255,.78)}
+.card .whois .av{box-shadow:0 0 0 2px rgba(255,255,255,.85)}
 .card .whois b{font-size:20px;letter-spacing:.04em}
 .card .whois b::before{content:"来自 ";font-size:12px;font-weight:600;letter-spacing:.1em;opacity:.6;margin-right:2px}
-.card[data-wt="near"]{--wt:rgba(224,140,90,.18)}
-.card[data-wt="work"]{--wt:rgba(90,127,214,.15)}
-.card[data-wt="ai"]{--wt:rgba(122,90,214,.18)}
-.card[data-wt="luck"]{--wt:rgba(63,143,106,.18)}
-.card[data-wt="crisis"]{--wt:rgba(192,70,79,.18)}
+.card[data-wt="near"]{--wt:#b8643c}
+.card[data-wt="work"]{--wt:#3d5a99}
+.card[data-wt="ai"]{--wt:#5b44a8}
+.card[data-wt="luck"]{--wt:#2f7a58}
+.card[data-wt="crisis"]{--wt:#a8343f}
 /* 原型默认收起，点开才看 */
-.src .src-t{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:#9a5b2a}
-.src .src-x{display:none}
-.src.open .src-x{display:block;margin-top:4px}
+.src b{font-size:12px;font-weight:700;color:#9a5b2a;margin-right:6px;letter-spacing:.1em}
 /* 选项下面：这个选择会影响哪几项 */
 #play .fx{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px}
 #play .fx i{font-style:normal;font:700 11px var(--f-body);padding:2px 7px;border-radius:999px;background:rgba(43,34,48,.1);color:rgba(43,34,48,.75);letter-spacing:.05em}
@@ -907,15 +906,27 @@ body.lx #ideal .ideal-btn{padding:10px 12px}
 body.dealing #play #bL,body.dealing #play #bR{opacity:0;pointer-events:none;transition:opacity .15s ease 0s}
 #play #bL,#play #bR{transition:opacity .35s ease,transform .2s,box-shadow .2s}
 body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .2s,box-shadow .2s}
-/* 选完以后的“后来……”纸条 */
-.after-note{position:absolute;left:50%;top:50%;z-index:6;width:min(420px,90%);transform:translate(-50%,-50%) rotate(-1.5deg);background:#fffaf0;color:#2b2230;border-radius:4px;padding:18px 20px 12px;
-  box-shadow:0 2px 0 #e6d9c6,0 18px 40px rgba(0,0,0,.45);cursor:pointer;animation:afterIn .35s cubic-bezier(.2,1.2,.4,1)}
-.after-note::before{content:"";position:absolute;top:-10px;left:50%;width:76px;height:22px;margin-left:-38px;background:rgba(255,255,255,.6);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
-.after-note i{font-style:normal;font:700 13px var(--f-display);letter-spacing:.3em;color:#a0522d}
-.after-note p{margin:6px 0 8px;font-size:18px;line-height:1.65}
-.after-note small{display:block;text-align:right;font-size:12px;color:#9a8c96}
-.after-note.out{opacity:0;transform:translate(-50%,-46%) rotate(-1.5deg);transition:.22s}
-@keyframes afterIn{from{opacity:0;transform:translate(-50%,-40%) rotate(-4deg)}}
+/* 选完以后：卡片的位置翻出一张“后来”卡，打字机写出后来发生的事，点一下才继续 */
+.after-card{position:absolute;left:50%;top:50%;z-index:6;width:min(460px,94%);min-height:240px;margin:0;transform:translate(-50%,-50%);perspective:1200px;cursor:pointer}
+.after-card .ac-in{position:relative;background:#fffaf0;color:#2b2230;border-radius:18px;padding:22px 24px 18px;transform-origin:50% 50%;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 30px,rgba(160,82,45,.10) 30px 31px);
+  box-shadow:0 2px 0 #e6d9c6,0 22px 50px rgba(0,0,0,.5);animation:acFlip .62s cubic-bezier(.2,.9,.25,1.05) both}
+.after-card .ac-in::before{content:"";position:absolute;top:-11px;left:50%;width:84px;height:24px;margin-left:-42px;background:rgba(255,255,255,.62);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.after-card .ac-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.after-card .ac-stamp{display:inline-block;font:700 15px var(--f-display);letter-spacing:.4em;color:#a0522d;border:2px solid #a0522d;border-radius:6px;padding:3px 4px 3px 10px;transform:rotate(-6deg);
+  opacity:0;animation:acStamp .38s cubic-bezier(.3,1.6,.5,1) .5s forwards}
+.after-card .ac-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(160,82,45,.5),transparent);transform-origin:left;transform:scaleX(0);animation:acLine .5s ease .7s forwards}
+.after-card p{margin:6px 0 10px;font-size:20px;line-height:1.75;min-height:3.5em}
+.after-card small{display:block;text-align:right;font-size:13px;color:#a0522d;font-weight:700;opacity:0;transition:opacity .3s}
+.after-card.ready small{opacity:1;animation:acNudge 1.4s ease-in-out .3s infinite}
+.after-card.out .ac-in{animation:acOut .3s ease forwards}
+@keyframes acFlip{0%{transform:rotateY(-90deg) scale(.92);opacity:.2}60%{transform:rotateY(8deg) scale(1.01);opacity:1}100%{transform:none}}
+@keyframes acStamp{0%{opacity:0;transform:rotate(-6deg) scale(2.2)}100%{opacity:1;transform:rotate(-6deg) scale(1)}}
+@keyframes acLine{to{transform:scaleX(1)}}
+@keyframes acNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@keyframes acOut{to{transform:translateY(-14px) rotate(2deg);opacity:0}}
+body.aftering #play #bL,body.aftering #play #bR,body.aftering #play #undo{opacity:0;pointer-events:none;transition:opacity .2s}
+@media (prefers-reduced-motion:reduce){.after-card .ac-in,.after-card .ac-stamp,.after-card .ac-line{animation:none;opacity:1;transform:none}}
 #play .table{position:relative}
 
 /* ===== 第八版：十个音乐小游戏 ===== */
@@ -1039,3 +1050,26 @@ body.lx #transit,#transit{position:fixed;inset:0;display:flex;flex-direction:col
 @media (max-width:560px){ .topbar #topTitle{display:none} .tb-r{gap:6px} .tb-r .home{padding:6px 10px;font-size:12px} }
 body:not(.lx) #play .fx i{background:rgba(255,255,255,.12);color:var(--soft)}
 body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
+
+/* ===== 第九版 ===== */
+/* 酒吧：「听客人哼」按钮要醒目 */
+.btn.pre-hum{align-self:flex-start;background:linear-gradient(180deg,#ffcf5a,#f0a020);color:#2b1a05;border:0;font-weight:800;font-size:16px;padding:12px 20px;border-radius:999px;
+  box-shadow:0 0 0 3px rgba(255,207,90,.35),0 8px 18px rgba(240,160,32,.45);animation:humPulse 1.6s ease-in-out infinite}
+.btn.pre-hum span{display:inline-block;margin-right:4px}
+.btn.pre-hum.heard{animation:none;box-shadow:0 4px 10px rgba(240,160,32,.35)}
+@keyframes humPulse{0%,100%{box-shadow:0 0 0 3px rgba(255,207,90,.35),0 8px 18px rgba(240,160,32,.45)}50%{box-shadow:0 0 0 9px rgba(255,207,90,.12),0 8px 22px rgba(240,160,32,.6)}}
+@media (prefers-reduced-motion:reduce){.btn.pre-hum{animation:none}}
+/* 答完以后再听一遍 */
+.rc-replay{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}
+.rc-replay>span{font-size:12px;color:var(--paper-mute,#8a7f90);margin-right:2px}
+.rc-replay .btn{color:#2b2230;background:rgba(43,35,51,.05);border:1px solid rgba(43,35,51,.3);box-shadow:none}
+.rc-replay .btn:hover{background:rgba(43,35,51,.1)}
+.rc-replay .btn.r{box-shadow:inset 0 0 0 2px #2e9b6d;color:#1f6b4a}
+.rc-replay .btn.x{box-shadow:inset 0 0 0 2px #c0464f;color:#a3343d}
+.rc-replay .btn.me.f{box-shadow:inset 0 0 0 2px #d79a2e;color:#7a5410}
+/* 你自己：三个版本 */
+.cs-top .cs-ver{font:700 14px var(--f-body);color:#2b2230}
+.clip.cassette.picked{box-shadow:0 0 0 3px #f0b45a,0 16px 30px rgba(0,0,0,.5)}
+/* 朋友圈：自己写一句 */
+.own-post{display:flex;gap:8px;align-items:center}
+.own-post input{flex:1;min-width:0;font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:inherit}

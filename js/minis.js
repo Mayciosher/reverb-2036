@@ -21,25 +21,25 @@ const MINI_DEF = {
   tune: { eye: '凭耳朵调弦', title: '帮吉他手调弦', rules: [['听拍音', '标准音和琴弦一起响，没对准时会听到“哇—哇—”的起伏。'], ['拖动滑块', '起伏越慢越接近，完全听不到起伏就调准了。'], ['一共三根弦', '每根弦调好了就点「调好了」。']], run: gTune,
     eff: [{ o: -6, l: -4 }, { o: 2 }, { o: 6, l: 4 }, { o: 10, l: 6, f: 4 }],
     say: [['没调准', '最后还是用了调音器。你开始想，耳朵是不是被耳机泡坏了。'], ['还行', '大致准了，但录音师还是偷偷开了修音。'], ['很准', '录音师点点头，没说什么，这就是最高评价。'], ['比调音器还准', '吉他手看了一眼调音器，愣住了：“分毫不差。”']] },
-  ear: { eye: '录音棚试音', title: '听音', rules: [['先听 la', '每题先放标准音 la，再放要你听的声音。'], ['六道题', '单音（有黑键上的音）、两个音之间的距离、三个音一起响的和弦，越往后越难。'], ['连对', '连续答对有连击加分。每题可以再听一遍。']], run: gEar,
+  ear: { eye: '录音棚试音', title: '听音', rules: [['先听 la', '每道题都会先弹一个标准音 la，再弹要你听的声音。'], ['六道题', '单音（有黑键上的音）、两个音之间的距离、三个音一起响的和弦，越往后越难。'], ['连对', '连续答对有连击加分。每题可以再听一遍。']], run: gEar,
     eff: [{ o: -8, l: -6 }, { o: -2 }, { o: 6, l: 4 }, { o: 12, l: 8, f: 4 }],
     say: [['没听出来', '走出录音棚，你在地铁上把那段声音听了二十遍。'], ['有点吃力', '你开始怀疑，自己是不是太依赖 AI 扒谱了。'], ['还行', '错了几题，但听得出你有底子。'], ['耳朵很好', '对方愣了一下：“你学过视唱练耳吧？”']] },
-  tempo: { eye: '心里的拍子', title: '节拍器坏了', cal: true, rules: [['先听 4 下', '节拍器会响 4 下，然后它就坏了，背景音乐也会停。'], ['自己接着拍', '从第 5 拍开始，按同样的速度拍 8 下：按空格，或者点节拍器。'], ['越稳越好', '每一下和该响的时刻差得越少，分数越高。']], run: gTempo,
+  tempo: { eye: '心里的拍子', title: '节拍器坏了', cal: true, rules: [['先听 4 下', '节拍器会响 4 下，然后它就坏了，背景音乐也会停。'], ['自己接着拍', '用同样的速度拍 8 下：按空格，或者点节拍器。第一下早一点晚一点都没关系。'], ['只看稳不稳', '算的是你每两下之间隔多久：每一下的间隔都和节拍器一样长，就是满分。耳机有延迟也不影响。']], run: gTempo,
     eff: [{ o: -6, f: -4 }, { o: -2 }, { o: 5, f: 3 }, { o: 8, f: 6, l: 4 }],
     say: [['拍子乱了', '鼓手叹了口气，把节拍器拿去修了。'], ['有点飘', '你越拍越急，像在追什么。'], ['很稳', '鼓手冲你点了点头。'], ['稳得像节拍器', '鼓手说：“节拍器不用修了，有你就行。”']] },
   ai: { eye: '人机辨听', title: '哪段是人弹的？', rules: [['两轮', '每轮两段钢琴，同一段旋律，一段是真人，一段是 AI。'], ['听三件事', '速度有没有快慢，每个音有没有轻重，音和音之间是断开还是连着。'], ['都听完才能选', '第二轮的 AI 也学会了“不完美”，要更仔细。']], run: gAi,
     eff: [{ o: -10, l: -4 }, { o: 2 }, { o: 8, f: 4 }, { o: 12, f: 6, l: 4 }],
     say: [['被骗过去了', '两轮都没听出来。A&R 在你的名字后面画了一个问号。'], ['一半一半', '第一轮听出来了，第二轮被骗了。'], ['听出来了', 'A&R 在你的名字后面画了一个勾。'], ['两轮全对', 'A&R 说：“这种耳朵，以后会越来越值钱。”']] },
-  solo: { eye: '乐团排练', title: '谁在独奏？', rules: [['四段音乐', '每段里，有一件乐器在吹（拉、弹）主旋律。'], ['选出是哪件乐器', '每段有四个选项，可以再听一遍。'], ['连对', '连续答对有连击加分。']], run: gSolo,
+  solo: { eye: '乐团排练', title: '谁在独奏？', rules: [['四段音乐', '整个乐团一起在演奏，其中一件乐器在吹（拉）主旋律，它只比别人响一点点。'], ['选出是哪件乐器', '每段有四个选项，里面有音色很像的乐器，比如小提琴和中提琴。'], ['每段只放一次', '不能重听，第一遍就要竖起耳朵。连续答对有连击加分。']], run: gSolo,
     eff: [{ o: -6, l: -3 }, { o: 1 }, { o: 6, l: 4 }, { o: 10, l: 6, f: 4 }],
     say: [['没听出来', '指挥摇摇头：“下次排练，你坐在乐团中间听。”'], ['勉强', '你听出了一两件，其他的都混在了一起。'], ['不错', '指挥说：“耳朵挺灵。”'], ['全听出来了', '指挥放下指挥棒：“明天你来当助理指挥。”']] },
-  fill: { eye: '主舞台救场', title: '数着小节打鼓', cal: true, rules: [['数小节', '乐队一小节四拍。你要在第 4 小节的最后一拍，敲一下镲（过门）。'], ['三轮', '第一轮有小节提示；第二轮没有提示；第三轮要数到第 8 小节。'], ['怎么敲', '按空格，或者点那面镲。敲得越准，台下越嗨。']], run: gFill,
+  fill: { eye: '主舞台救场', title: '数着小节打鼓', cal: true, rules: [['数小节', '你要在指定小节的最后一拍，敲一下镲（过门）。屏幕上不会提示你数到第几小节了。'], ['三轮', '第一轮四拍子，数到第 4 小节；第二轮鼓手会在第 2 小节故意敲一个假过门骗你；第三轮换成三拍子，数到第 6 小节。'], ['怎么敲', '按空格，或者点那面镲。敲得越准，台下越嗨。']], run: gFill,
     eff: [{ f: -10, l: -5 }, { m: 3, f: -2 }, { m: 10, f: 8 }, { m: 16, f: 14, l: 5 }],
     say: [['乱了', '过门敲早了，乐队全乱了，三万人一起愣住。'], ['勉强', '有一轮敲对了，乐队硬是接住了你。'], ['救场成功', '三万人跟着你的过门一起跳了起来。'], ['封神', '第二天热搜：“替补鼓手的过门，比原鼓手还准。”']] },
   arrange: { eye: '慢歌录制', title: '把编曲拼回去', rules: [['参考小样', '先听参考小样：里面有鼓、贝斯、和弦三层。'], ['每层选一个', '每一层有三个版本，选出和小样一样的那个。'], ['少听几遍', '可以随时听小样和你的版本对比。听得越少就拼对，分数越高。']], run: gArrange,
     eff: [{ o: -6, l: -4 }, { o: 2 }, { o: 7, l: 4 }, { o: 12, l: 6, m: 4 }],
     say: [['拼错了', '制作人听了一遍，默默打开了 AI 编曲。'], ['差一点', '错了一层，听起来总有哪里不对。'], ['拼对了', '制作人说：“就是这个感觉。”'], ['一次就拼对', '制作人把工程文件交给你：“以后编曲你来。”']] },
-  simon: { eye: '综艺总决赛', title: '越来越长的旋律', rules: [['跟着弹', '五个彩色的键，会亮着放一段旋律，你按顺序弹回来（也可以按数字键 1 到 5）。'], ['越来越长', '每对一次，旋律就多一个音，也会越来越快。'], ['错一个就结束', '记住的音越多，分数越高，会记下你的最好纪录。']], run: gSimon,
+  simon: { eye: '综艺总决赛', title: '越来越长的旋律', rules: [['只能用耳朵', '五个键从低到高排好，放旋律的时候键不会亮，只能靠听音高记住，再按顺序弹回来（也可以按数字键 1 到 5）。'], ['越来越长', '一开始就有 4 个音，每对一次多一个音，也会越来越快。'], ['错一个就结束', '弹错时会亮出正确的那个键。记住的音越多，分数越高。']], run: gSimon,
     eff: [{ o: -6, f: -6 }, { o: 2, f: -2 }, { o: 8, f: 8 }, { o: 12, f: 14, l: 5 }],
     say: [['第一轮就出局了', '镜头给了你一个特写，你笑得有点僵。'], ['记住了一些', '你在半决赛水平停下了。'], ['进了前三', '导演说：“观众很喜欢你认真的样子。”'], ['冠军', '最后一个音弹完，全场站了起来。']] },
   finale: { eye: '评审团', title: '十年的耳朵', rules: [['三道关', '听音、记旋律、分辨真人和 AI，这十年练过的耳朵全都用上。'], ['一关接一关', '每关结束直接进入下一关。'], ['总分', '三关加起来算总分。']], run: gFinale,
@@ -247,23 +247,25 @@ function gTempo(done) {
   /* 从示范到你自己拍完，背景音乐一直完全停着，只听节拍器（结算时再恢复） */
   E.duck(.0001);
   E.playClip(bus => { for (let i = 0; i < 4; i++) { tone(bus, t0 + i * beat, i ? 84 : 96, .05, { type: 'triangle', gain: .28, att: .001, rel: .06 }); E.later(() => { if (tok !== TOK) return; dots[i].classList.add('on'); swing(i) }, (t0 + i * beat - now()) * 1000) } return 4 * beat + 1 }, 1);
-  E.later(() => { if (tok !== TOK) return; $('#tst').textContent = `节拍器坏了。从第 5 拍开始，自己拍 ${N} 下`; pend.style.transition = 'transform .6s'; pend.style.transform = 'rotate(4deg)'; $('#metro').classList.add('broken'); live = true }, (t0 + 3.5 * beat - now()) * 1000);
+  E.later(() => { if (tok !== TOK) return; $('#tst').textContent = `节拍器坏了。用同样的速度，自己拍 ${N} 下`; pend.style.transition = 'transform .6s'; pend.style.transform = 'rotate(4deg)'; $('#metro').classList.add('broken'); live = true }, (t0 + 3.5 * beat - now()) * 1000);
   const tap = () => {
     if (!live) return; const t = now() - LAT(); if (t < t0 + 3.5 * beat) return;
     taps.push(t); const el = $('#metro'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 90);
     tone(E.sfx, t, 79, .04, { type: 'triangle', gain: .12, att: .001, rel: .05 }); swing(taps.length);
-    if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on');
+    if (dots[3 + taps.length]) dots[3 + taps.length].classList.add('on'); if (taps.length === 1) $('#tst').textContent = '继续，保持同样的速度……';
     if (taps.length >= N) { live = false; fin() }
   };
   $('#metro').addEventListener('pointerdown', e => { e.preventDefault(); tap() });
   KEYH = e => { if (e.key === ' ' || e.key === 'Enter') { tap(); return true } };
+  /* 只看每两下之间的间隔和节拍器一不一样长：第一下早晚、耳机延迟都不影响分数 */
   const fin = () => {
-    const errs = taps.map((t, k) => (t - (t0 + (4 + k) * beat)) * 1000);
-    const mean = errs.reduce((a, b) => a + Math.abs(b), 0) / errs.length;
-    $('#toff').innerHTML = errs.map(e => `<i class="${e > 0 ? 'late' : ''}" style="height:${Math.min(70, 4 + Math.abs(e) / 3)}px" title="${e.toFixed(0)} 毫秒"></i>`).join('');
-    const drift = errs[errs.length - 1] - errs[0], tend = Math.abs(drift) < 60 ? '速度很稳' : drift > 0 ? '越拍越慢' : '越拍越快';
-    $('#tst').textContent = `平均差 ${mean.toFixed(0)} 毫秒，${tend}。绿色是抢拍，红色是拖拍。`;
-    setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, 1 - (mean - 20) / 140)), `平均差 ${mean.toFixed(0)} 毫秒，${tend}。${tend === '越拍越快' ? '紧张的时候人会不自觉地抢拍，这很常见。' : tend === '越拍越慢' ? '拖拍常常是因为在“等”声音，试着提前一点点。' : '你心里的钟很准。'}`) }, 1800);
+    const iv = taps.slice(1).map((t, k) => (t - taps[k]) * 1000), B = beat * 1000;
+    const errs = iv.map(x => x - B), mad = errs.reduce((a, b) => a + Math.abs(b), 0) / errs.length;
+    const avg = iv.reduce((a, b) => a + b, 0) / iv.length, drift = avg - B;
+    $('#toff').innerHTML = errs.map(e => `<i class="${e > 0 ? 'late' : ''}" style="height:${Math.min(70, 4 + Math.abs(e) / 2)}px" title="${e.toFixed(0)} 毫秒"></i>`).join('');
+    const tend = Math.abs(drift) < 25 ? '速度很稳' : drift > 0 ? '越拍越慢' : '越拍越快';
+    $('#tst').textContent = `每两下的间隔平均差 ${mad.toFixed(0)} 毫秒，${tend}。绿色是太快，红色是太慢。`;
+    setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, 1 - (mad - 18) / 110)), `每两下的间隔，和节拍器平均差 ${mad.toFixed(0)} 毫秒（节拍器一下是 ${B.toFixed(0)} 毫秒），${tend}。${tend === '越拍越快' ? '紧张的时候人会不自觉地抢拍，这很常见。' : tend === '越拍越慢' ? '拖拍常常是因为在“等”声音，试着提前一点点。' : '你心里的钟很准。'}`) }, 1800);
   };
 }
 
@@ -317,34 +319,47 @@ function gAi(done) {
 
 /* ---------- 6. 乐团：谁在独奏 ---------- */
 const SOLOISTS = {
-  vln: ['小提琴', (b, t, m, d) => strings(b, t, m + 12, d, .05, { att: .08, cut: 5200 })],
-  cello: ['大提琴', (b, t, m, d) => strings(b, t, m - 12, d, .07, { att: .1, cut: 2200 })],
-  flute: ['长笛', (b, t, m, d) => flute(b, t, m + 12, d, .1)],
-  tpt: ['小号', (b, t, m, d) => trumpet(b, t, m, d, .07)],
-  horn: ['圆号', (b, t, m, d) => horn(b, t, m - 12, d, .1)],
-  harp: ['竖琴', (b, t, m) => harp(b, t, m + 12, .12)],
-  piano: ['钢琴', (b, t, m, d) => keys(b, t, m + 12, d, .12)],
-  vibes: ['钟琴', (b, t, m) => vibes(b, t, m + 24, .08)]
+  vln: ['小提琴', (b, t, m, d) => strings(b, t, m + 12, d, .03, { att: .08, cut: 5200 })],
+  vla: ['中提琴', (b, t, m, d) => strings(b, t, m, d, .036, { att: .1, cut: 3400 })],
+  cello: ['大提琴', (b, t, m, d) => strings(b, t, m - 12, d, .045, { att: .1, cut: 2200 })],
+  flute: ['长笛', (b, t, m, d) => flute(b, t, m + 12, d, .06)],
+  oboe: ['双簧管', (b, t, m, d) => { tone(b, t, m + 12, d, { type: 'sawtooth', gain: .022, att: .03, rel: .12, cut: 2400, q: 4 }); tone(b, t, m + 12, d, { type: 'square', gain: .008, att: .03, rel: .12, cut: 1400, detune: 4 }) }],
+  tpt: ['小号', (b, t, m, d) => trumpet(b, t, m, d, .042)],
+  horn: ['圆号', (b, t, m, d) => horn(b, t, m - 12, d, .06)]
 };
-const SOLO_MEL = [[60, 0, 1], [64, 1, 1], [67, 2, 1.5], [65, 3.5, .5], [64, 4, 1], [62, 5, 1], [60, 6, 2]];
+/* 音色很像、容易混的几组：选项总是从同一组里出 */
+const SOLO_FAM = [['vln', 'vla', 'cello'], ['flute', 'oboe'], ['tpt', 'horn']];
+const SOLO_MELS = [
+  [[60, 0, 1], [64, 1, 1], [67, 2, 1.5], [65, 3.5, .5], [64, 4, 1], [62, 5, 1], [60, 6, 2]],
+  [[67, 0, 1.5], [65, 1.5, .5], [64, 2, 1], [62, 3, 1], [64, 4, 2], [60, 6, 2]],
+  [[64, 0, .5], [65, .5, .5], [67, 1, 1], [72, 2, 2], [71, 4, 1], [67, 5, 1], [69, 6, 2]],
+  [[62, 0, 1], [64, 1, 1], [65, 2, 1], [67, 3, 1], [65, 4, 1.5], [64, 5.5, .5], [62, 6, 2]]
+];
 function gSolo(done) {
   const tok = TOK; E.duck(.05);
-  const order = shuffle(Object.keys(SOLOISTS)).slice(0, 4);
-  let i = 0, right = 0, combo = 0, pts = 0, answered = false, reps = 1;
+  /* 四段：每组至少一段，第四段随机 */
+  const order = shuffle([...SOLO_FAM.map(f => shuffle(f)[0]), shuffle(Object.keys(SOLOISTS))[0]]);
+  let i = 0, right = 0, combo = 0, pts = 0, answered = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds">${order.map(() => '<i></i>').join('')}</div><p class="status" id="sstat"></p>
     <div class="orch" aria-hidden="true">${['🎻', '🎺', '🪈', '🎹', '🪕'].map(x => `<span>${x}</span>`).join('')}</div>
-    <div class="row" style="justify-content:center"><button class="btn ghost sm" id="srep">再听一遍（1）</button></div><div class="ear-opts" id="sopts"></div>`;
+    <p class="mnote" style="text-align:center">每段只放一次</p><div class="ear-opts" id="sopts"></div>`;
   const cb = comboEl(); $('#miniBody').appendChild(cb);
-  const play = () => { const k = order[i]; E.playClip(bus => { const b = 60 / 92, t0 = now() + .2; [[0, [48, 55, 64]], [4, [43, 50, 59]], [6, [48, 55, 64]]].forEach(([s, v]) => v.forEach(m => strings(bus, t0 + s * b, m, (s === 4 ? 2 : 4) * b, .012, { att: .3, cut: 1400 }))); SOLO_MEL.forEach(([m, s, d]) => SOLOISTS[k][1](bus, t0 + s * b, m, d * b)); return 8 * b + 1.4 }, .05) };
+  /* 整个乐团一起：弦乐铺底、竖琴分解和弦、低音、另一件乐器吹副旋律，独奏只比它们响一点 */
+  const play = () => { const k = order[i], mel = SOLO_MELS[i % SOLO_MELS.length], other = shuffle(Object.keys(SOLOISTS).filter(x => !SOLO_FAM.find(f => f.includes(k)).includes(x)))[0]; E.playClip(bus => {
+    const b = 60 / 92, t0 = now() + .2, CH = [[0, [48, 55, 64]], [2, [45, 52, 60]], [4, [43, 50, 59]], [6, [48, 55, 64]]];
+    CH.forEach(([s, v]) => { v.forEach(m => strings(bus, t0 + s * b, m, 2 * b, .016, { att: .25, cut: 1600 })); tone(bus, t0 + s * b, v[0] - 12, 1.9 * b, { type: 'triangle', gain: .16, cut: 500 }); for (let q = 0; q < 4; q++) harp(bus, t0 + (s + q / 2) * b, [...v, v[0] + 12][q] + 12, .045) });
+    [[67, 0, 2], [65, 2, 2], [62, 4, 2], [64, 6, 2]].forEach(([m, s, d]) => SOLOISTS[other][1](bus, t0 + s * b, m - 5, d * b * .9));
+    mel.forEach(([m, s, d]) => SOLOISTS[k][1](bus, t0 + s * b, m, d * b)); return 8 * b + 1.4 }, .05) };
   const ask = () => {
     if (tok !== TOK) return;
     if (i >= order.length) return done(Math.min(1, pts / (order.length * 1.2)), `四段对了 ${right} 段。`);
-    answered = false; reps = 1; $('#srep').disabled = false; $('#srep').textContent = '再听一遍（1）';
-    const opts = shuffle([order[i], ...shuffle(Object.keys(SOLOISTS).filter(k => k !== order[i])).slice(0, 3)]);
+    answered = false;
+    const fam = SOLO_FAM.find(f => f.includes(order[i]));
+    const opts = shuffle([...fam, ...shuffle(Object.keys(SOLOISTS).filter(k => !fam.includes(k))).slice(0, 4 - fam.length)]);
     $('#sstat').textContent = `第 ${i + 1} / ${order.length} 段 · 主旋律是哪件乐器？`;
     $('#sopts').innerHTML = opts.map(k => `<button class="btn ghost ear-o" data-s="${k}">${SOLOISTS[k][0]}</button>`).join('');
-    $$('#sopts .ear-o').forEach((b, j) => b.onclick = () => answer(b.dataset.s));
-    setTimeout(play, 300);
+    $$('#sopts .ear-o').forEach(b => b.onclick = () => answer(b.dataset.s));
+    setTimeout(() => { if (tok === TOK && !answered) play() }, 300);
   };
   const answer = k => {
     if (answered) return; answered = true; const ok = k === order[i];
@@ -353,7 +368,6 @@ function gSolo(done) {
     if (ok) { right++; combo++; pts += 1 + Math.min(combo - 1, 2) * .1; sfxGood() } else { combo = 0; sfxBuzz() }
     setCombo(cb, combo); i++; setTimeout(ask, 1400);
   };
-  $('#srep').onclick = () => { if (answered || reps <= 0) return; reps--; $('#srep').disabled = true; play() };
   KEYH = e => { const k = '1234'.indexOf(e.key); const b = $$('#sopts .ear-o')[k]; if (k >= 0 && b) { answer(b.dataset.s); return true } };
   ask();
 }
@@ -361,26 +375,30 @@ function gSolo(done) {
 /* ---------- 7. 主舞台救场：数着小节敲过门 ---------- */
 function gFill(done) {
   const tok = TOK; E.duck(.0001);
-  const rounds = [{ bars: 4, show: true, bpm: 100 }, { bars: 4, show: false, bpm: 100 }, { bars: 8, show: false, bpm: 108 }];
+  const rounds = [{ bars: 4, n: 4, bpm: 100 }, { bars: 4, n: 4, bpm: 100, fake: 2 }, { bars: 6, n: 3, bpm: 112 }];
   let r = 0, errs = [], live = false, target = 0, tapped = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div><p class="status" id="fstat"></p>
     <div class="barcount" id="bars"></div>
     <button class="cymbal" id="cym" aria-label="敲镲"><span>镲</span></button><p class="mnote" style="text-align:center">按空格，或点这面镲</p>`;
-  const groove = (bus, t0, beat, bars) => {
-    for (let b = 0; b < bars; b++) for (let q = 0; q < 4; q++) { const t = t0 + (b * 4 + q) * beat; kick(bus, t, q % 2 ? .4 : .8); if (q % 2) snare(bus, t, .18); hat(bus, t, .05); hat(bus, t + beat / 2, .035); if (q === 0) tone(bus, t, [36, 33, 41, 43][b % 4], beat * 3.6, { type: 'triangle', gain: .22, cut: 700 }) }
-    kick(bus, t0 + bars * 4 * beat, .9); nhit(bus, t0 + bars * 4 * beat, { g: .2, f: 4500, d: 1.2 });
+  const groove = (bus, t0, beat, bars, n, fake) => {
+    for (let b = 0; b < bars; b++) for (let q = 0; q < n; q++) {
+      const t = t0 + (b * n + q) * beat;
+      if (fake && b === fake - 1 && q === n - 1) { [0, .25, .5, .75].forEach((o, k) => snare(bus, t + o * beat, .12 + k * .04)); continue }  /* 假过门：骗你提前敲 */
+      kick(bus, t, q === 0 ? .8 : .4); if (n === 4 ? q % 2 : q) snare(bus, t, .18); hat(bus, t, .05); hat(bus, t + beat / 2, .035); if (q === 0) tone(bus, t, [36, 33, 41, 43, 38, 43][b % 6], beat * (n - .4), { type: 'triangle', gain: .22, cut: 700 })
+    }
+    kick(bus, t0 + bars * n * beat, .9); nhit(bus, t0 + bars * n * beat, { g: .2, f: 4500, d: 1.2 });
   };
   const go = () => {
     if (tok !== TOK) return;
     if (r >= rounds.length) { const sc = errs.map(e => e == null ? 0 : Math.max(0, 1 - Math.max(0, e - 30) / 220)); return done(sc.reduce((a, b) => a + b, 0) / rounds.length, `三轮的偏差：${errs.map(e => e == null ? '没敲' : Math.round(e) + ' 毫秒').join('、')}。`) }
-    const R = rounds[r], beat = 60 / R.bpm, t0 = now() + .8; target = t0 + (R.bars * 4 - 1) * beat; tapped = false; live = true;
-    $('#fstat').textContent = `第 ${r + 1} 轮 · 在第 ${R.bars} 小节的最后一拍敲镲${R.show ? '（这轮有小节提示）' : '（没有提示，自己数）'}`;
-    $('#bars').innerHTML = R.show ? Array.from({ length: R.bars }, (_, b) => `<i>${b + 1}</i>`).join('') : '<em>自己数：一小节四拍</em>';
-    E.playClip(bus => { groove(bus, t0, beat, R.bars); if (R.show) for (let b = 0; b < R.bars; b++) E.later(() => { const el = $$('#bars i')[b]; el && el.classList.add('on') }, (t0 + b * 4 * beat - now()) * 1000); return R.bars * 4 * beat + 2 }, 1, () => {
+    const R = rounds[r], beat = 60 / R.bpm, t0 = now() + .8; target = t0 + (R.bars * R.n - 1) * beat; tapped = false; live = true;
+    $('#fstat').textContent = `第 ${r + 1} 轮 · 在第 ${R.bars} 小节的最后一拍敲镲${R.fake ? '（小心鼓手的假过门）' : ''}`;
+    $('#bars').innerHTML = `<em>自己数：一小节 ${R.n} 拍${R.n === 3 ? '（三拍子：强、弱、弱）' : ''}</em>`;
+    E.playClip(bus => { groove(bus, t0, beat, R.bars, R.n, R.fake); return R.bars * R.n * beat + 2 }, 1, () => {
       if (tok !== TOK) return; live = false; if (!tapped) { errs.push(null); $$('#rounds i')[r].className = 'no' } r++; setTimeout(go, 900) });
   };
   const tap = () => {
-    if (!live || tapped) return; const t = now() - LAT(); if (t < target - 2) return;
+    if (!live || tapped) return; const t = now() - LAT(); if (t < target - 30) return;  /* 敲早了也算这一轮的那一下（假过门就是用来骗你的） */
     tapped = true; const e = Math.abs(t - target) * 1000; errs.push(e);
     nhit(E.sfx, now(), { g: .4, f: 5000, d: 1.1 }); snare(E.sfx, now(), .25);
     const el = $('#cym'); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 160);
@@ -439,17 +457,17 @@ function gSimon(done) {
   const sound = (i, t, out) => { keys(out || E.sfx, t, PADS[i][0] + 12, .4, .14); bell(out || E.sfx, t, PADS[i][0] + 24, .02) };
   const grow = () => {
     if (tok !== TOK) return;
-    seq.push(Math.floor(Math.random() * PADS.length)); if (seq.length < 3) return grow();
-    pos = 0; canTap = false; speed = Math.max(.3, .58 - (seq.length - 3) * .035);
-    $('#smstat').textContent = `第 ${seq.length - 2} 轮 · 听……`;
-    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => { sound(p, t0 + k * speed, bus); E.later(() => flash(p, speed * .7), (.4 + k * speed) * 1000) }); return seq.length * speed + .6 }, .05,
+    seq.push(Math.floor(Math.random() * PADS.length)); if (seq.length < 4) return grow();
+    pos = 0; canTap = false; speed = Math.max(.24, .5 - (seq.length - 4) * .045);
+    $('#smstat').textContent = `第 ${seq.length - 3} 轮 · 只听，不看……`;
+    E.playClip(bus => { const t0 = now() + .4; seq.forEach((p, k) => sound(p, t0 + k * speed, bus));  /* 放的时候键不亮 */ return seq.length * speed + .6 }, .05,
       () => { if (tok !== TOK) return; canTap = true; $('#smstat').textContent = '轮到你了'; });
   };
   const press = i => {
     if (!canTap) return; sound(i, now()); flash(i, .2);
     if (i !== seq[pos]) { canTap = false; sfxBuzz(); pads[seq[pos]].classList.add('want'); const got = seq.length - 1;
       $('#smstat').textContent = `错了。正确的是第 ${seq[pos] + 1} 个键。`;
-      setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, (got - 2) / 7)), `你记住了 ${got} 个音的旋律${PROG.best && PROG.best.simonLen ? `，之前的纪录是 ${PROG.best.simonLen} 个` : ''}。`); PROG.best = PROG.best || {}; PROG.best.simonLen = Math.max(PROG.best.simonLen || 0, got) }, 1500); return }
+      setTimeout(() => { if (tok === TOK) done(Math.max(0, Math.min(1, (got - 3) / 7)), `你记住了 ${got} 个音的旋律${PROG.best && PROG.best.simonLen ? `，之前的纪录是 ${PROG.best.simonLen} 个` : ''}。`); PROG.best = PROG.best || {}; PROG.best.simonLen = Math.max(PROG.best.simonLen || 0, got) }, 1500); return }
     pos++; if (pos >= seq.length) { canTap = false; $('#smlen').textContent = `长度 ${seq.length}`; sfxGood(); if (seq.length >= 12) return setTimeout(() => done(1, `你记住了全部 ${seq.length} 个音！`), 900); setTimeout(grow, 900) }
   };
   pads.forEach((p, i) => p.addEventListener('pointerdown', e => { e.preventDefault(); press(i) }));

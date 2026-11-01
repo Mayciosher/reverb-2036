@@ -189,10 +189,12 @@ function fateMelody(bus, notes) {
 /* 片段播放器。事件格式：[第几拍, 乐器, 音高, 时值(拍), 力度, 音分偏差] */
 function sched(bus, o) {
   const b = 60 / o.bpm, t0 = now() + .1; let end = 0;
+  if (o.space) bus = spaceBus(bus, o.space);
   o.ev.forEach(([s, k, m, d = 1, g = 1, ct = 0]) => {
     const t = t0 + s * b, dd = d * b, mm = m + ct / 100; end = Math.max(end, s + d);
     switch (k) {
       case 'p': keys(bus, t, mm, dd * .95, .1 * g); break;
+      case 'ep': epKeys(bus, t, mm, dd * .95, .08 * g); break;
       case 'pc': keys(bus, t, mm, dd * .9, .035 * g); break;
       case 'b': tone(bus, t, mm, dd * .85, { type: 'triangle', gain: .3 * g, rel: .12, cut: 900 }); break;
       case 'k': kick(bus, t, .5 * g); break;
@@ -214,6 +216,21 @@ function sched(bus, o) {
     }
   });
   return end * b + 1.3;
+}
+/* 空间感：用一段人工生成的“回声样本”（脉冲响应）模拟不同的房间
+   near 贴耳的小房间：几乎没有回声；hall 大教堂：回声又长又大；bath 浴室：回声短，但很亮、有金属感 */
+const SPACES = { near: { len: .25, decay: 9, dry: 1, wet: .12, bright: .3 }, hall: { len: 4.5, decay: 1.6, dry: .45, wet: 1.1, bright: .45, pre: .05 }, bath: { len: .9, decay: 4.5, dry: .7, wet: .75, bright: 1, taps: true } };
+function spaceBus(out, kind) {
+  const c = E.ctx, S = SPACES[kind], rate = c.sampleRate, n = Math.floor(S.len * rate), ir = c.createBuffer(2, n, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch); let lp = 0;
+    for (let i = 0; i < n; i++) { const x = i / rate; let v = (Math.random() * 2 - 1) * Math.exp(-S.decay * x); if (S.pre && x < S.pre) v = 0; lp += (v - lp) * S.bright; d[i] = lp }
+    if (S.taps) [.011, .017, .023, .031, .037, .044, .052].forEach((tt, k) => { const i = Math.floor(tt * rate) + ch * 7; if (i < n) d[i] += (k % 2 ? -.7 : .8) * (1 - k * .1) });
+  }
+  const inp = c.createGain(), dry = c.createGain(), wet = c.createGain(), cv = c.createConvolver();
+  cv.buffer = ir; dry.gain.value = S.dry; wet.gain.value = S.wet;
+  inp.connect(dry); dry.connect(out); inp.connect(cv); cv.connect(wet); wet.connect(out);
+  return inp;
 }
 /* 人声：锯齿波过两个共振峰，像在唱“啊”。vo 自然（从下面滑上来，慢慢颤动）；vr 修过头（音直接跳，没有颤动）；vw 颤得又快又抖 */
 function voice(out, t, midi, d, g, mode) {
@@ -289,11 +306,6 @@ const TASKS = {
     opts: ['warm', 'tri', 'saw'].map(inst => ({ ok: inst === 'warm', o: { bpm: 80, ev: [...melEv([[72, 0, 1], [71, 1, .5], [69, 1.5, .5], [67, 2, 1.5], [64, 3.5, .5], [65, 4, 1], [67, 5, 1], [64, 6, 2]], inst), ...chordEv([[0, C_], [2, G_], [4, F_], [6, C_]], 2, .7)] } })),
     why: '温暖的音色<b>泛音少、起音慢</b>，像吹出来的气。三角波起音太硬，像电子琴的提示音；带共振的锯齿波有鼻音和电流感。'
   },
-  cadence: {
-    who: '内心', brief: '最后一句，要听起来<b>真的结束了</b>。小心，有一版很会骗人。',
-    opts: [[60, C_], [67, G_], [60, Am_]].map(([end, ch], i) => ({ ok: i === 0, o: { bpm: 88, ev: [...melEv([[64, 0, 1], [65, 1, 1], [67, 2, 1], [69, 3, 1], [67, 4, 1], [65, 5, 1], [64, 6, 1], [62, 7, 1], [end, 8, 3]]), ...chordEv([[0, C_], [4, F_], [6, G_], [8, ch]], 2), [8, 'b', ch[0], 3], ...ch[1].map(m => [8, 'pc', m, 3])] } })),
-    why: '只有一版是<b>完全终止</b>：G 和弦走到 C 和弦，旋律落在 1（Do）。有一版停在 G 上，叫<b>半终止</b>，像逗号。最会骗人的那版，旋律也落在 Do，但和弦换成了 Am，叫<b>假终止</b>，耳朵会觉得“还没完”。'
-  },
   breath: {
     who: '动感单车课', brief: '最后一分钟冲刺。耳机里传来三位学员的呼吸声，听出<b>哪一位已经喘不上来</b>，需要让他先停下。',
     opts: (() => {
@@ -316,15 +328,15 @@ const TASKS = {
     })(),
     why: '人说话的声音集中在<b>中频</b>。一版有很响的长笛旋律，正好落在说话的频段，客人会不自觉地提高嗓门；一版鼓又密又响，整个店都会变吵。对的那版没有突出的旋律，音量轻、音区偏低，给说话留出了空间。'
   },
-  /* 人声制作人：三条都修过音，挑一条听起来还像真人在唱的 */
-  tuneoff: {
-    who: '歌手', brief: '三条人声都修过音。挑一条<b>听起来还像真人在唱</b>的：有一点气息、有一点自然的颤动。',
+  /* 人声制作人：同一条人声，三种空间感（混响） */
+  space: {
+    who: '歌手', brief: '歌手说：“这首歌要像<b>在小房间里，贴着你耳朵唱</b>。”三版混音的人声一模一样，只是“放”在了不同的空间里。',
     opts: (() => {
-      const mel = [[64, 0, 1], [67, 1, 1], [69, 2, 1.5], [67, 3.5, .5], [64, 4, 1], [62, 5, 1], [64, 6, 2]];
-      const acc = chordEv([[0, C_], [2, F_], [4, G_], [6, C_]], 2, .7);
-      return [['vo', true], ['vr', false], ['vw', false]].map(([k, ok]) => ({ ok, o: { bpm: 80, ev: [...melEv(mel, k), ...acc] } }));
+      const mel = [[67, 0, 1], [69, 1, .5], [67, 1.5, .5], [64, 2, 1.5], [62, 3.5, .5], [60, 4, 1], [62, 5, 1], [64, 6, 2]];
+      const acc = chordEv([[0, C_], [2, Am_], [4, F_], [6, G_]], 2, .5);
+      return ['near', 'hall', 'bath'].map((sp, i) => ({ ok: i === 0, o: { bpm: 72, space: sp, ev: [...melEv(mel, 'vo', 1.1), ...acc] } }));
     })(),
-    why: '对的那条，每个音开头会从下面轻轻“滑”上来，拉长的音带着慢慢的颤动，像人在呼吸。另一条修得太狠了：音和音之间<b>一下子跳过去</b>，长音一点颤动都没有，像机器人；还有一条的颤动<b>又快又抖</b>，那是修音软件开过头的副作用。修音是为了让人唱得更好，不是把人修没了。'
+    why: '对的那版几乎没有回声，声音很“近”，像就在你耳边。另一版回声又长又大，每句唱完尾巴还要拖好几秒，那是<b>大教堂</b>；还有一版回声很短，但很亮，带着一点“嗡嗡”的金属感，那是<b>贴满瓷砖的浴室</b>。混音师用混响决定声音“站”在哪里。'
   },
   /* 酒吧驻唱：听客人跑调的哼唱，认出他点的是哪首 */
   hum: {
@@ -341,14 +353,16 @@ const TASKS = {
   },
   /* 音乐老师：三个学生弹同一段，有一个人弹错了一个音 */
   wrongnote: {
-    who: '学生', brief: '你在{place}上课。三个学生弹同一段练习曲，其中<b>有一个人弹错了一个音</b>。听出是谁。',
+    who: '学生', brief: '你在{place}上课。三个学生弹同一段练习曲，每个人的节奏都有一点快慢，但<b>有一个人弹错了一个音</b>，而且错在左手的和弦里。听出是谁。',
     opts: (() => {
-      const mel = [[60, 0, .5], [62, .5, .5], [64, 1, .5], [65, 1.5, .5], [67, 2, 1], [69, 3, .5], [67, 3.5, .5], [65, 4, .5], [64, 4.5, .5], [62, 5, .5], [64, 5.5, .5], [60, 6, 2]];
-      const acc = chordEv([[0, C_], [2, C_], [4, F_], [6, C_]], 2, .55);
-      const take = (sh, wrong) => ({ bpm: 100, ev: [...mel.map(([m, st, d], i) => [st + (i % 3 === 1 ? sh : 0), 'p', m + (i === wrong ? 1 : 0), d, .9]), ...acc] });
-      return [{ ok: true, o: take(.02, 9) }, { ok: false, o: take(-.02, -1) }, { ok: false, o: take(.03, -1) }];
+      const mel = [[67, 0, 1], [72, 1, .5], [71, 1.5, .5], [69, 2, 1], [65, 3, 1], [64, 4, .5], [65, 4.5, .5], [67, 5, 1], [60, 6, 2]];
+      const chs = [[0, [48, 52, 55]], [2, [45, 48, 52]], [4, [41, 45, 48]], [6, [43, 47, 50]]];
+      /* 每个人都有一点点快慢；弹错的人把 F 和弦里的 A 按成了旁边的 A♭（低半音） */
+      const take = (jit, wrong) => ({ bpm: 92, ev: [...mel.map(([m, st, d], i) => [st + jit[i % jit.length], 'p', m, d, .85]),
+        ...chs.flatMap(([st, v], ci) => v.map((m, k) => [st + jit[(ci + k) % jit.length] * .6, 'pc', m + (wrong && ci === 2 && k === 1 ? -1 : 0), 2, 1.3]))] });
+      return [{ ok: true, o: take([.02, -.03, .04, 0, -.02], true) }, { ok: false, o: take([-.03, .03, 0, .04, -.02], false) }, { ok: false, o: take([.04, 0, -.03, .02, .03], false) }];
     })(),
-    why: '弹错的那位，在倒数第三个音上按了<b>旁边的黑键</b>：本来该是 Re，他弹成了升 Re，和下面的和弦撞在一起，会“刺”一下。另外两位节奏有一点点快慢，但音都对。老师的耳朵，要分得清“不一样”和“错了”。'
+    why: '弹错的那位，错在<b>左手的和弦</b>里：第三个和弦本来是 F 大三和弦（F、A、C），他把中间的 A 按成了旁边的 A♭，只差半音，和弦一下子变暗、变“酸”。右手旋律三个人都弹对了。另外两位节奏有一点点快慢，那不算错。老师的耳朵，要分得清“不一样”和“错了”。'
   },
   /* 康复治疗师：看病人走路，选一首速度正好跟上他步伐的音乐 */
   gait: {
@@ -378,9 +392,29 @@ const TASKS = {
     why: '高潮第一拍，是所有声音同时砸下来的那一瞬间：底鼓、贝斯、镲片一起响，舞台灯也在那一刻全亮。早了半拍，拍到的是乐手在等；晚了，彩带和人群跳起来的最高点已经过去。好的现场摄影师靠的是<b>听歌预判</b>，不是看到了再按。'
   }
 };
+/* 你自己：用第二关弹给调音婆婆的 8 个音，编成三个版本。没有对错，选中的那版会成为第四关开场的音乐 */
+const SELF_VER = { fast: '轻快版', slow: '慢版', sad: '悲伤版' };
+function selfNotes() { return PROG.l2notes && PROG.l2notes.length ? PROG.l2notes.slice(0, 8) : [0, 2, 4, 5, 4, 2, 1, 0] }
+function selfVersion(v) {
+  const n = selfNotes();
+  if (v === 'fast') return { bpm: 126, ev: [...n.flatMap((d, i) => [[i * .5, 'ep', SCALE[d] + 12, .45, 1.2], [4 + i * .5, 'ep', SCALE[d] + 12, .45, 1.2]]), ...chordEv([[0, C_], [2, F_], [4, G_], [6, C_]], 2, .7), ...drums(8)] };
+  if (v === 'slow') return { bpm: 56, ev: [...n.map((d, i) => [i, 'p', SCALE[d], 1.3, .9]), ...chordEv([[0, C_], [2, Am_], [4, F_], [6, G_]], 2, .55)] };
+  return { bpm: 62, ev: [...n.map((d, i) => [i, 'p', SELF_MINOR[d], 1.2, .85]), ...chordEv([[0, Am_], [2, F_], [4, Dm_], [6, E_]], 2, .55)] };
+}
+TASKS.self = {
+  who: '你自己', free: true,
+  brief: '凌晨一点，你把第二关弹给调音婆婆的那 8 个音拿出来，编成了三个版本。<b>没有对错</b>，选你最喜欢的一版：它会成为第四关开场时响起的音乐。',
+  get opts() { return ['fast', 'slow', 'sad'].map(v => ({ ok: true, v, o: selfVersion(v) })) }, why: ''
+};
+/* 把选中的那一版变成循环的背景音乐 */
+const CH_SAD = [{ r: 45, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 38, v: [57, 62, 65] }, { r: 40, v: [56, 59, 64] }];
+function playSelfTune(v) {
+  Object.assign(STYLES.self, { mel: selfNotes(), bpm: v === 'fast' ? 118 : v === 'slow' ? 60 : v === 'sad' ? 64 : 76, minor: v === 'sad', fast: v === 'fast', chords: v === 'sad' ? CH_SAD : CH_POP });
+  E.duck(1); E.play('self', ALL.self);
+}
 const L3 = { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: null, place: '', money: 0, good: 0, streak: 0, boost: false, wins: [], fx: {}, shield: 0, aiHelp: 0 };
 const L3_PLACES = ['学校', '自己的工作室', '一家培训机构'];
-const L3_KEYS = ['i', 'right', 'own', 'ai', 'tags', 'picks', 'fav', 'post', 'roles', 'place', 'money', 'good', 'streak', 'boost', 'wins', 'fx', 'shield', 'aiHelp'];
+const L3_KEYS = ['tune', 'i', 'right', 'own', 'ai', 'tags', 'picks', 'fav', 'post', 'roles', 'place', 'money', 'good', 'streak', 'boost', 'wins', 'fx', 'shield', 'aiHelp'];
 function saveL3() { const o = {}; L3_KEYS.forEach(k => o[k] = L3[k]); PROG.l3save = JSON.parse(JSON.stringify(o)); save() }
 /* 按第一关结局“音乐大约占你生活几成”分配今天的身份 */
 function l3Ms() { const e = PROG.l1 && ENDINGS[PROG.l1.id]; return e ? e.ms : (PROG.share ?? 5) }
@@ -391,7 +425,7 @@ function pickRoles() {
   return [...shuffle([...music, ...shuffle(otherPool).slice(0, 6 - n)]), 'self'];
 }
 function roleMusic(role) {
-  if (role.style === 'self') STYLES.self.mel = (PROG.l2notes && PROG.l2notes.length ? PROG.l2notes : [0, 2, 4, 5, 4, 2, 1, 0]);
+  if (role.style === 'self') return playSelfTune(L3.tune);
   E.duck(1); E.play(role.style, ALL[role.style]);
 }
 /* 第二关抽到的三张牌：分到今天的某几单上 */
@@ -406,7 +440,7 @@ function startL3() {
   setView('l3', '');
   E.resetMood(); E.duck(1); KEYH = null;
   if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < L3.roles.length ? l3Task() : l3End() }
-  Object.assign(L3, { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES), money: 0, good: 0, streak: 0, boost: false, wins: [] }, dealTarot());
+  Object.assign(L3, { tune: null, i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES), money: 0, good: 0, streak: 0, boost: false, wins: [] }, dealTarot());
   E.play('synth', ['pad', 'sbass']);
   const ms = l3Ms(), n = L3.roles.slice(0, 6).filter(k => L3_ROLES[k].music).length;
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 2036 年的一天</span><h2 class="big-title">身兼数职的一天</h2>
@@ -419,19 +453,19 @@ function l3Task() {
   const role = L3_ROLES[L3.roles[L3.i]]; if (!role) return l3End();
   const key = L3.roles[L3.i], T = TASKS[role.task], time = L3_TIMES[L3.i], W = L3_WORK[key], fx = L3.fx[L3.i];
   show('l3'); KEYH = null; roleMusic(role); if (window.SCENE) SCENE.l3Role(L3.i, L3.roles);
-  const order = shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
+  const order = T.free ? [0, 1, 2] : shuffle(T.opts.map((_, k) => k)), letters = ['A', 'B', 'C'];
   const pay = Math.round(W.pay * (fx === 'bonus' ? 1.5 : 1) * (L3.boost ? 2 : 1));
   const tag = fx ? `<span class="fxtag ${TAROT_FX[fx][2] ? 'up' : 'down'}">${TAROT_FX[fx][0]}</span>` : '';
   setTimeout(() => { setView('l3', 'task'); TT.intro($('#l3lock .tt')); MO.type($('#l3brief'), T.brief.replace('{place}', L3.place || '学校')); MO.rise($('#l3 .clips'), '.clip') }, 0);
   $('#l3').innerHTML = `<div class="lx-head" id="l3lock">${TT.l3(time, role.name, L3.roles.map(k => L3_PLACE[k]), L3.i)}</div>
     <div class="brief order"><div class="od-h"><b>工作单</b><span>${time} · ${T.who}${role.music ? '' : ' · 音乐以外的工作'}</span></div><p id="l3brief"></p>
-      ${T.pre ? `<button class="btn ghost sm" id="l3pre">▶ ${T.pre.label}</button>` : ''}${T.step ? `<div class="gait" style="--st:${T.step}s"><i></i><i></i><span>他现在的步子</span></div>` : ''}
+      ${T.pre ? `<button class="btn pre-hum" id="l3pre"><span>▶</span> ${T.pre.label}</button>` : ''}${T.step ? `<div class="gait" style="--st:${T.step}s"><i></i><i></i><span>他现在的步子</span></div>` : ''}
       <div class="od-pay"><span>这一单 <b>${W.pay ? yuan(pay) : '不收钱'}</b>${L3.boost ? ' <em class="up">推荐位 ×2</em>' : ''}${tag}</span><span>今天 ${yuan(L3.money)} · 好评 ${L3.good}${L3.streak ? ` · 连续 ${L3.streak}` : ''}</span><span id="l3timer"></span></div>
-      <div class="od-f"><span>${fx ? TAROT_FX[fx][1].replace('第三关有一单，', '这一单：').replace('第三关', '') : ''}</span><button class="od-ai" id="l3ai">听不出来？交给小谱挑</button></div></div>
-    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b></div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>就用 ${letters[j]}</button></div></div>`).join('')}</div>
+      <div class="od-f"><span>${fx ? TAROT_FX[fx][1].replace('第三关有一单，', '这一单：').replace('第三关', '') : ''}</span>${T.free ? '' : '<button class="od-ai" id="l3ai">听不出来？交给小谱挑</button>'}</div></div>
+    <div class="clips">${order.map((k, j) => `<div class="clip cassette" data-o="${k}"><div class="cs-top"><b>${letters[j]}</b>${T.free ? `<span class="cs-ver">${SELF_VER[T.opts[k].v]}</span>` : ''}</div><div class="cs-win"><i class="reel"></i><i class="tape"></i><i class="reel"></i></div><div class="cs-btns"><button class="btn ghost sm" data-p="${k}">▶ 播放</button><button class="btn sm" data-c="${k}" disabled>${T.free ? '选这一版' : `就用 ${letters[j]}`}</button></div></div>`).join('')}</div>
     <div id="l3res"></div>`;
   const playClip = (o, el) => { $$('.clip').forEach(c => c.classList.remove('playing')); el && el.classList.add('playing'); E.playClip(bus => sched(bus, o), .06, () => el && el.classList.remove('playing')) };
-  if (T.pre) $('#l3pre').onclick = () => playClip(T.pre.o, null);
+  if (T.pre) $('#l3pre').onclick = () => { $('#l3pre').classList.add('heard'); playClip(T.pre.o, null) };
   /* 好耳朵：划掉一个错的版本 */
   if (fx === 'hint') { const wrong = order.find(k => !T.opts[k].ok); const el = document.querySelector(`.clip[data-o="${wrong}"]`); el.classList.add('struck'); el.querySelectorAll('button').forEach(b => b.disabled = true) }
   /* 再点一次正在播的那盘磁带，就停下；疲惫：每盘只能听一遍 */
@@ -448,34 +482,48 @@ function l3Task() {
     if (decided) return; decided = true; clearInterval(l3Task._t);
     E.stopClip(); $$('.clip').forEach(c => c.classList.remove('playing')); $$('[data-p]').forEach(x => { x.textContent = '▶ 播放'; x.disabled = false });
     $$('[data-c],#l3ai').forEach(b => { b.disabled = true; b.dataset.done = 1 });
-    const ok = T.opts[k].ok; if (byAI) { L3.ai++; addTags('ai avoid', L3.tags) } else { L3.own++; if (ok) L3.right++ }
-    L3.picks.push({ time, role: key, ok, byAI });
-    $$('.clip').forEach(c => { const kk = +c.dataset.o; if (T.opts[kk].ok) c.classList.add('right'); else if (kk === k) c.classList.add('wrong') });
-    const L = letters[order.indexOf(k)], R = letters[order.findIndex(x => T.opts[x].ok)];
-    const head = late ? `超时了，随手交了 ${L}。${ok ? '碰巧对了。' : `对的是 ${R}。`}` : byAI ? (ok ? `小谱挑了 ${L}，对了。` : `小谱随手挑了 ${L}，挑错了。对的是 ${R}。`) : (ok ? `你挑了 ${L}，对了。` : `你挑了 ${L}，对的其实是 ${R}。`);
-    /* 收入和口碑：挑对拿全款和一份奖励；挑错要返工，扣一半；护身牌能挡一次 */
-    let got = pay, note = '', boostNow = false;
-    if (ok) { L3.good++; L3.streak++; if (W.win) L3.wins.push({ i: L3.i, role: key, win: W.win }); if (L3.streak === 3) { boostNow = true } }
-    else { L3.streak = 0; if (L3.shield > 0 && W.pay) { L3.shield--; note = '护身牌挡了一下：这次不扣钱。' } else { got = Math.round(pay / 2); note = W.pay ? `返工扣了一半，只拿到 ${yuan(got)}。` : '' } }
-    L3.money += W.pay ? got : 0; L3.boost = boostNow;
-    ok ? sfxGood() : sfxBuzz();
-    const ev = role.ev;
-    $('#l3res').innerHTML = `<div class="receipt"><div class="rc-h"><b>${head}</b><span>${W.pay ? (ok ? '+' : '+') + yuan(W.pay ? got : 0) : ''}</span></div>
-        <p class="rc-say">${ok ? W.ok : W.bad}</p>${ok && W.win ? `<p class="rc-win">🎁 ${W.win}</p>` : ''}${note ? `<p class="rc-note">${note}</p>` : ''}${boostNow ? '<p class="rc-win">连续 3 单好评！平台给了你推荐位，下一单报酬翻倍。</p>' : ''}
-        <details class="rc-why"><summary>为什么</summary><p>${T.why}</p><span class="mnote">现在可以把三个版本再听一遍，对比一下。</span></details></div>
+    let head, say, got = 0, note = '', boostNow = false, winNow = '';
+    if (T.free) {
+      /* 你自己：没有对错，只记下你选了哪一版 */
+      const v = T.opts[k].v; L3.tune = v; PROG.l3tune = v; L3.own++; L3.picks.push({ time, role: key, ok: null, free: v });
+      $$('.clip').forEach(c => c.classList.toggle('picked', +c.dataset.o === k)); sfxGood();
+      head = `你选了${SELF_VER[v]}。`; say = `${W.ok}它会在第四关开场时响起。`; playSelfTune(v);
+    } else {
+      const ok = T.opts[k].ok; if (byAI) { L3.ai++; addTags('ai avoid', L3.tags) } else { L3.own++; if (ok) L3.right++ }
+      L3.picks.push({ time, role: key, ok, byAI });
+      $$('.clip').forEach(c => { const kk = +c.dataset.o; if (T.opts[kk].ok) c.classList.add('right'); else if (kk === k) c.classList.add('wrong') });
+      const L = letters[order.indexOf(k)], R = letters[order.findIndex(x => T.opts[x].ok)];
+      head = late ? `超时了，随手交了 ${L}。${ok ? '碰巧对了。' : `对的是 ${R}。`}` : byAI ? (ok ? `小谱挑了 ${L}，对了。` : `小谱随手挑了 ${L}，挑错了。对的是 ${R}。`) : (ok ? `你挑了 ${L}，对了。` : `你挑了 ${L}，对的其实是 ${R}。`);
+      /* 收入和口碑：挑对拿全款和一份奖励；挑错要返工，扣一半；护身牌能挡一次 */
+      got = pay;
+      if (ok) { L3.good++; L3.streak++; if (W.win) { L3.wins.push({ i: L3.i, role: key, win: W.win }); winNow = W.win } if (L3.streak === 3) boostNow = true }
+      else { L3.streak = 0; if (L3.shield > 0 && W.pay) { L3.shield--; note = '护身牌挡了一下：这次不扣钱。' } else { got = Math.round(pay / 2); note = W.pay ? `返工扣了一半，只拿到 ${yuan(got)}。` : '' } }
+      L3.money += W.pay ? got : 0; L3.boost = boostNow; say = ok ? W.ok : W.bad;
+      ok ? sfxGood() : sfxBuzz();
+    }
+    const ev = role.ev, last = L3.i + 1 >= L3.roles.length;
+    /* 答完以后，三盘磁带都还能再听，对比一下 */
+    const replay = `<div class="rc-replay"><span>再听一遍</span>${order.map((kk, j) => `<button class="btn ghost sm${!T.free && T.opts[kk].ok ? ' r' : ''}${kk === k ? ' me' + (T.free ? ' f' : T.opts[kk].ok ? '' : ' x') : ''}" data-rp="${kk}">▶ ${letters[j]}${T.free ? ' ' + SELF_VER[T.opts[kk].v] : T.opts[kk].ok ? ' · 对的' : ''}${kk === k ? ' · 你选的' : ''}</button>`).join('')}</div>`;
+    $('#l3res').innerHTML = `<div class="receipt"><div class="rc-h"><b>${head}</b><span>${W.pay ? '+' + yuan(got) : ''}</span></div>
+        <p class="rc-say">${say}</p>${winNow ? `<p class="rc-win">🎁 ${winNow}</p>` : ''}${note ? `<p class="rc-note">${note}</p>` : ''}${boostNow ? '<p class="rc-win">连续 3 单好评！平台给了你推荐位，下一单报酬翻倍。</p>' : ''}
+        ${replay}${T.why ? `<details class="rc-why"><summary>为什么</summary><p>${T.why}</p></details>` : ''}</div>
       <div class="event"><span class="eyebrow">小插曲 · ${ev.who}</span><p>${ev.say}</p><div class="choices-col">${ev.a.map((a, j) => `<button class="btn ghost" data-ev="${j}">${a[0]}</button>`).join('')}</div></div>`;
+    $$('[data-rp]').forEach(b => b.onclick = () => { const kk = +b.dataset.rp, el = document.querySelector(`.clip[data-o="${kk}"]`); playClip(T.opts[kk].o, el) });
     $$('[data-ev]').forEach(b => b.onclick = () => {
       const a = ev.a[+b.dataset.ev]; addTags(a[1], L3.tags); PROG.log.push({ lv: 3, who: ev.who, say: ev.say, pick: a[0], k: a[1], time });
       /* 插曲的反馈：这个选择记下了什么，会出现在第四关和最后的画像里 */
       const names = a[1].split(' ').filter(x => TRAITS[x]).map(x => `「${TRAITS[x].n}」`).join('');
       $$('[data-ev]').forEach(x => x.disabled = true); b.classList.add('picked');
       const fb = document.createElement('p'); fb.className = 'ev-fb'; fb.innerHTML = `这个选择记下了：${names}<br><small>它会出现在最后的音乐人格画像里。</small>`; b.closest('.event').appendChild(fb);
-      L3.i++; saveL3(); const t = TOK; setTimeout(() => { if (t !== TOK) return; E.stopClip(); L3.i < L3.roles.length ? l3Task() : l3End() }, 1700);
+      L3.i++; saveL3();
+      /* 不自动跳：想再听一遍磁带也可以，听完自己点下一单 */
+      const nx = document.createElement('button'); nx.className = 'btn'; nx.style.alignSelf = 'flex-start'; nx.textContent = last ? '凌晨两点了 →' : '下一单 →';
+      nx.onclick = () => { E.stopClip(); L3.i < L3.roles.length ? l3Task() : l3End() }; b.closest('.event').appendChild(nx); MO.rise(b.closest('.event'));
     });
     $('#l3res').scrollIntoView({ behavior: 'smooth', block: 'start' }); MO.rise($('#l3res'));
   };
   $$('[data-c]').forEach(b => b.onclick = () => decide(+b.dataset.c, false));
-  $('#l3ai').onclick = () => { let k = Math.floor(Math.random() * 3); if (L3.aiHelp > 0) { L3.aiHelp--; k = T.opts.findIndex(o => o.ok) } decide(k, true) };
+  if ($('#l3ai')) $('#l3ai').onclick = () => { let k = Math.floor(Math.random() * 3); if (L3.aiHelp > 0) { L3.aiHelp--; k = T.opts.findIndex(o => o.ok) } decide(k, true) };
   /* 赶工：30 秒内要交 */
   clearInterval(l3Task._t);
   if (fx === 'rush') { let left = 30; const tok = TOK; $('#l3timer').textContent = `⏱ ${left} 秒`; l3Task._t = setInterval(() => { if (tok !== TOK) return clearInterval(l3Task._t); left--; const el = $('#l3timer'); if (el) el.textContent = `⏱ ${left} 秒`; if (left <= 0) { clearInterval(l3Task._t); decide(Math.floor(Math.random() * 3), false, true) } }, 1000) }
@@ -491,33 +539,41 @@ function l3End() {
     $('#l3').innerHTML = `<span class="eyebrow">第三关 · 凌晨 2 点 47 分</span><h2 class="big-title">今天你换了七个身份</h2>
       <p class="lead">${R.map((r, i) => `${L3_TIMES[i]} ${r.name}`).join('，')}。</p>
       <div class="speech"><p>凌晨两点，你在朋友圈写今天的总结。<b>你会写哪一件事？</b></p></div>
-      <div class="choices-col">${opts.map(([t], j) => `<button class="btn ghost" data-fav="${j}">${t}</button>`).join('')}</div>`;
+      <div class="choices-col">${opts.map(([t], j) => `<button class="btn ghost" data-fav="${j}">${t}</button>`).join('')}
+        <div class="own-post"><input id="ownPost" maxlength="40" placeholder="自己写一句（40 字以内）"><button class="btn sm" id="ownGo" disabled>发出去</button></div>
+        <button class="btn ghost" id="noPost">今天什么都不发</button></div>`;
     TT.duo('l3', TT.gen('第三关 · 凌晨 2 点 47 分', '今天的朋友圈', '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order', intro: true });
-    $$('[data-fav]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.fav]; L3.fav = o[1]; L3.post = o[0]; PROG.log.push({ lv: 3, who: '你自己', say: '凌晨两点，你在朋友圈写今天的总结。', pick: o[0], k: '' }); saveL3(); l3End() });
+    const post = (text, fav) => { L3.fav = fav; L3.post = text; PROG.log.push({ lv: 3, who: '你自己', say: '凌晨两点，你在朋友圈写今天的总结。', pick: text || '今天什么都不发', k: '' }); saveL3(); l3End() };
+    $$('[data-fav]').forEach(b => b.onclick = () => { const o = opts[+b.dataset.fav]; post(o[0], o[1]) });
+    $('#ownPost').oninput = () => $('#ownGo').disabled = !$('#ownPost').value.trim();
+    $('#ownPost').onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && $('#ownPost').value.trim()) $('#ownGo').click() };
+    $('#ownGo').onclick = () => post($('#ownPost').value.trim().replace(/[<>&]/g, ''), R.length - 1);
+    $('#noPost').onclick = () => post('', R.length - 1);
     return;
   }
-  const fav = R[L3.fav] || R[R.length - 1], post = L3.post || (L3.wins.find(w => w.i === L3.fav) || {}).win || `今天当了一回${fav.name}`;
+  const fav = R[L3.fav] || R[R.length - 1], post = L3.post === '' ? '' : L3.post || (L3.wins.find(w => w.i === L3.fav) || {}).win || `今天当了一回${fav.name}`;
   const share = Math.round(L3.own / L3.roles.length * 100);
   let t, x;
-  if (L3.own >= L3.roles.length - 1 && L3.right >= L3.roles.length - 2) { t = '靠自己的耳朵'; x = '今天几乎每一单都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
+  const scored = L3.roles.length - 1; /* 最后一单“你自己”没有对错 */
+  if (L3.own >= L3.roles.length - 1 && L3.right >= scored - 1) { t = '靠自己的耳朵'; x = '今天几乎每一单都是你自己听、自己判断的。小谱给你发了一条消息：“你今天几乎没用我。”' }
   else if (L3.own >= Math.ceil(L3.roles.length / 2)) { t = '和小谱搭档'; x = '今天有些判断是你做的，有些交给了小谱。你也说不清，哪些功劳算你的。' }
   else { t = '小谱替你听'; x = '今天大部分的判断都交给了小谱。你有点记不清，今天到底听过些什么。' }
-  if (L3.right >= L3.roles.length - 1) addTags('auth', L3.tags);
+  if (L3.right >= scored) addTags('auth', L3.tags);
   skill('l3', L3.right);
   PROG.best = PROG.best || {}; const prev = PROG.best.l3Money, rec = prev == null || L3.money > prev; if (rec) { PROG.best.l3Money = L3.money; save() }
   $('#l3').innerHTML = `<span class="eyebrow">第三关 · 02:47</span><h2 class="big-title">${t}</h2>
     <div class="dayreceipt"><div class="dr-h"><b>今日账单</b><span>2036 · 02:47</span></div>
-      ${L3.picks.map(p => `<div class="dr-row"><span>${L3_TIMES[L3.picks.indexOf(p)] || ''} ${L3_ROLES[p.role].name}</span><span>${p.ok ? '好评 ★' : '差评'}${p.byAI ? ' · 小谱挑的' : ''}</span></div>`).join('')}
+      ${L3.picks.map(p => `<div class="dr-row"><span>${L3_TIMES[L3.picks.indexOf(p)] || ''} ${L3_ROLES[p.role].name}</span><span>${p.free ? SELF_VER[p.free] : p.ok ? '好评 ★' : '差评'}${p.byAI ? ' · 小谱挑的' : ''}</span></div>`).join('')}
       <div class="dr-sum"><span>今天一共挣了</span><b>${yuan(L3.money)}</b></div>
-      <div class="dr-row"><span>好评</span><span>${L3.good} / ${L3.picks.length}${rec && prev != null ? ' · <b class="up">新纪录</b>' : ''}</span></div>
+      <div class="dr-row"><span>好评</span><span>${L3.good} / ${L3.picks.filter(p => !p.free).length}${rec && prev != null ? ' · <b class="up">新纪录</b>' : ''}</span></div>
       ${L3.wins.length ? `<div class="dr-wins"><b>今天的收获</b>${L3.wins.map(w => `<span>${w.win}</span>`).join('')}</div>` : ''}</div>
     <p class="lead">${x}</p>
-    <p class="lead">凌晨两点，你在朋友圈写下的是：<b>「${post}」</b>。</p>
-    <p class="mnote">现在的背景音乐，是用你在第二关弹给调音婆婆的那 8 个音写成的。</p>
+    <p class="lead">${post ? `凌晨两点，你在朋友圈写下的是：<b>「${post}」</b>。` : '凌晨两点，你打开朋友圈，又关上了。今天什么都没发。'}</p>
+    <p class="mnote">现在的背景音乐，是你凌晨选的${SELF_VER[L3.tune] || '那一版'}，用你在第二关弹给调音婆婆的那 8 个音写成。</p>
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
   TT.duo('l3', TT.gen('第三关 · 02:47', t, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order' });
   $('#l3done').onclick = () => {
-    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); transit(2, startL4);
+    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length, tune: L3.tune }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); transit(2, startL4);
   };
 }
 
@@ -532,7 +588,8 @@ function countTags(...ks) { return PROG.log.filter(x => x.lv === 1 && ks.some(k 
 function startL4() {
   setView('l4', '');
   Object.assign(L4, { notes: [], tags: {}, ans: {}, dom: {} });
-  E.resetMood(); E.duck(1); E.play('orch', ['vln', 'cello', 'harpo']); KEYH = null; if (window.SCENE) SCENE.hall(1);
+  E.resetMood(); E.duck(1); KEYH = null; if (window.SCENE) SCENE.hall(1);
+  const tune = PROG.l3tune; if (tune) playSelfTune(tune); else E.play('orch', ['vln', 'cello', 'harpo']);
   const P = PROG, mem = [];
   const l1 = P.log.filter(x => x.lv === 1 && x.key);
   shuffle(l1).slice(0, 6).sort((a, b) => a.y - b.y).forEach(x => mem.push(`<li><i>${2026 + x.y} · 第 ${x.y} 年</i>${x.who}：“${x.say.replace(/<[^>]+>/g, '').slice(0, 40)}${x.say.length > 40 ? '……' : ''}”<br>你选了<b>「${x.pick}」</b>。</li>`));
@@ -542,8 +599,9 @@ function startL4() {
   $('#l4').innerHTML = `<span class="eyebrow">第四关 · 2036 年 12 月 31 日</span><h2 class="big-title">十年回响</h2>
     <p class="lead">十年的最后一个晚上，你坐在钢琴前，回头看这十年。</p>
     <ul class="memories">${mem.join('')}</ul>
+    ${tune ? `<p class="mnote">现在响起的，是你在第三关凌晨选的${SELF_VER[tune]}：用你第二关弹给调音婆婆的 8 个音写成。</p>` : ''}
     <button class="btn" id="l4go" style="align-self:flex-start">回答最后四个问题</button>`;
-  show('l4'); TT.duo('l4', TT.gen('第四关 · 2036 年 12 月 31 日', '十年回响', '十年的最后一个晚上', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme', intro: true }); $('#l4go').onclick = () => l4Ask(0);
+  show('l4'); TT.duo('l4', TT.gen('第四关 · 2036 年 12 月 31 日', '十年回响', '十年的最后一个晚上', 'l4'), { drop: '.eyebrow,.big-title', mat: 'programme', intro: true }); $('#l4go').onclick = () => { if (tune) E.play('orch', ['vln', 'cello', 'harpo']); l4Ask(0) };
 }
 function l4Questions() { if (window.SCENE) SCENE.hall(2);
   const id = IDEALS[PROG.ideal] || IDEALS.indie;
@@ -714,6 +772,7 @@ function identSection(p) {
    ========================================================= */
 document.addEventListener('keydown', e => {
   if (KEYH && !e.repeat && KEYH(e)) { e.preventDefault(); return }
+  if (document.body.classList.contains('aftering') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const n = $('.after-card'); if (n) n.dispatchEvent(new Event('pointerdown')); return }
   if (!$('#play').hidden && G && !G.lock) { if (e.key === 'ArrowLeft') { e.preventDefault(); choose('L') } if (e.key === 'ArrowRight') { e.preventDefault(); choose('R') } }
   if (!$('#yearbreak').hidden && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#ybGo').click() }
 });

@@ -117,7 +117,7 @@ SMP.onState = st => { const ts = $('#tapSound'); if (!ts) return; if (st === 'lo
    ========================================================= */
 const LEVELS = [
   { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 4 个选择、1 个音乐关卡。数值到极限会遇到人生转折，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
-  { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '大提琴持续音加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
+  { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '很轻的合成垫加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
   { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，有的和音乐有关，有的在别的行业，比例取决于第一关结局里音乐占你生活几成。每个身份都要用耳朵做一个判断，背后还藏着一个选择。', bgmName: '每个身份一段音乐', bgm: '酒吧是爵士三重奏，咖啡馆是 bossa nova，健身房是 house，音乐节是电子舞曲……最后一段，用的是你在第二关弹的旋律。', style: 'jazz' },
   { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
 ];
@@ -151,7 +151,7 @@ function transit(i, next) {
     setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(1)); kick(E.sfx, now(), .9, 90, 40, .25); nhit(E.sfx, now(), { g: .3, type: 'bandpass', f: 700, d: .12 }) }, 1100);
     setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(2)); SCENE.view('p' + Math.min(3, i + 1)); harp(E.sfx, now(), 74, .06) }, 2300);
   }
-  $('#trGo').onclick = go; setTimeout(go, window.SCENE ? 5200 : 2600);
+  $('#trGo').onclick = go;  /* 不自动跳：等玩家自己点「检票入场」 */
 }
 function renderHub() {
   const st = PROG.stage; if (hubSel == null || hubSel > Math.min(st, 3)) hubSel = Math.min(st, 3);
@@ -159,7 +159,7 @@ function renderHub() {
   if (window.SCENE) {
     SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, result: i < st ? levelResult(i) : '', state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
     SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length);
-    SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel') });
+    SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel'); if (i < PROG.stage) openReview(i) });  /* 海报上写着「点我回看」：已完成的关卡点一下直接回看 */
   }
   $('#levels').innerHTML = LEVELS.map((L, i) => {
     const state = i < st ? 'done' : i === st ? 'now' : 'locked';
@@ -349,18 +349,20 @@ function renderUndo() {
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
+  document.body.classList.remove('aftering'); document.querySelectorAll('.after-card').forEach(n => n.remove());
   const card = $('#card'); card.className = 'card enter' + (c.crisis ? ' crisis' : ''); card.style.transform = ''; card.style.opacity = '';
   $('#av').textContent = ch; $('#av').style.background = col;
   $('#who').textContent = c.who; $('#when').textContent = `${2026 + G.year} · 第 ${G.year} 年`; card.dataset.wt = whoType(c);
   const badge = c.crisis ? '<span class="badge">人生岔路</span>' : c.R.mini ? '<span class="badge">音乐关卡</span>' : '';
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
   MO.type($('#say'), badge + badge2 + c.say);
-  $('#src').innerHTML = c.real ? `<button class="src-t" type="button">原型 ▸</button><span class="src-x">${c.real}</span>` : ''; $('#src').hidden = !c.real; $('#src').classList.remove('open');
+  $('#src').innerHTML = c.real ? `<b>原型</b>${c.real}` : ''; $('#src').hidden = !c.real;
   $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}${G.revised ? ` · 改过 ${G.revised} 次` : ''}`;
   const lab = o => `${o.t}${optFx(o, c)}`;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
-  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#yrLock .tt')) }
+  /* 年份标题的大字开场只在年终页放一次，这里直接放在左边 */
+  if ($('#yrLock').dataset.y !== String(G.year)) { $('#yrLock').dataset.y = G.year; $('#yrLock').innerHTML = TT.l1(G.year) }
   renderMeters(); renderUndo();
   /* 先发牌：卡片落到中间，停一下，左右两个选项再出现 */
   const t = TOK; document.body.classList.add('dealing'); clearTimeout(renderCard._t);
@@ -382,15 +384,22 @@ function optFx(o, c) {
   if (!ks.length && !turn) return '';
   return `<span class="fx">${turn}${ks.map(k => `<i data-k="${k}">${STAT[k]}</i>`).join('')}</span>`;
 }
-document.addEventListener('pointerdown', e => { if (e.target.closest('.src-t')) e.stopPropagation() }, true);
-document.addEventListener('click', e => { const b = e.target.closest('.src-t'); if (b) { e.stopPropagation(); const p = b.parentNode; p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '原型 ▾' : '原型 ▸' } }, true);
-/* 选完以后，桌上出现一张小纸条：“后来……”。点一下或等几秒，继续下一张 */
+/* 选完以后，卡片的位置翻出一张“后来”卡：盖章、打字机写出后来的事。
+   不会自己消失，点一下才继续；这时左右两个选项先藏起来 */
 function showAfter(text, done) {
   if (!text) { setTimeout(done, 250); return }
-  const n = document.createElement('div'); n.className = 'after-note'; n.innerHTML = `<i>后来</i><p>${text.replace(/^后来/, '')}</p><small>点一下继续</small>`;
-  ($('#play .table') || document.body).appendChild(n); G.lock = true;
-  let gone = false; const go = () => { if (gone) return; gone = true; n.classList.add('out'); setTimeout(() => { n.remove(); done() }, 220) };
-  n.addEventListener('pointerdown', go); setTimeout(go, 1200 + text.length * 70);
+  const n = document.createElement('div'); n.className = 'after-card';
+  n.innerHTML = `<div class="ac-in"><div class="ac-h"><span class="ac-stamp">后来</span><span class="ac-line"></span></div><p></p><small>点一下继续 ▸</small></div>`;
+  ($('#play .table') || document.body).appendChild(n); G.lock = true; document.body.classList.add('aftering');
+  let ready = false, gone = false;
+  const p = n.querySelector('p');
+  setTimeout(() => { if (!gone) MO.type(p, text.replace(/^后来[，,]?/, ''), { perChar: 38 }).then(() => { ready = true; n.classList.add('ready') }) }, MO.reduce ? 0 : 650);
+  const go = () => {
+    if (gone) return;
+    if (!ready) { ready = true; if (!p.textContent) p.textContent = text.replace(/^后来[，,]?/, ''); else p.click(); n.classList.add('ready'); return }  /* 第一下：先把字显示全 */
+    gone = true; n.classList.add('out'); document.body.classList.remove('aftering'); setTimeout(() => { n.remove(); done() }, 280);
+  };
+  n.addEventListener('pointerdown', go);
 }
 function preview(side) {
   KEYS.forEach(k => {
@@ -454,13 +463,13 @@ function renderMeters() {
 }
 function updateMood() {
   if (!G) return; const s = G.s;
-  let d = 0; KEYS.forEach(k => { const v = s[k]; if (v <= 20) d = Math.max(d, (22 - v) / 22); if (v >= 80) d = Math.max(d, (v - 78) / 22) });
+  let d = 0; KEYS.forEach(k => { const v = s[k]; if (v <= 20) d = Math.max(d, (22 - v) / 22) }); /* 只有数值太低才紧张；数值高是高光，不报警 */
   E.mood = { danger: d, love: s.l / 100, orig: s.o / 100 }; E.tempoMul = 1 + .05 * d; if (window.SCENE) SCENE.danger(d); document.body.classList.toggle('danger', d > .3);
   if (E.ctx) E.lp.frequency.setTargetAtTime(d > .05 ? 18000 * Math.pow(1500 / 18000, d) : 18000, now(), .4);
   if (E.styleKey === 'lofi') E.setLayer('heart', d > .15);
   if (window.ALARM) ALARM.check(s);
   const notes = [];
-  if (d > .15) notes.push('有数值快到极限了，所以出现了心跳声，声音变闷，节奏变快。');
+  if (d > .15) notes.push('有数值太低了，所以出现了心跳声，声音变闷，节奏变快。');
   if (s.l < 30) notes.push('热爱太低，钢琴开始走音。');
   if (s.o < 35) notes.push('原创太低，节奏不再摇摆，长笛（第 7 年起）变成机器音色。');
   const n = STYLES.lofi.layers.filter(L => E.layers[L.name] && !L.hot).length;
