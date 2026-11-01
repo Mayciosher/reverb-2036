@@ -33,8 +33,8 @@ function startL2() {
   E.resetMood(); E.duck(1); E.play('mystic', ALL.mystic); KEYH = null;
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 2036 年 12 月</span><h2 class="big-title">音乐命运签</h2>
     <p class="lead">十年过去了。一个下雪的晚上，你路过一家没有招牌的小店，门口挂着一块木牌：<b>「回声铺」</b>。</p>
-    <p class="lead">店里坐着一位眼睛看不见的调音婆婆。她不看手相，也不看八字，只听音乐。</p>
-    <div class="speech"><p>“坐吧。随手弹 8 个音给我听。我能听出你这十年是怎么过的，也能告诉你，下一个十年会遇到什么。”</p></div>
+    <div class="speech"><p>“坐吧。随手弹 8 个音给我听。我能听出你是哪一种音乐人，也能告诉你，下一个十年会遇到什么。”</p></div>
+    <h3 class="rules-h">游戏规则</h3><ol class="rules">${RULES.l2.map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('')}</ol>
     <button class="btn" id="l2go" style="align-self:flex-start">坐下来</button>`;
   show('l2'); TT.duo('l2', TT.l2('音乐命运签', '2036 年冬 · 一家没有招牌的小店', 0), { drop: '.eyebrow,.big-title', mat: 'letter', intro: true }); $('#l2go').onclick = l2Play;
 }
@@ -66,23 +66,26 @@ function analyzeMelody(a) {
   if (avg >= 4.5) add('ideal');
   return { v, why };
 }
+/* 命盘：不复述你做过什么，而是告诉你“你是哪一种音乐人”，优点、盲点和一句能马上去做的建议 */
 function l2Read() {
   setView('l2', '');
-  const tok = TOK; E.duck(1);
+  E.duck(1);
   const { v, why } = analyzeMelody(L2.notes); for (const k in v) L2.tags[k] = (L2.tags[k] || 0) + v[k];
-  const l1 = PROG.log.filter(x => x.lv === 1 && x.k);
-  const keyLog = shuffle(l1.filter(x => x.key)).slice(0, 2).sort((a, b) => a.y - b.y);
-  const lines = [`“${why[0]}。”`, `“${why[1]}。”`];
-  keyLog.forEach(x => { const t = x.k.split(' ')[0]; lines.push(`“第 ${x.y} 年，${x.who}找过你。你选了<b>「${x.pick}」</b>。那一下，你心里的「${TRAITS[t].n}」占了上风。”`) });
-  if (PROG.l1) lines.push(`“十年以后，你成了<b>「${ENDINGS[PROG.l1.id].t}」</b>。”她停了一下，“你自己满意吗？不用回答我。”`);
-  lines.push('“好了，过去的事说完了。来，抽三张牌，我们看看下一个十年。”');
-  $('#l2').innerHTML = `<span class="eyebrow">第二关 · 二</span><h2 class="big-title">她听见了你的十年</h2><div class="speech" id="l2sp"></div><button class="btn" id="l2next" style="align-self:flex-start" hidden>抽牌</button>`;
-  TT.duo('l2', TT.l2('她听见了你的十年', '回声铺 · 婆婆在说', .4), { drop: '.eyebrow,.big-title', mat: 'letter' });
-  lines.forEach((ln, i) => setTimeout(() => {
-    if (tok !== TOK) return; const p = document.createElement('p'); p.innerHTML = ln; $('#l2sp').appendChild(p);
-    harp(E.sfx, now(), [62, 66, 69, 74, 70, 67, 74][i % 7], .05);
-    if (i === lines.length - 1) $('#l2next').hidden = false;
-  }, 900 + i * 1700));
+  const { T, keys } = rankTraits(L2.tags), top = keys[0], second = keys.find(k => k !== top) || top;
+  const flaw = FLAWY.filter(k => k !== top).sort((a, b) => (T[b] || 0) - (T[a] || 0))[0];
+  L2.chart = { type: CHART_TYPE[top] + '音乐人', top, second, flaw };
+  $('#l2').innerHTML = `<article class="chart">
+      <div class="ch-h"><span>回声铺 · 命盘</span><b>你是「${CHART_TYPE[top]}音乐人」</b><em>副倾向：${TRAITS[second].n}</em></div>
+      <dl>
+        <dt>你的 8 个音说</dt><dd>${why.slice(0, 2).join('。')}。</dd>
+        <dt>你的长处</dt><dd>${TRAITS[top].s}</dd>
+        <dt>你的盲点</dt><dd>${TRAITS[flaw].w}</dd>
+        <dt>从明天开始</dt><dd><b>${CHART_ADVICE[top]}</b></dd>
+      </dl></article>
+    <div class="speech"><p>“命盘看完了。来，抽三张牌。它们会跟着你，走进 2036 年的那一天。”</p></div>
+    <button class="btn" id="l2next" style="align-self:flex-start">抽牌</button>`;
+  TT.duo('l2', TT.l2('你的命盘', '回声铺 · 婆婆在说', .4), { mat: 'letter', intro: true });
+  harp(E.sfx, now(), 74, .05); MO.rise($('#l2 .chart dl'));
   $('#l2next').onclick = l2Cards;
 }
 function l2Cards() {
@@ -103,7 +106,7 @@ function l2Cards() {
     c.querySelector('.face small').textContent = pos[k]; c.classList.add('flip');
     const sc = STYLES.mystic.scale, t = now();[0, 2, 4].forEach((d, j) => harp(E.sfx, t + j * .12, sc[(i + d) % 8] + 12, .07));
     for (const kk in TAROT[i].v) L2.tags[kk] = (L2.tags[kk] || 0) + TAROT[i].v[kk] * (k === 2 ? 1.5 : 1);
-    const slot = $$('#spread div')[k]; slot.innerHTML = `<b>${pos[k]}</b>「${TAROT[i].n}」${TAROT[i].mean}`; slot.classList.add('got'); MO.rise($('#spread'), 'div.got:last-of-type');
+    const slot = $$('#spread div')[k], F = TAROT_FX[TAROT[i].fx]; slot.innerHTML = `<b>${pos[k]}</b>「${TAROT[i].n}」${TAROT[i].mean}<em class="fx3 ${F[2] ? 'up' : 'down'}">第三关 · ${F[0]}：${F[1]}</em>`; slot.classList.add('got'); MO.rise($('#spread'), 'div.got:last-of-type');
     if (L2.picks.length < 3) tip(`“「${TAROT[i].n}」……嗯。下一张是你的<b>${pos[L2.picks.length]}</b>。”`);
     else { tip(`“「${TAROT[i].n}」。三张牌都翻开了。来，我问你三个问题。”`); $$('.tc:not(.flip)').forEach(x => x.classList.add('dim')); if (window.SCENE) SCENE.dimRest(); $('#l2next').hidden = false; MO.rise($('#spread'), '#l2next') }
   };
@@ -129,10 +132,10 @@ function l2Fortune() {
   const title = ADJ[second] + NOUN[top];
   const hk = [...new Set([top, second, flaw, ...keys])].slice(0, 3); const hurdles = hk.map(k => HURDLES[k]);
   const lucky = L2.notes[L2.notes.length - 1];
-  const fortune = { title, top, second, flaw, least, verse: VERSE[top], hurdles, lucky, notes: L2.notes.slice(), picks: L2.picks.slice() };
+  const fortune = { title, top, second, flaw, least, verse: VERSE[top], hurdles, lucky, notes: L2.notes.slice(), picks: L2.picks.slice(), fx: L2.picks.map(i => TAROT[i].fx), chart: L2.chart ? L2.chart.type : '' };
   L2.fortune = fortune;
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 五</span>
-    <article class="fortune"><span class="eyebrow">回声铺 · 下一个十年 · 2036—2046</span><h3>${title}</h3>
+    <article class="fortune"><span class="eyebrow">回声铺签文 · 2036—2046</span><h3>${title}</h3>
       <dl>
         <dt>判词</dt><dd>${fortune.verse}</dd>
         <dt>三道坎</dt><dd><ol>${hurdles.map(h => `<li>${h}</li>`).join('')}</ol></dd>
@@ -140,11 +143,12 @@ function l2Fortune() {
         <dt>要提防</dt><dd>那个「${TRAITS[flaw].n}」的自己。${TRAITS[flaw].w}</dd>
         <dt>幸运乐器</dt><dd>${LUCKY_INST[lucky]}</dd>
         <dt>幸运音</dt><dd>${NUM[lucky]}（${SOLF[lucky]}），你刚才弹的最后一个音</dd>
+        <dt>带进第三关</dt><dd><ul class="fxl">${fortune.fx.map(f => `<li class="${TAROT_FX[f][2] ? 'up' : 'down'}"><b>${TAROT_FX[f][0]}</b>${TAROT_FX[f][1]}</li>`).join('')}</ul></dd>
       </dl>
       <p class="verse">“这支签你收好。十年后，你会知道它准不准。”</p></article>
     <div class="row"><button class="btn" id="l2hear">听你的命运旋律</button><button class="btn ghost" id="l2done">收下这支签，进入第三关</button></div>
     <p class="mnote">命运旋律是用你刚才弹的 8 个音，配上竖琴和弦乐写成的。播放时背景音乐会暂停，播完自动恢复。</p>`;
-  TT.duo('l2', TT.l2('你的签', '2036 → 2046 · 下一个十年', 1), { drop: '.eyebrow', mat: 'letter', intro: true });
+  TT.duo('l2', TT.l2('下一个十年', '2036 → 2046 · 回声铺签文', 1), { drop: '.eyebrow', mat: 'letter', intro: true });
   $('#l2hear').onclick = () => {
     if (E.clipBus) { E.stopClip(); $('#l2hear').textContent = '听你的命运旋律'; return }
     $('#l2hear').textContent = '停止';
