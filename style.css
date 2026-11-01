@@ -907,3 +907,13 @@ body.lx #ideal .ideal-btn{padding:10px 12px}
 body.dealing #play #bL,body.dealing #play #bR{opacity:0;pointer-events:none;transition:opacity .15s ease 0s}
 #play #bL,#play #bR{transition:opacity .35s ease,transform .2s,box-shadow .2s}
 body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .2s,box-shadow .2s}
+/* 选完以后的“后来……”纸条 */
+.after-note{position:absolute;left:50%;top:50%;z-index:6;width:min(420px,90%);transform:translate(-50%,-50%) rotate(-1.5deg);background:#fffaf0;color:#2b2230;border-radius:4px;padding:18px 20px 12px;
+  box-shadow:0 2px 0 #e6d9c6,0 18px 40px rgba(0,0,0,.45);cursor:pointer;animation:afterIn .35s cubic-bezier(.2,1.2,.4,1)}
+.after-note::before{content:"";position:absolute;top:-10px;left:50%;width:76px;height:22px;margin-left:-38px;background:rgba(255,255,255,.6);transform:rotate(2deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.after-note i{font-style:normal;font:700 13px var(--f-display);letter-spacing:.3em;color:#a0522d}
+.after-note p{margin:6px 0 8px;font-size:18px;line-height:1.65}
+.after-note small{display:block;text-align:right;font-size:12px;color:#9a8c96}
+.after-note.out{opacity:0;transform:translate(-50%,-46%) rotate(-1.5deg);transition:.22s}
+@keyframes afterIn{from{opacity:0;transform:translate(-50%,-40%) rotate(-4deg)}}
+#play .table{position:relative}

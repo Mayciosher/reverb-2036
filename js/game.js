@@ -16,7 +16,7 @@ let TOK = 0; /* 每次换页面加一，旧页面里的定时器看到号码变�
 const STORE = 'reverb2036-progress-v3', GSTORE = 'reverb2036-gallery';
 const blank = () => ({ stage: 0, ideal: null, g: null, l1save: null, l1: null, l2: null, l3save: null, l3: null, l4: null, portrait: null, share: null, dom: {}, tags: {}, log: [], skills: {} });
 /* 存档版本号：游戏结构有大改动时加 1，旧存档会被提示重新开始 */
-const SAVE_VERSION = 5;
+const SAVE_VERSION = 6;
 let PROG = blank(), GALLERY = [], OUTDATED = false;
 try {
   const r = localStorage.getItem(STORE);
@@ -103,7 +103,7 @@ function firstSound(e) {
    主页
    ========================================================= */
 const LEVELS = [
-  { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 5 个选择、1 个音乐关卡。数值到极限会遇到人生岔路，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
+  { no: '1', id: 'l1', name: '饿死之前', desc: '2027 到 2036，每年 4 个选择、1 个音乐关卡。数值到极限会遇到人生转折，一共 19 种活法。', bgmName: 'Lo-fi 爵士', bgm: '每过一年多一种乐器，数值越危险，音乐越紧张。', style: 'lofi' },
   { no: '2', id: 'l2', name: '音乐命运签', desc: '十年后的冬天，你走进一家叫「回声铺」的小店。看不见的调音婆婆听你弹 8 个音，说出你的过去，再给你算下一个十年。', bgmName: '神秘竖琴', bgm: '大提琴持续音加竖琴，用的是带东方色彩的弗里吉亚属调式。', style: 'mystic' },
   { no: '3', id: 'l3', name: '2036 · 身兼数职的一天', desc: '2036 年，没有人只做一件事。从早上 8 点到凌晨 2 点，你要换七个身份，有的和音乐有关，有的在别的行业，比例取决于第一关结局里音乐占你生活几成。每个身份都要用耳朵做一个判断，背后还藏着一个选择。', bgmName: '每个身份一段音乐', bgm: '酒吧是爵士三重奏，咖啡馆是 bossa nova，健身房是 house，音乐节是电子舞曲……最后一段，用的是你在第二关弹的旋律。', style: 'jazz' },
   { no: '4', id: 'l4', name: '十年回响', desc: '回看这十年，回答最后四个问题，写一段旋律交给管弦乐团。最后生成你的音乐人格画像和身份光谱，和你开局时的理想对比。', bgmName: '管弦乐', bgm: '弦乐、大提琴、竖琴、圆号、定音鼓。结局好就走向大调，不好就停在小调。', style: 'orch' }
@@ -219,14 +219,18 @@ function yearBreak() {
     G.s.m = Math.max(0, G.s.m - rent); G.s.f = Math.max(0, G.s.f - 3);
     items.push(['生活开销', `钱 −${rent}（约 ${rent} 千元，${where}）`]);
     items.push(['时间', '名气 −3（没人会一直记得你）']);
+    const gig = fameIncome();
+    if (gig) { G.s.m = Math.min(100, G.s.m + gig); items.push(['商演收入', `钱 +${gig}（名气越高，找你演出的越多${G.flags.scandal ? '；你有过争议，品牌和演出商都会压价' : ''}）`]) }
   }
   if (UNLOCK[G.year]) items.push(['新乐器', `${STYLES.lofi.layers.find(L => L.name === UNLOCK[G.year]).label}加入了背景音乐`]);
   items.push(['速度', `每分钟 ${80 + G.year - 1} 拍`]);
-  items.push(['今年', '5 个选择，1 个音乐关卡']);
+  items.push(['今年', '4 个选择，1 个音乐关卡']);
   if (G.year === 10) items.push(['最后一年', '撑过今年，你会得到属于自己的活法']);
   G.yb = items; if (window.SCENE) SCENE.year(G.year); buildQueue(); checkCrisis(); G.cur = null; saveL1();
   renderYB(); show('yearbreak'); applyYearMusic();
 }
+/* 名气变现：名气 40 以上才有人找你商演，每多 10 点多 2 点钱；靠争议红起来的，打对折 */
+function fameIncome() { const f = G.s.f; if (f < 40) return 0; const v = Math.round((f - 40) / 10) * 2; return G.flags.scandal ? Math.floor(v / 2) : v }
 function livingCost() {
   const f = G.flags;
   if (f.smallcity) return [4, '你搬回了小城'];
@@ -237,21 +241,25 @@ function renderYB() {
   $('#ybCal').textContent = `${2026 + G.year} 年`; $('#ybBig').textContent = `第 ${G.year} 年`; $('#ybLock').innerHTML = TT.l1(G.year); TT.introSoon(() => $('#ybLock .tt'));
   $('#ybList').innerHTML = G.yb.map(i => `<li><i>${i[0]}</i><span>${i[1]}</span></li>`).join(''); MO.rise($('#ybList'));
 }
+/* 每年 4 张卡 + 1 个音乐关卡。四个位置：
+   ① 真实故事改编（每年必有）② 他/她的专属卡，或一张深一点的卡 ③ 一张短卡（轻松一点）
+   ④ 浮动：几年前的选择回来找你（回响），或者一个意外；都没有就换成普通卡
+   每局都从题库里随机抽，所以每次遇到的题都不一样 */
 function buildQueue() {
   const y = G.year;
-  const pool = shuffle(CARDS.filter(c => !G.used.includes(c.id) && c.w[0] <= y && y <= c.w[1] && (!c.need || G.flags[c.need]))).sort((a, b) => a.w[1] - b.w[1]);
-  const gender = y <= 8 && G.gLeft.length;
-  let need = gender ? 4 : 5;
-  /* 每年尽量放一张“真实故事改编” */
-  const real = pool.find(c => c.real); const picked = [];
-  if (real) { picked.push(real); need-- }
-  picked.push(...pool.filter(c => c !== real).slice(0, need));
-  let q = picked.map(c => ({ c: c.id }));
-  if (gender) q.push({ c: G.gLeft.shift() });
-  /* 意外：从第 2 年起，每年约四成概率替换掉一张普通卡 */
-  const sLeft = SURPRISES.filter(c => !G.used.includes(c.id));
-  if (y >= 2 && sLeft.length && Math.random() < .5) { const k = q.findIndex(r => !BYID[r.c].real && !/^(she|he)/.test(r.c)); if (k >= 0) q[k] = { c: pick(sLeft).id } }
-  q = shuffle(q); q.splice(2, 0, { m: y });
+  const ok = c => !G.used.includes(c.id) && c.w[0] <= y && y <= c.w[1] && (!c.need || G.flags[c.need]);
+  const pool = shuffle(CARDS.filter(ok));
+  const take = f => { const i = pool.findIndex(f); return i >= 0 ? { c: pool.splice(i, 1)[0].id } : null };
+  const normal = c => !c.fun && !c.need && !c.real;
+  const real = take(c => c.real) || take(normal);
+  const deep = y <= 8 && G.gLeft.length ? { c: G.gLeft.shift() } : take(normal);
+  const fun = take(c => c.fun) || take(normal);
+  let flt = Math.random() < .7 ? take(c => c.need) : null;
+  if (!flt) { const sLeft = SURPRISES.filter(c => !G.used.includes(c.id) && (!c.need || G.flags[c.need])); if (y >= 2 && sLeft.length && Math.random() < .5) { const hot = sLeft.filter(c => c.need); flt = { c: pick(hot.length ? hot : sLeft).id } } }
+  if (!flt) flt = take(normal) || take(() => true);
+  /* 长卡和短卡交替：长、短、音乐关卡、长、长 */
+  const longs = shuffle([real, deep, flt].filter(Boolean));
+  const q = [longs[0], fun, { m: y }, ...longs.slice(1)].filter(Boolean);
   G.queue = q; G.idx = 0; G.total = q.length;
 }
 $('#ybGo').onclick = () => { if ($('#yearbreak').hidden || !G) return; show('play'); nextCard() };
@@ -264,7 +272,7 @@ function resumeL1() {
 }
 function nextCard() {
   if (!G) return;
-  if (!G.queue.length) { if (G.year >= 10) return finishL1(finalEnding(G.s), true); return yearBreak() }
+  if (!G.queue.length) { if (G.year >= 10) return finishL1(G.turn ? G.turn.end : finalEnding(G.s), true); return yearBreak() }
   G.cur = G.queue.shift(); if (!G.cur.x) G.idx++; G.lock = false; G.snapPrev = G.snapCur || null; G.snapCur = snapshot(); saveL1(); renderCard();
 }
 /* 撤回上一步：保存“做上一个选择之前”的完整状态。每局 3 次 */
@@ -274,16 +282,17 @@ function snapshot() {
 }
 function undo() {
   if (!G || G.lock || !G.snapPrev || (G.regrets ?? 3) <= 0) return;
-  const r = G.snapPrev, left = (G.regrets ?? 3) - 1;
+  const r = G.snapPrev, left = (G.regrets ?? 3) - 1, used = (G.regretUsed || 0) + 1;
   G = JSON.parse(JSON.stringify(r.g)); G.regrets = left; G.snapCur = r; G.snapPrev = null; G.lock = false;
   PROG.tags = JSON.parse(JSON.stringify(r.tags)); PROG.log.length = r.logLen; PROG.skills = JSON.parse(JSON.stringify(r.skills));
-  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe();
+  G.s.l = Math.max(0, G.s.l - 3); G.regretUsed = used;
+  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe(); toast('吃了一颗后悔药。热爱 −3', 2200);
 }
 $('#undo').onclick = undo;
 function renderUndo() {
   const left = G.regrets ?? 3, b = $('#undo');
   b.disabled = !G.snapPrev || left <= 0;
-  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗` : '后悔药用完了';
+  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗（每颗热爱 −3）` : '后悔药用完了';
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
@@ -322,6 +331,14 @@ function optFx(o, c) {
 }
 document.addEventListener('pointerdown', e => { if (e.target.closest('.src-t')) e.stopPropagation() }, true);
 document.addEventListener('click', e => { const b = e.target.closest('.src-t'); if (b) { e.stopPropagation(); const p = b.parentNode; p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '原型 ▾' : '原型 ▸' } }, true);
+/* 选完以后，桌上出现一张小纸条：“后来……”。点一下或等几秒，继续下一张 */
+function showAfter(text, done) {
+  if (!text) { setTimeout(done, 250); return }
+  const n = document.createElement('div'); n.className = 'after-note'; n.innerHTML = `<i>后来</i><p>${text.replace(/^后来/, '')}</p><small>点一下继续</small>`;
+  ($('#play .table') || document.body).appendChild(n); G.lock = true;
+  let gone = false; const go = () => { if (gone) return; gone = true; n.classList.add('out'); setTimeout(() => { n.remove(); done() }, 220) };
+  n.addEventListener('pointerdown', go); setTimeout(go, 1200 + text.length * 70);
+}
 function preview(side) {
   KEYS.forEach(k => {
     const m = document.querySelector(`.meter[data-k="${k}"]`), d = m.querySelector('.dot'); d.className = 'dot'; m.classList.remove('hint'); if (!side || !G || !G.cur) return; const opt = resolveCard(G.cur)[side];
@@ -343,9 +360,16 @@ function choose(side) {
   setTimeout(() => {
     if (opt.mini) return startMini(opt.mini);
     commitChoice(c, opt);
-    if (opt.end) return finishL1(opt.end, false);
-    apply(opt.e || {}, opt.reset); G.cur = null; saveL1();
-    setTimeout(nextCard, 250);
+    let after = opt.a;
+    if (opt.end) {
+      /* 人生转折：不提前结束，记下这一次转向，把数值拉回安全的位置，继续把十年走完 */
+      const k = c.crisis.replace(/\d+/, ''), low = /0$/.test(c.crisis) && !/100$/.test(c.crisis);
+      G.turn = { end: opt.end, y: G.year }; G.turns = (G.turns || []).concat(opt.end);
+      if (opt.end === 'ashore' || opt.end === 'hometown') G.flags.smallcity = 1;
+      apply(opt.e || {}, { [k]: low ? 30 : 70 }); after = TURN_AFTER[opt.end] || ''; toast('人生转折：' + ENDINGS[opt.end].t + '。日子还要继续。', 2600);
+    } else apply(opt.e || {}, opt.reset);
+    G.cur = null; saveL1();
+    const t = TOK; showAfter(after, () => { if (t === TOK) nextCard() });
   }, 300);
 }
 function apply(e = {}, reset) {
@@ -437,10 +461,10 @@ function finishL1(id, survived) {
   const en = ENDINGS[id];
   if (en.tone === 'bad') { E.stop(.3); setTimeout(() => { const t0 = now() + .1;[69, 65, 62, 57].forEach((m, i) => keys(E.sfx, t0 + i * .45, m, i === 3 ? 1.6 : .4, .12)) }, 400) }
   else { E.resetMood(); E.play(en.tone === 'good' ? 'orchM' : 'orch', ['vln', 'cello', 'harpo', 'hornm']) }
-  PROG.l1 = { id, stats: { ...G.s }, year: G.year, survived }; PROG.l1save = null; PROG.stage = Math.max(PROG.stage, 1);
+  PROG.l1 = { id, stats: { ...G.s }, year: G.year, survived, regrets: G.regretUsed || 0, turns: G.turns || [] }; PROG.l1save = null; PROG.stage = Math.max(PROG.stage, 1);
   if (!GALLERY.includes(id)) GALLERY.push(id); save();
   const n = PROG.log.filter(x => x.lv === 1).length;
-  $('#endKind').textContent = survived ? '撑过了十年 · 2036' : `第 ${G.year} 年 · 人生岔路`;
+  $('#endKind').textContent = G.turn ? `撑过了十年 · 第 ${G.turn.y} 年的人生转折` : '撑过了十年 · 2036';
   $('#endTitle').textContent = en.t; $('#endText').innerHTML = `${en.x}<br><br>十年后，别人介绍你时会说：<b>${en.who}</b>。音乐大约占你生活的 <b>${en.ms} 成</b>${PROG.share != null ? `（你开局时希望是 ${PROG.share} 成）` : ''}。`;
   $('#final').innerHTML = KEYS.map(k => `<div><b>${G.s[k]}</b><span>${STAT[k]}</span></div>`).join('');
   $('#endMusic').textContent = `这一路你做了 ${n} 个选择，它们会在第四关变成你的音乐人格画像。结局图鉴已解锁 ${GALLERY.filter(k => ENDINGS[k]).length} / ${Object.keys(ENDINGS).length}。`;

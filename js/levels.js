@@ -634,6 +634,7 @@ function identSection(p) {
       : `你开局时以为音乐只占 ${p.share0} 成，按你十年的选择算，它大约占了 ${p.musicNow} 成。也许你低估了自己有多需要它。`;
   const lines = [];
   if (p.endWho) lines.push(`第一关结束时，别人这样介绍你：「${p.endWho}」。`);
+  if (PROG.l1 && PROG.l1.regrets) lines.push(`这十年你吃了 ${PROG.l1.regrets} 颗后悔药。${PROG.l1.regrets >= 3 ? '你很在意把每一步都走对。' : '现实里没有后悔药，你也没怎么用它。'}`);
   if (p.fav) lines.push(`2036 年身兼数职的那一天，你觉得最像自己的身份是「${p.fav}」。`);
   if (p.ans && p.ans.intro) lines.push(`饭局上被问到“你是做什么的”，你回答：${p.ans.intro}`);
   return `<section class="pt-sec"><h4>身份光谱：十年后，你不只是一种人</h4>
