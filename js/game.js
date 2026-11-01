@@ -44,7 +44,7 @@ function avatar(who) { let h = 0; for (const ch of who) h = (h * 31 + ch.charCod
 /* =========================================================
    页面切换
    ========================================================= */
-const TITLES = { ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
+const TITLES = { transit: '回到房间', ideal: '开始之前', intro: '第一关 · 饿死之前', yearbreak: '第一关 · 饿死之前', play: '第一关 · 饿死之前', mini: '第一关 · 音乐关卡', end: '第一关 · 结局', l2: '第二关 · 音乐命运签', l3: '第三关 · 身兼数职的一天', l4: '第四关 · 十年回响', portrait: '音乐人格画像' };
 /* 横屏布局：电脑或横着的平板用横屏排版，手机竖屏保持原来的竖向排版 */
 function updLX() { document.body.classList.toggle('lx', innerWidth >= 960 && innerWidth / innerHeight > 1.15) }
 updLX(); addEventListener('resize', updLX);
@@ -68,6 +68,17 @@ function rulesFor(id) {
   if (id === 'mini') return MINI_RULES ? [MINI_RULES[0], MINI_RULES[1]] : ['第一关 · 饿死之前', RULES.l1];
   if (RULES[id]) return [TITLES[id], RULES[id]];
   return null;
+}
+/* 回看已经走完的关卡 */
+function openReview(i) {
+  closeRules(); let h = '';
+  if (i === 0 && PROG.l1) { const en = ENDINGS[PROG.l1.id]; h = `<p><b>${en.t}</b></p><p>${en.x}</p><p>十年后，别人介绍你时会说：<b>${en.who}</b>。</p><div class="final">${KEYS.map(k => `<div><b>${PROG.l1.stats[k]}</b><span>${STAT[k]}</span></div>`).join('')}</div>` }
+  if (i === 1 && PROG.l2) { const f = PROG.l2; h = `${f.chart ? `<p>命盘：<b>${f.chart}</b></p>` : ''}<p>签文：<b>${f.title}</b></p><p>${f.verse}</p>${f.fx ? `<ul class="fxl">${f.fx.map(x => `<li class="${TAROT_FX[x][2] ? 'up' : 'down'}"><b>${TAROT_FX[x][0]}</b>${TAROT_FX[x][1]}</li>`).join('')}</ul>` : ''}` }
+  if (i === 2 && PROG.l3) { const l = PROG.l3; h = `<p><b>${l.title}</b></p><p>这一天挣了 <b>${yuan(l.money || 0)}</b>，拿到 ${l.good ?? l.right} 个好评。</p>${l.fav ? `<p>凌晨两点的朋友圈：「${l.fav}」</p>` : ''}` }
+  if (i === 3) { closeRules(); showPortrait(); return }
+  const m = document.createElement('div'); m.id = 'rulesModal'; m.className = 'rules-modal';
+  m.innerHTML = `<div class="rm-card" role="dialog"><div class="rm-h"><b>回看</b><span>第${['一', '二', '三', '四'][i]}关 · ${LEVELS[i].name}</span></div><div class="rv">${h}</div><button class="btn" data-rules-close>知道了</button></div>`;
+  document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-rules-close]')) closeRules() });
 }
 function closeRules() { const m = $('#rulesModal'); if (m) m.remove() }
 function openRules() {
@@ -118,11 +129,36 @@ function levelSummary(i) {
   if (i === 3 && PROG.portrait) return '你的画像：' + PROG.portrait.archT;
   return '已完成';
 }
+/* 海报上写的结果 */
+function levelResult(i) {
+  if (i === 0 && PROG.l1) return '活法：' + ENDINGS[PROG.l1.id].t;
+  if (i === 1 && PROG.l2) return PROG.l2.chart || PROG.l2.title;
+  if (i === 2 && PROG.l3) return '挣了 ' + yuan(PROG.l3.money || 0);
+  if (i === 3 && PROG.portrait) return PROG.portrait.archT;
+  return '';
+}
+/* 关卡之间：回到房间，刚走完的那张海报盖上章，下一张亮起来，镜头推过去，进入下一关 */
+function transit(i, next) {
+  const t0 = TOK + 1; PROG.stage = Math.max(PROG.stage, i + 1); save();
+  show('transit'); KEYH = null;
+  $('#trDone').textContent = `第${['一', '二', '三', '四'][i]}关 · ${LEVELS[i].name} · 走完了`;
+  $('#trResult').textContent = levelResult(i);
+  $('#trNext').textContent = LEVELS[i + 1] ? `下一站：第${['一', '二', '三', '四'][i + 1]}关 · ${LEVELS[i + 1].name}` : '';
+  const list = st => LEVELS.map((L, k) => ({ no: L.no, name: L.name, result: k <= i && st ? levelResult(k) : k < i ? levelResult(k) : '', state: k < i ? 'done' : k === i ? (st ? 'done' : 'now') : k === i + 1 && st > 1 ? 'now' : 'locked' }));
+  let gone = false; const go = () => { if (gone || TOK !== t0) return; gone = true; next() };
+  if (window.SCENE) {
+    SCENE.posters(list(0)); SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length); SCENE.view('p' + i);
+    setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(1)); kick(E.sfx, now(), .9, 90, 40, .25); nhit(E.sfx, now(), { g: .3, type: 'bandpass', f: 700, d: .12 }) }, 1100);
+    setTimeout(() => { if (TOK !== t0) return; SCENE.posters(list(2)); SCENE.view('p' + Math.min(3, i + 1)); harp(E.sfx, now(), 74, .06) }, 2300);
+  }
+  $('#trGo').onclick = go; setTimeout(go, window.SCENE ? 5200 : 2600);
+}
 function renderHub() {
   const st = PROG.stage; if (hubSel == null || hubSel > Math.min(st, 3)) hubSel = Math.min(st, 3);
   /* 3D 房间右墙上的四张海报就是四个关卡，点海报看这一关的介绍 */
   if (window.SCENE) {
-    SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
+    SCENE.posters(LEVELS.map((L, i) => ({ no: L.no, name: L.name, result: i < st ? levelResult(i) : '', state: i < st ? 'done' : i === st ? 'now' : 'locked' })));
+    SCENE.gallery(GALLERY.filter(k => ENDINGS[k]).length);
     SCENE.onPick(i => { if (document.body.dataset.screen !== 'hub') return; hubSel = i; sfxSwipe(); renderHub(); MO.rise($('#levels'), '.lvl.sel') });
   }
   $('#levels').innerHTML = LEVELS.map((L, i) => {
@@ -133,7 +169,7 @@ function renderHub() {
       <span class="no">${L.no}</span>
       <h3>${L.name}${tag}</h3>
       <p>${L.desc}</p>
-      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
+      <div class="row">${state === 'now' ? `<button class="btn sm" data-go="${L.id}">${cont ? '继续' : '检票入场'}</button>` : ''}${state === 'done' ? `<button class="btn ghost sm" data-review="${i}">回看这一关</button>` : ''}<button class="btn ghost sm listen" data-listen="${i}">试听本关音乐</button></div>
     </article>`}).join('');
   let j = '';
   if (st >= 4) j = `<div class="journey"><span class="eyebrow">十年已经走完</span><h3>你的音乐人格：${PROG.portrait ? PROG.portrait.archT : ''}</h3><div class="row"><button class="btn" data-portrait>查看我的音乐人格画像</button><button class="btn ghost" data-reset>重新开始十年</button></div></div>`;
@@ -156,7 +192,8 @@ document.addEventListener('click', e => {
     previewTimer = setTimeout(stopPreview, 16000); return;
   }
   const g = e.target.closest('[data-go]');
-  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); startLevel(g.dataset.go); return }
+  if (g) { const idx = LEVELS.findIndex(L => L.id === g.dataset.go); if (idx !== PROG.stage) return; E.init(); stopPreview(false); if (document.body.dataset.screen === 'end') transit(0, () => startLevel(g.dataset.go)); else startLevel(g.dataset.go); return }
+  const rv = e.target.closest('[data-review]'); if (rv) { openReview(+rv.dataset.review); return }
   if (e.target.closest('[data-hub]')) { goHub(); return }
   if (e.target.closest('[data-portrait]')) { E.init(); stopPreview(false); showPortrait(); return }
   if (e.target.closest('[data-reset]')) { confirmReset = true; renderHub(); return }

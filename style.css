@@ -1020,3 +1020,17 @@ body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .
 .dr-sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #26222e;border-bottom:1px dashed #26222e;padding:6px 0;margin:4px 0}
 .dr-sum b{font:700 24px var(--f-mono);color:#c04a16}
 .dr-wins{display:flex;flex-direction:column;gap:3px;margin-top:4px}.dr-wins b{font-size:13px;color:#9a5b2a}.dr-wins span::before{content:"🎁 "}
+
+/* ===== 第八版：关卡之间的房间 ===== */
+#transit{display:flex;align-items:flex-end;justify-content:center;padding-bottom:6vh}
+#transit[hidden]{display:none}
+.tr-plaque{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:18px 28px 16px;border-radius:6px;background:linear-gradient(170deg,#fffaf3,#efe3d2);color:#2b2230;
+  box-shadow:0 3px 0 #d8c8b6,0 6px 0 #c2ad97,0 26px 50px rgba(0,0,0,.5);transform:rotate(-1deg);animation:afterIn .5s ease .3s both;max-width:min(520px,92vw)}
+.tr-plaque .eyebrow{color:#9a5b2a}
+.tr-plaque b{font:400 34px var(--f-display)}
+.tr-plaque p{margin:0;color:#5a5266}
+.rv p{margin:0 0 8px;line-height:1.7}.rv .final{margin-top:6px}
+body.lx #transit,#transit{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 16px 7vh;pointer-events:none;grid-template-columns:none}
+#transit[hidden]{display:none!important}
+.rv .final div{background:rgba(43,34,48,.08)!important;color:#2b2230}
+.rv .final b{color:#2b2230!important}.rv .final span{color:#6a5d68!important}

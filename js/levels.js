@@ -157,7 +157,7 @@ function l2Fortune() {
   $('#l2done').onclick = () => {
     mergeTags(L2.tags);
     L2.answers.forEach(a => PROG.log.push({ lv: 2, who: '调音婆婆', say: a.q, pick: a.a, k: a.k }));
-    PROG.l2 = fortune; PROG.l2notes = L2.notes.slice(); PROG.stage = Math.max(PROG.stage, 2); save(); startL3();
+    PROG.l2 = fortune; PROG.l2notes = L2.notes.slice(); PROG.stage = Math.max(PROG.stage, 2); save(); transit(1, startL3);
   };
   bell(E.sfx, now(), 74, .05);
 }
@@ -517,7 +517,7 @@ function l3End() {
     <button class="btn" id="l3done" style="align-self:flex-start">进入第四关</button>`;
   TT.duo('l3', TT.gen('第三关 · 02:47', t, '', 'l3'), { drop: '.eyebrow,.big-title', mat: 'order' });
   $('#l3done').onclick = () => {
-    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); startL4();
+    mergeTags(L3.tags); addDom(fav.dom, 3); PROG.l3 = { own: L3.own, right: L3.right, ai: L3.ai, title: t, fav: post, money: L3.money, good: L3.good, n: L3.roles.length }; PROG.l3save = null; PROG.stage = Math.max(PROG.stage, 3); save(); transit(2, startL4);
   };
 }
 
