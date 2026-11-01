@@ -89,7 +89,7 @@ function openRules() {
 }
 document.addEventListener('click', e => { if (e.target.closest('[data-rules]')) openRules() });
 function goHub() {
-  if (E.ctx) { E.stopClip(); E.duck(1) }
+  if (E.ctx) { E.stopClip(); E.hold(1) }
   if (G) { saveL1(); G = null }
   KEYH = null; stopPreview(false); renderHub(); show('hub'); homeMusic(); MO.drop($('#heroTitle')); MO.rise($('#levels'), '.lvl.sel');
 }
@@ -97,7 +97,7 @@ function goHub() {
    浏览器不允许网页自己出声，所以要等玩家第一次点击或按键后才开始 */
 function homeMusic() {
   if (!E.ctx || previewing !== null || E.styleKey === 'chill') return;
-  E.resetMood(); E.duck(1); E.play('chill', ALL.chill);
+  E.resetMood(); E.hold(1); E.play('chill', ALL.chill);
 }
 const HOME_SCREENS = ['hub', 'ideal', 'intro'];
 let skipSndToggle = false;

@@ -35,7 +35,7 @@ E.init = function () {
   const vg = c.createGain(); vg.gain.value = .4; this.verb.connect(vg); vg.connect(this.comp);
   /* 背景音乐通路：master → 低通滤波（危险时变闷）→ 闪避（播放片段时压低）→ 压缩 */
   this.master = c.createGain(); this.lp = c.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.frequency.value = 18000;
-  this.duckG = c.createGain(); this.master.connect(this.lp); this.lp.connect(this.duckG); this.duckG.connect(this.comp);
+  this.duckG = c.createGain(); this.duckG.gain.value = this.base ?? 1; this.master.connect(this.lp); this.lp.connect(this.duckG); this.duckG.connect(this.comp);
   /* 界面音效 */
   this.sfx = c.createGain(); this.sfx.gain.value = .7; this.sfx.connect(this.comp);
   const sv = c.createGain(); sv.gain.value = .2; this.sfx.connect(sv); sv.connect(this.verb);
@@ -79,7 +79,7 @@ E.stopClip = function () {
     setTimeout(() => { try { g.disconnect() } catch (e) { } }, 300);
     this.clipBus = null;
   }
-  if (this.clipDuck) { this.clipDuck = false; this.duck(1) }
+  if (this.clipDuck) { this.clipDuck = false; this.duck(this.base) }
 };
 /* fn(bus) 负责排好音符并返回时长（秒）；duckTo 是播放时背景音乐压到多低，0 表示完全停 */
 E.playClip = function (fn, duckTo = .08, onEnd) {
@@ -88,9 +88,10 @@ E.playClip = function (fn, duckTo = .08, onEnd) {
   const c = this.ctx, g = c.createGain(); g.gain.value = 1; g.connect(this.comp);
   const s = c.createGain(); s.gain.value = .3; g.connect(s); s.connect(this.verb);
   this.clipBus = g;
-  if (duckTo < 1) { this.clipDuck = true; this.duck(duckTo) }
+  /* 只要放游戏里的音乐，背景音乐就压低（比常驻音量更低） */
+  if (duckTo < 1) { this.clipDuck = true; this.duck(Math.min(duckTo, this.base)) }
   const d = fn(g) || 1;
-  this.later(() => { if (this.clipBus === g) { this.clipBus = null; if (this.clipDuck) { this.clipDuck = false; this.duck(1) } } onEnd && onEnd() }, d * 1000);
+  this.later(() => { if (this.clipBus === g) { this.clipBus = null; if (this.clipDuck) { this.clipDuck = false; this.duck(this.base) } } onEnd && onEnd() }, d * 1000);
   return d;
 };
 /* 和片段绑定的定时器：片段被打断时一起取消 */
@@ -132,6 +133,9 @@ E.sched = function (step, t) {
 };
 E.nextBarTime = function () { const d = this.d16(); return this.nextTime + ((16 - (this.step % 16)) % 16) * d };
 E.duck = function (v) { if (this.ctx) this.duckG.gain.setTargetAtTime(v, now(), .12) };
+/* 背景音乐的“常驻音量”：进了小游戏就一直压低，片段放完只回到这个音量，不会突然变响 */
+E.base = 1;
+E.hold = function (v) { this.base = v; this.duck(v) };
 E.setMute = function (m) {
   this.muted = m; if (this.ctx) this.out.gain.setTargetAtTime(m ? 0 : .85, now(), .05);
   this.onMute && this.onMute(m);

@@ -52,7 +52,7 @@ function miniHead(eye, title) { $('#miniEye').textContent = '音乐关卡 · ' +
 function startMini(kind) {
   const d = MINI_DEF[kind]; if (!d) { console.warn('没有这个小游戏：', kind); return }
   MG = { kind, tries: 0, best: null };
-  show('mini'); E.duck(1); KEYH = null;
+  show('mini'); E.hold(1); KEYH = null;
   MINI_RULES = ['音乐关卡 · ' + d.title, d.rules];
   miniHead(d.eye, d.title);
   $('#miniBody').innerHTML = `<div class="mg-rules"><h3 class="rules-h">游戏规则</h3><ol class="rules">${d.rules.map(([t, x]) => `<li><b class="rt">${t}</b><p>${x}</p></li>`).join('')}</ol>
@@ -70,7 +70,7 @@ const starsOf = r => r >= .85 ? 3 : r >= .6 ? 2 : r >= .3 ? 1 : 0;
 const NEXT = [.3, .6, .85];
 /* 结算：星星、最好成绩、差一点就升星的提示、再来一次 */
 function miniFinish(ratio, detail) {
-  TOK++; KEYH = null; E.stopClip(); E.duck(1);
+  TOK++; KEYH = null; E.stopClip(); E.hold(1);
   const d = MINI_DEF[MG.kind], st = starsOf(ratio);
   PROG.best = PROG.best || {}; const key = MG.kind, prevBest = PROG.best[key];
   const isBest = prevBest == null || ratio > prevBest; if (isBest) { PROG.best[key] = ratio; save() }
@@ -144,7 +144,7 @@ function gRhythm(done) {
 /* ---------- 2. 调弦：听拍音 ---------- */
 function gTune(done) {
   const tok = TOK;
-  E.duck(.1);
+  E.hold(.1);
   const notes = [64, 69, 62];
   let round = 0, errs = [], off = 0, TU = null, mode = 'both';
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div>
@@ -197,7 +197,7 @@ function earQuestion(type) {
 }
 function gEar(done, list) {
   const tok = TOK, types = list || ['note', 'interval', 'chord', 'note', 'interval', 'chord'];
-  E.duck(.06);
+  E.hold(.06);
   let i = 0, right = 0, combo = 0, maxCombo = 0, pts = 0, Q = null, reps = 1, answered = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds">${types.map(() => '<i></i>').join('')}</div><p class="status" id="estat"></p>
     <div class="ear-q"><div class="row" style="justify-content:center"><button class="btn ghost sm" id="eref">听标准音 la</button><button class="btn ghost sm" id="erep">再听一遍</button></div>
@@ -245,7 +245,7 @@ function gTempo(done) {
   const swing = k => { pend.style.transition = `transform ${beat}s ease-in-out`; pend.style.transform = `rotate(${k % 2 ? 22 : -22}deg)` };
   const t0 = now() + .9;
   /* 从示范到你自己拍完，背景音乐一直完全停着，只听节拍器（结算时再恢复） */
-  E.duck(.0001);
+  E.hold(.0001);
   E.playClip(bus => { for (let i = 0; i < 4; i++) { tone(bus, t0 + i * beat, i ? 84 : 96, .05, { type: 'triangle', gain: .28, att: .001, rel: .06 }); E.later(() => { if (tok !== TOK) return; dots[i].classList.add('on'); swing(i) }, (t0 + i * beat - now()) * 1000) } return 4 * beat + 1 }, 1);
   E.later(() => { if (tok !== TOK) return; $('#tst').textContent = `节拍器坏了。用同样的速度，自己拍 ${N} 下`; pend.style.transition = 'transform .6s'; pend.style.transform = 'rotate(4deg)'; $('#metro').classList.add('broken'); live = true }, (t0 + 3.5 * beat - now()) * 1000);
   const tap = () => {
@@ -311,7 +311,7 @@ function aiRound(kindAI, onDone, label) {
   });
 }
 function gAi(done) {
-  const tok = TOK; E.duck(.05); let r = 0;
+  const tok = TOK; E.hold(.05); let r = 0;
   aiRound('ai', ok1 => { if (tok !== TOK) return; r += ok1; $('#miniBody').innerHTML = '';
     aiRound('aijit', ok2 => { if (tok !== TOK) return; r += ok2; done(r === 2 ? 1 : r === 1 ? .62 : .1, `两轮对了 ${r} 轮。`) }, '第 2 轮 · 这次的 AI 学会了“不完美”');
   }, '第 1 轮');
@@ -336,7 +336,7 @@ const SOLO_MELS = [
   [[62, 0, 1], [64, 1, 1], [65, 2, 1], [67, 3, 1], [65, 4, 1.5], [64, 5.5, .5], [62, 6, 2]]
 ];
 function gSolo(done) {
-  const tok = TOK; E.duck(.05);
+  const tok = TOK; E.hold(.05);
   /* 四段：每组至少一段，第四段随机 */
   const order = shuffle([...SOLO_FAM.map(f => shuffle(f)[0]), shuffle(Object.keys(SOLOISTS))[0]]);
   let i = 0, right = 0, combo = 0, pts = 0, answered = false;
@@ -374,7 +374,7 @@ function gSolo(done) {
 
 /* ---------- 7. 主舞台救场：数着小节敲过门 ---------- */
 function gFill(done) {
-  const tok = TOK; E.duck(.0001);
+  const tok = TOK; E.hold(.0001);
   const rounds = [{ bars: 4, n: 4, bpm: 100 }, { bars: 4, n: 4, bpm: 100, fake: 2 }, { bars: 6, n: 3, bpm: 112 }];
   let r = 0, errs = [], live = false, target = 0, tapped = false;
   $('#miniBody').innerHTML = `<div class="rounds" id="rounds"><i></i><i></i><i></i></div><p class="status" id="fstat"></p>
@@ -422,7 +422,7 @@ const ARR_LAYERS = [
     ['弦乐铺底', (b, t, B) => [[60, 64, 67], [57, 60, 64], [57, 60, 65], [59, 62, 67]].forEach((v, i) => v.forEach(m => strings(b, t + i * 2 * B, m, 2 * B, .014, { att: .25, cut: 1600 })))]]]
 ];
 function gArrange(done) {
-  const tok = TOK; E.duck(.05);
+  const tok = TOK; E.hold(.05);
   const ref = ARR_LAYERS.map(() => Math.floor(Math.random() * 3)), mine = ARR_LAYERS.map(() => null);
   let listens = 0;
   $('#miniBody').innerHTML = `<div class="row" style="justify-content:center"><button class="btn" id="aref">▶ 听参考小样</button><button class="btn ghost" id="amine">▶ 听我的版本</button></div>
@@ -448,7 +448,7 @@ function gArrange(done) {
 
 /* ---------- 9. 综艺总决赛：越来越长的旋律 ---------- */
 function gSimon(done) {
-  const tok = TOK; E.duck(.05);
+  const tok = TOK; E.hold(.05);
   /* 一个完整的八度：C4 到 C5（do re mi fa sol la si do），钢琴采样已逐个测过频率，音高是准的 */
   const PADS = [[60, '#f0b45a', '1', 'do'], [62, '#f2d36b', '2', 're'], [64, '#9fd98a', '3', 'mi'], [65, '#7fd0b6', '4', 'fa'], [67, '#7fb6e8', '5', 'sol'], [69, '#9fa6f0', '6', 'la'], [71, '#c6a3ef', '7', 'si'], [72, '#ef8aa0', '1', 'do']];
   let seq = [], pos = 0, canTap = false, speed = .55;
@@ -501,7 +501,7 @@ const DUEL_LIVE = [
 const DUEL_LIVE_OPTS = [['放下吉他，跟台下聊两句，再唱一首安静的', 'chat'], ['把麦克风朝向观众，副歌让他们唱', 'sing'], ['一秒都不停，直接接最炸的那一首', 'hype']];
 const DUEL_ASK = { q: '“AI 一分钟就能写十首歌，回声刚才也唱得很好。你凭什么站在这里？”', opts: [['“因为这十年，每一首歌都是我自己活出来的。”', 18, '台下安静了一秒，然后掌声响起来。', 'auth'], ['“我会用 AI，但我比它更懂你们。”', 8, '很聪明的回答，有人点头，也有人觉得太圆滑。', 'ai'], ['“说实话，我也不知道。我只是还想唱。”', 14, '你说得很老实，观众反而更信你了。', 'bond'], ['“它只是机器，根本不懂音乐。”', -10, '回声没有反驳。观众觉得你有点急了。', 'fight']] };
 function gFinale(done) {
-  const tok = TOK; E.duck(.05);
+  const tok = TOK; E.hold(.05);
   let vote = 50; const log = [];
   $('#miniBody').innerHTML = `<div class="duel">
     <div class="du-top"><div class="du-side me"><i>选手</i><b>你</b></div><div class="du-vs">VS</div><div class="du-side ai"><i>AI</i><b>回声</b></div></div>

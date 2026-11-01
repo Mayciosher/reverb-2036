@@ -30,7 +30,7 @@ const VERSE = {
 const L2 = { notes: [], picks: [], tags: {}, answers: [] };
 function startL2() {
   Object.assign(L2, { notes: [], picks: [], tags: {}, answers: [] });
-  E.resetMood(); E.duck(1); E.play('mystic', ALL.mystic); KEYH = null;
+  E.resetMood(); E.hold(1); E.play('mystic', ALL.mystic); KEYH = null;
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 2036 年 12 月</span><h2 class="big-title">音乐命运签</h2>
     <p class="lead">十年过去了。一个下雪的晚上，你路过一家没有招牌的小店，门口挂着一块木牌：<b>「回声铺」</b>。</p>
     <div class="speech"><p>“坐吧。随手弹 8 个音给我听。我能听出你是哪一种音乐人，也能告诉你，下一个十年会遇到什么。”</p></div>
@@ -40,7 +40,7 @@ function startL2() {
 }
 function l2Play() {
   setView('l2', '');
-  E.duck(.12);
+  E.hold(.12);
   $('#l2').innerHTML = `<span class="eyebrow">第二关 · 一</span><h2 class="big-title">随手弹 8 个音</h2>
     <p class="lead">不用想，凭感觉弹。键盘是 C 大调，1 是 Do，从左到右越来越高，也可以按数字键 1 到 8。</p>
     <div class="slots" id="l2slots">${'<span></span>'.repeat(8)}</div>
@@ -69,7 +69,7 @@ function analyzeMelody(a) {
 /* 命盘：不复述你做过什么，而是告诉你“你是哪一种音乐人”，优点、盲点和一句能马上去做的建议 */
 function l2Read() {
   setView('l2', '');
-  E.duck(1);
+  E.hold(1);
   const { v, why } = analyzeMelody(L2.notes); for (const k in v) L2.tags[k] = (L2.tags[k] || 0) + v[k];
   const { T, keys } = rankTraits(L2.tags), top = keys[0], second = keys.find(k => k !== top) || top;
   const flaw = FLAWY.filter(k => k !== top).sort((a, b) => (T[b] || 0) - (T[a] || 0))[0];
@@ -410,7 +410,7 @@ TASKS.self = {
 const CH_SAD = [{ r: 45, v: [57, 60, 64] }, { r: 41, v: [57, 60, 65] }, { r: 38, v: [57, 62, 65] }, { r: 40, v: [56, 59, 64] }];
 function playSelfTune(v) {
   Object.assign(STYLES.self, { mel: selfNotes(), bpm: v === 'fast' ? 118 : v === 'slow' ? 60 : v === 'sad' ? 64 : 76, minor: v === 'sad', fast: v === 'fast', chords: v === 'sad' ? CH_SAD : CH_POP });
-  E.duck(1); E.play('self', ALL.self);
+  E.hold(1); E.play('self', ALL.self);
 }
 const L3 = { i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: null, place: '', money: 0, good: 0, streak: 0, boost: false, wins: [], fx: {}, shield: 0, aiHelp: 0 };
 const L3_PLACES = ['学校', '自己的工作室', '一家培训机构'];
@@ -426,7 +426,7 @@ function pickRoles() {
 }
 function roleMusic(role) {
   if (role.style === 'self') return playSelfTune(L3.tune);
-  E.duck(1); E.play(role.style, ALL[role.style]);
+  E.hold(1); E.play(role.style, ALL[role.style]);
 }
 /* 第二关抽到的三张牌：分到今天的某几单上 */
 function dealTarot() {
@@ -438,7 +438,7 @@ function dealTarot() {
 const yuan = n => '¥' + n.toLocaleString('zh-CN');
 function startL3() {
   setView('l3', '');
-  E.resetMood(); E.duck(1); KEYH = null;
+  E.resetMood(); E.hold(1); KEYH = null;
   if (PROG.l3save) { Object.assign(L3, PROG.l3save); if (!L3.roles) L3.roles = pickRoles(); return L3.i < L3.roles.length ? l3Task() : l3End() }
   Object.assign(L3, { tune: null, i: 0, right: 0, own: 0, ai: 0, tags: {}, picks: [], fav: null, roles: pickRoles(), place: pick(L3_PLACES), money: 0, good: 0, streak: 0, boost: false, wins: [] }, dealTarot());
   E.play('synth', ['pad', 'sbass']);
@@ -530,7 +530,7 @@ function l3Task() {
   saveL3();
 }
 function l3End() {
-  show('l3'); setView('l3', ''); E.duck(1); if (window.SCENE) SCENE.l3Role(6, L3.roles);
+  show('l3'); setView('l3', ''); E.hold(1); if (window.SCENE) SCENE.l3Role(6, L3.roles);
   if (E.styleKey !== 'self') roleMusic(L3_ROLES.self);
   const R = L3.roles.map(k => L3_ROLES[k]);
   /* 凌晨两点的朋友圈：选项是你今天真正拿到的东西 */
@@ -588,7 +588,7 @@ function countTags(...ks) { return PROG.log.filter(x => x.lv === 1 && ks.some(k 
 function startL4() {
   setView('l4', '');
   Object.assign(L4, { notes: [], tags: {}, ans: {}, dom: {} });
-  E.resetMood(); E.duck(1); KEYH = null; if (window.SCENE) SCENE.hall(1);
+  E.resetMood(); E.hold(1); KEYH = null; if (window.SCENE) SCENE.hall(1);
   const tune = PROG.l3tune; if (tune) playSelfTune(tune); else E.play('orch', ['vln', 'cello', 'harpo']);
   const P = PROG, mem = [];
   const l1 = P.log.filter(x => x.lv === 1 && x.key);
@@ -626,7 +626,7 @@ function l4Ask(i) {
 }
 function l4Compose() {
   setView('l4', '');
-  L4.notes = []; E.play('orch', ['vln']); E.duck(.3);
+  L4.notes = []; E.play('orch', ['vln']); E.hold(.3);
   $('#l4').innerHTML = `<span class="eyebrow">第四关 · 作曲</span><h2 class="big-title">留给十年前的自己</h2>
     <p class="lead">弹 4 个音，留给 2027 年的自己。弹完以后，管弦乐团会把它奏出来，再高八度演奏一遍，每个音后面都跟着竖琴的回声。1 是 Do，从左到右越来越高，也可以按数字键 1 到 8。</p>
     <div class="slots" id="l4slots">${'<span></span>'.repeat(4)}</div>
