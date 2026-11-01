@@ -917,3 +917,60 @@ body.lx #play #bL,body.lx #play #bR{transition:opacity .35s ease .1s,transform .
 .after-note.out{opacity:0;transform:translate(-50%,-46%) rotate(-1.5deg);transition:.22s}
 @keyframes afterIn{from{opacity:0;transform:translate(-50%,-40%) rotate(-4deg)}}
 #play .table{position:relative}
+
+/* ===== 第八版：十个音乐小游戏 ===== */
+.mg-rules{display:flex;flex-direction:column;gap:14px}
+.mg-go{font-size:20px;padding:14px 40px}
+.combo{position:absolute;right:8px;top:8px;z-index:3;display:flex;align-items:baseline;gap:4px;font:700 13px var(--f-body);color:#9a8c96;pointer-events:none}
+.combo b{font:700 26px var(--f-mono);color:#2b2230;transition:color .2s}
+.combo.hot b{color:#d0571c}.combo.pop b{animation:comboPop .3s ease}
+@keyframes comboPop{50%{transform:scale(1.4)}}
+#miniBody{position:relative}
+.mg-res .stars{display:flex;gap:6px;font-size:46px;line-height:1}
+.mg-res .stars i{font-style:normal;color:rgba(43,34,48,.18)}
+.mg-res .stars i.on{color:#e3a93c;text-shadow:0 2px 0 #a8731f,0 6px 14px rgba(227,169,60,.5);animation:starIn .5s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(var(--i) * .25s)}
+@keyframes starIn{from{transform:scale(0) rotate(-40deg);opacity:0}}
+.mg-res .near{margin:0;font-weight:700;color:#c0464f;font-size:17px}
+.mg-res .mg-best{margin:0;font:600 14px var(--f-mono);color:#7a6d78}.mg-res .mg-best b{color:#d0571c}
+.mg-res .mg-detail{margin:0;font-size:15px}
+.stars-s{color:#e3a93c;letter-spacing:2px}
+.ear-q{display:flex;flex-direction:column;gap:12px}
+.ear-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ear-o{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:17px;padding:14px 10px}
+.ear-o small{font-size:12px;opacity:.7;font-weight:500}
+.ear-o.right,.arr-row.right .arr-o.on{box-shadow:inset 0 0 0 2.5px #3f8f6a!important;background:rgba(63,143,106,.15)!important}
+.ear-o.wrong,.arr-row.wrong .arr-o.on{box-shadow:inset 0 0 0 2.5px #c0464f!important;background:rgba(192,70,79,.12)!important}
+/* 坏掉的节拍器 */
+.metro-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.metro{all:unset;cursor:pointer;position:relative;width:190px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.35));transition:transform .08s}
+.metro svg{width:100%;display:block}
+.metro.hit{transform:scale(.96) translateY(3px)}
+.metro.broken #pend{transition:transform .6s}
+.metro-hint{display:block;text-align:center;font-size:13px;color:#7a6d78;margin-top:4px}
+/* 镲和小节 */
+.barcount{display:flex;justify-content:center;gap:8px;min-height:40px;align-items:center}
+.barcount i{font-style:normal;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font:700 18px var(--f-mono);background:rgba(43,34,48,.08);transition:.15s}
+.barcount i.on{background:#e3a93c;color:#24180a;transform:translateY(-3px)}
+.barcount em{font-style:normal;color:#7a6d78}
+.cymbal{all:unset;cursor:pointer;align-self:center;width:180px;height:180px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 50%,#3b2a14 0 9px,#f6d58a 10px,#d9a640 38%,#f3cf7a 56%,#b8862e 80%,#e8c06a 100%);box-shadow:0 10px 0 #8a6422,0 20px 30px rgba(0,0,0,.35);transform:rotateX(35deg);transition:transform .1s}
+.cymbal span{font:700 22px var(--f-display);color:#5a3e10;opacity:.6}
+.cymbal.hit{transform:rotateX(35deg) rotate(8deg) scale(.95);box-shadow:0 4px 0 #8a6422,0 0 40px rgba(255,220,120,.9)}
+/* 编曲拼图 */
+.arr{display:flex;flex-direction:column;gap:10px}
+.arr-row{display:grid;grid-template-columns:48px repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.arr-row b{display:grid;place-items:center;font-size:15px}
+.arr-o{all:unset;cursor:pointer;border-radius:10px;padding:10px 8px;background:rgba(43,34,48,.06);box-shadow:inset 0 0 0 1px rgba(43,34,48,.18);display:flex;flex-direction:column;gap:3px;text-align:center;font-size:14px;font-weight:600}
+.arr-o i{font-style:normal;font-size:11px;font-weight:500;opacity:.6}
+.arr-o.on{box-shadow:inset 0 0 0 2.5px #d0571c;background:rgba(255,220,180,.6)}
+/* 越来越长的旋律 */
+.simon{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:10px 0}
+.pad{all:unset;cursor:pointer;aspect-ratio:1/1.3;border-radius:14px;background:var(--c);opacity:.55;display:grid;place-items:end center;padding-bottom:10px;box-shadow:0 6px 0 rgba(0,0,0,.25);transition:opacity .08s,transform .08s}
+.pad b{font:700 18px var(--f-mono);color:rgba(30,20,30,.6)}
+.pad.lit{opacity:1;transform:translateY(-4px);box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px var(--c)}
+.pad.want{outline:3px dashed #c0464f;outline-offset:3px}
+.orch{display:flex;justify-content:center;gap:14px;font-size:28px;opacity:.75}
+.stage-card{display:grid;place-items:center;min-height:240px;font:400 40px var(--f-display);text-align:center;gap:6px;animation:afterIn .4s ease}
+.stage-card b{display:block;font-size:16px;letter-spacing:.3em;color:#d0571c}
+.ai-round{display:flex;flex-direction:column;gap:12px}
+.ai-round .clip.right{box-shadow:inset 0 0 0 2.5px #3f8f6a}.ai-round .clip.wrong{box-shadow:inset 0 0 0 2.5px #c0464f}

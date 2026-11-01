@@ -583,7 +583,7 @@ function buildPortrait() {
   return {
     arch: best, archT: IDEALS[best].t, ideal: PROG.ideal, top, bars: keys.filter(k => T[k]).slice(0, 7).map(k => [k, T[k] || 0]),
     asks, ending: PROG.l1 ? PROG.l1.id : null, fortune: PROG.l2 ? PROG.l2.title : null,
-    skills: { rhythm: avg(sk.rhythm), tune: avg(sk.tune), memory: sk.memory ? sk.memory.reduce((a, b) => a + b, 0) : null, memN: sk.memory ? sk.memory.length * 3 : 0, tempo: avg(sk.tempo), ai: sk.ai ? sk.ai.reduce((a, b) => a + b, 0) : null, aiN: sk.ai ? sk.ai.length : 0, l3: PROG.l3 ? PROG.l3.right : null },
+    skills: { minis: Object.keys(MINI_DEF).filter(k => sk[k] && sk[k].length).map(k => [k, Math.max(...sk[k])]), l3: PROG.l3 ? PROG.l3.right : null },
     ans: PROG.l4 ? PROG.l4.ans : {}, notes: PROG.l4 ? PROG.l4.notes : [],
     spec, ident, musicNow, share0: PROG.share, endWho: PROG.l1 ? ENDINGS[PROG.l1.id].who : null, fav: PROG.l3 ? PROG.l3.fav : null
   };
@@ -594,11 +594,7 @@ function showPortrait(fresh) { if (window.SCENE) SCENE.hall(3);
   const id = IDEALS[p.ideal] || null, same = p.ideal === p.arch;
   const maxv = Math.max(...p.bars.map(b => b[1]), 1);
   const s = p.skills, cells = [];
-  if (s.rhythm != null) cells.push([Math.round(s.rhythm * 100) + '%', '演出节奏命中']);
-  if (s.tune != null) cells.push([s.tune.toFixed(0) + ' 音分', '调弦平均误差']);
-  if (s.memory != null) cells.push([`${s.memory}/${s.memN}`, '听音模仿']);
-  if (s.tempo != null) cells.push([s.tempo.toFixed(0) + ' 毫秒', '稳拍平均偏差']);
-  if (s.ai != null) cells.push([`${s.ai}/${s.aiN}`, '人机辨听']);
+  (s.minis || []).forEach(([k, r]) => { const n = starsOf(r); cells.push([`<span class="stars-s">${'★'.repeat(n)}${'☆'.repeat(3 - n)}</span>`, MINI_DEF[k].title]) });
   if (s.l3 != null) cells.push([`${s.l3}/${(PROG.l3 && PROG.l3.n) || 7}`, '身兼数职听辨']);
   const verdict = !id ? '' : same ? '你的选择和你开局时的理想是一致的。十年的风浪没有把你吹离初心，这很难得。' : `你开局时想成为「${id.t}」，但十年里一次次的选择，让你更像「${p.archT}」。这不一定是坏事，但值得想一想：是什么让你走到了这里？是你变了，还是你一开始就没那么想？`;
   const adv = [...(ADVICE[p.arch] || [])];
