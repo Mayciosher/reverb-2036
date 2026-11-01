@@ -1034,3 +1034,8 @@ body.lx #transit,#transit{position:fixed;inset:0;display:flex;flex-direction:col
 #transit[hidden]{display:none!important}
 .rv .final div{background:rgba(43,34,48,.08)!important;color:#2b2230}
 .rv .final b{color:#2b2230!important}.rv .final span{color:#6a5d68!important}
+/* 手机竖屏：顶栏放不下时，收起标题，按钮变短 */
+.topbar .home{white-space:nowrap}
+@media (max-width:560px){ .topbar #topTitle{display:none} .tb-r{gap:6px} .tb-r .home{padding:6px 10px;font-size:12px} }
+body:not(.lx) #play .fx i{background:rgba(255,255,255,.12);color:var(--soft)}
+body:not(.lx) #play .fx i.turn{background:rgba(192,70,79,.85);color:#fff}
