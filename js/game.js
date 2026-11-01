@@ -265,7 +265,7 @@ function yearBreak() {
   items.push(['速度', `每分钟 ${80 + G.year - 1} 拍`]);
   items.push(['今年', '4 个选择，1 个音乐关卡']);
   if (G.year === 10) items.push(['最后一年', '撑过今年，你会得到属于自己的活法']);
-  G.yb = items; if (window.SCENE) SCENE.year(G.year); buildQueue(); checkCrisis(); G.cur = null; saveL1();
+  G.revised = 0; G.yb = items; if (window.SCENE) SCENE.year(G.year); buildQueue(); checkCrisis(); G.cur = null; saveL1();
   renderYB(); show('yearbreak'); applyYearMusic();
 }
 /* 名气变现：名气 40 以上才有人找你商演，每多 10 点多 2 点钱；靠争议红起来的，打对折 */
@@ -322,16 +322,30 @@ function snapshot() {
 function undo() {
   if (!G || G.lock || !G.snapPrev || (G.regrets ?? 3) <= 0) return;
   const r = G.snapPrev, left = (G.regrets ?? 3) - 1, used = (G.regretUsed || 0) + 1;
+  const cost = regretCost(r); /* 要在恢复存档之前算，那时还记得你刚才选了什么 */
   G = JSON.parse(JSON.stringify(r.g)); G.regrets = left; G.snapCur = r; G.snapPrev = null; G.lock = false;
   PROG.tags = JSON.parse(JSON.stringify(r.tags)); PROG.log.length = r.logLen; PROG.skills = JSON.parse(JSON.stringify(r.skills));
-  G.s.l = Math.max(0, G.s.l - 3); G.regretUsed = used;
-  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe(); toast('吃了一颗后悔药。热爱 −3', 2200);
+  if (cost.k) G.s[cost.k] = Math.max(0, G.s[cost.k] - 3); else G.revised = (G.revised || 0) + 1;
+  G.regretUsed = used;
+  saveL1(); applyYearMusic(); show('play'); renderCard(); sfxSwipe(); toast('吃了一颗后悔药。' + cost.say, 2600);
+}
+/* 后悔药的代价，看你反悔的是哪一件事：
+   涉及钱（签约、接活、借钱）→ 违约金，钱 −3；涉及别人（答应了乐队、学生、朋友）→ 说话不算数，名气 −3；
+   只关乎你自己 → 不扣数值，这一年的进度上留下一道“改过”的痕迹 */
+function regretCost(r) {
+  if (!r) return { k: null, tag: '', say: '' };
+  const c = resolveCard(r.g.cur), last = PROG.log[r.logLen], opt = c && last ? [c.L, c.R].find(o => o.t === last.pick) || c.R : null;
+  const self = !c || /内心|你自己|旧备忘录|意外|体检|你的猫/.test(c.who) || (opt && opt.mini);
+  if (opt && opt.e && opt.e.m) return { k: 'm', tag: '违约金 钱 −3', say: '反悔要付违约金，钱 −3。' };
+  if (!self) return { k: 'f', tag: '失信 名气 −3', say: `你答应过${c.who}又反悔了，别人会觉得你说话不算数，名气 −3。` };
+  return { k: null, tag: '只关乎自己，不扣数值', say: '这件事只关乎你自己，不扣数值，但这一年留下了一道“改过”的痕迹。' };
 }
 $('#undo').onclick = undo;
 function renderUndo() {
   const left = G.regrets ?? 3, b = $('#undo');
   b.disabled = !G.snapPrev || left <= 0;
-  b.textContent = left > 0 ? `↶ 撤回上一步 · 后悔药还剩 ${left} 颗（每颗热爱 −3）` : '后悔药用完了';
+  const cost = G.snapPrev ? regretCost(G.snapPrev) : null;
+  b.textContent = left <= 0 ? '后悔药用完了' : `↶ 撤回上一步${cost && G.snapPrev ? ' · ' + cost.tag : ''} · 还剩 ${left} 颗`;
 }
 function renderCard() {
   const c = resolveCard(G.cur), [ch, col] = avatar(c.who);
@@ -342,7 +356,7 @@ function renderCard() {
   const badge2 = c.real ? '<span class="badge real">真实故事改编</span>' : c.who === '意外' ? '<span class="badge">意外</span>' : '';
   MO.type($('#say'), badge + badge2 + c.say);
   $('#src').innerHTML = c.real ? `<button class="src-t" type="button">原型 ▸</button><span class="src-x">${c.real}</span>` : ''; $('#src').hidden = !c.real; $('#src').classList.remove('open');
-  $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}`;
+  $('#prog').textContent = c.crisis ? '' : `今年 ${G.idx}/${G.total}${G.revised ? ` · 改过 ${G.revised} 次` : ''}`;
   const lab = o => `${o.t}${optFx(o, c)}`;
   $('#tL').innerHTML = lab(c.L); $('#tR').innerHTML = lab(c.R);
   $('#leanL').textContent = '← ' + c.L.t; $('#leanR').textContent = c.R.t + ' →';
