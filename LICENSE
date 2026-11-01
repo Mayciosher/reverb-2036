@@ -19,9 +19,12 @@ Copyright (c) 2026 《十年回响》创作小组（Mayciosher 及本仓库全�
 以上“简单来说”只是方便理解的说明，以协议全文为准。
 
 第三方内容不在本协议范围内，仍按各自的许可使用：
-  - 字体 Noto Sans SC、ZCOOL QingKe HuangYou、IBM Plex Mono
+  - 字体 Noto Sans SC、ZCOOL QingKe HuangYou、ZCOOL KuaiLe、Zhi Mang Xing、Orbitron、Playfair Display、IBM Plex Mono
     （fonts/ 目录及离线版中嵌入的字体）采用 SIL Open Font License 1.1。
   - 3D 库 Three.js（js/vendor/three.min.js）采用 MIT License，版权归 Three.js Authors。
+  - 钢琴采样来自 Salamander Grand Piano（作者 Alexander Holm），采用 CC BY 3.0。
+  - 弦乐、竖琴、小号、圆号、长笛、钟琴采样来自 VSCO 2 Community Edition（Versilian Studios），采用 CC0。
+    （采样打包在 js/samples.js 和离线版里）
   - “真实故事改编”卡片所引用的新闻报道，版权归原作者和原媒体所有，
     出处见 docs/真实案例来源.md。
 
@@ -38,4 +41,6 @@ Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 
 Third-party fonts are licensed under the SIL Open Font License 1.1.
 Three.js (js/vendor/three.min.js) is licensed under the MIT License.
+Piano samples: Salamander Grand Piano by Alexander Holm, CC BY 3.0.
+Orchestral samples: VSCO 2 Community Edition by Versilian Studios, CC0.
 Quoted news reports remain the property of their original authors.

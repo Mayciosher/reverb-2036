@@ -98,6 +98,8 @@ function firstSound(e) {
   E.init(); if (!E.styleKey && HOME_SCREENS.some(id => !$('#' + id).hidden)) homeMusic();
 }
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, firstSound, true));
+/* 真乐器音色在后台准备，准备好之前先用合成音色 */
+SMP.onState = st => { const ts = $('#tapSound'); if (!ts) return; if (st === 'loading') { ts.textContent = '♪ 正在准备真乐器音色……'; ts.style.visibility = 'visible' } else ts.style.visibility = 'hidden' };
 
 /* =========================================================
    主页

@@ -41,8 +41,35 @@ E.init = function () {
   const sv = c.createGain(); sv.gain.value = .2; this.sfx.connect(sv); sv.connect(this.verb);
   const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = nb.getChannelData(0);
   for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1; this.noise = nb;
+  setTimeout(() => SMP.load(), 60);
 };
 const now = () => E.ctx.currentTime;
+
+/* ---------- 真乐器采样 ----------
+   钢琴用 Salamander Grand Piano，弦乐、竖琴、小号、圆号、长笛、钟琴用 VSCO 2 Community Edition（数据在 js/samples.js）。
+   第一次出声以后在后台解码，解码完成前先用合成音色顶上。K 是每种乐器相对合成音色的音量系数 */
+const SMP = {
+  buf: {}, ready: false, loading: false,
+  /* 用离线渲染量出来的：让采样和原来的合成音色一样响；弦乐故意再大一半，让它更明显 */
+  K: { piano: 4, vln: 12, cello: 6.7, tpt: 3.2, horn: 4.4, harp: 1.1, flute: 5.6, glock: 20 },
+  load() {
+    if (this.loading || typeof SAMPLE_DATA === 'undefined' || !E.ctx) return; this.loading = true;
+    const c = E.ctx, jobs = [];
+    for (const inst in SAMPLE_DATA) { const list = this.buf[inst] = []; for (const m in SAMPLE_DATA[inst]) { const bin = atob(SAMPLE_DATA[inst][m]), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); jobs.push(new Promise(r => c.decodeAudioData(u.buffer, b => { list.push([+m, b]); r() }, () => r()))) } }
+    this.onState && this.onState('loading');
+    Promise.all(jobs).then(() => { for (const k in this.buf) this.buf[k].sort((a, b) => a[0] - b[0]); this.ready = true; this.onState && this.onState('ready') });
+  },
+  has(inst) { return this.ready && !E.noSamples && this.buf[inst] && this.buf[inst].length },
+  near(inst, midi) { let best = null, bd = 1e9; for (const x of this.buf[inst]) { const d = Math.abs(x[0] - midi); if (d < bd) { bd = d; best = x } } return best },
+  play(inst, out, t, midi, dur, gain, o = {}) {
+    const [m0, b] = this.near(inst, midi), c = E.ctx, s = c.createBufferSource(); s.buffer = b; s.playbackRate.value = Math.pow(2, (midi - m0) / 12);
+    const len = b.duration / s.playbackRate.value; if (o.loop && dur > len * .7) { s.loop = true; s.loopStart = b.duration * .35; s.loopEnd = b.duration * .78 }
+    const g = c.createGain(), att = o.att || .004, rel = o.rel || .3, hold = Math.max(dur, att + .01), v = gain * (this.K[inst] || 1);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + att); g.gain.setTargetAtTime(0, t + hold, rel / 3);
+    let n = s; if (o.cut) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.cut; f.Q.value = .5; s.connect(f); n = f }
+    n.connect(g); g.connect(out); s.start(t); s.stop(t + hold + rel * 2.5 + .05); return s;
+  }
+};
 
 /* ---------- 片段：可随时打断 ---------- */
 E.stopClip = function () {
@@ -125,6 +152,7 @@ function tone(out, t, midi, dur, o = {}) {
 }
 /* 钢琴：力度越大越亮 */
 function keys(out, t, midi, dur, gain = .06, detune = 0) {
+  if (SMP.has('piano')) return SMP.play('piano', out, t, midi + detune / 100, dur + .15, gain, { rel: .6, cut: 1800 + gain * 45000 });
   tone(out, t, midi, dur, { type: 'sine', gain, att: .004, rel: .5, detune });
   tone(out, t, midi + 12, dur * .6, { type: 'triangle', gain: gain * (.12 + gain * 1.6), att: .003, rel: .3, detune });
   tone(out, t, midi, .04, { type: 'triangle', gain: gain * .5, att: .002, rel: .06, cut: 2500 + gain * 20000 });
@@ -138,6 +166,7 @@ function shaker(out, t, g = .04) { nhit(out, t, { g, type: 'bandpass', f: 5500, 
 function guitar(out, t, midi, g = .07) { tone(out, t, midi, .02, { type: 'sawtooth', gain: g, att: .002, rel: .7, cut: 2000 }); tone(out, t, midi + 12, .02, { type: 'triangle', gain: g * .35, att: .002, rel: .35 }) }
 /* 弦乐组：三把略微走音的琴叠在一起，加揉弦 */
 function strings(out, t, midi, dur, g = .03, o = {}) {
+  if (SMP.has('vln')) { const inst = midi < 57 ? 'cello' : 'vln'; return SMP.play(inst, out, t, midi, dur, g, { loop: true, att: Math.max(.08, (o.att ?? .5) * .7), rel: (o.rel ?? .9) * 1.2, cut: Math.max(2000, (o.cut ?? 2200) * 1.6) }) }
   const c = E.ctx, { att = .5, rel = .9, cut = 2200 } = o;
   const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; f.Q.value = .5;
   const a = c.createGain(); const hold = Math.max(dur, att + .01);
@@ -149,6 +178,7 @@ function strings(out, t, midi, dur, g = .03, o = {}) {
 }
 /* 圆号：慢起音，暗一点 */
 function horn(out, t, midi, dur, g = .08) {
+  if (SMP.has('horn')) return SMP.play('horn', out, t, midi, dur, g, { loop: true, att: .06, rel: .35 });
   const c = E.ctx, f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = .7;
   f.frequency.setValueAtTime(500, t); f.frequency.linearRampToValueAtTime(1300, t + .15);
   const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .12); a.gain.setTargetAtTime(0, t + dur, .12);
@@ -157,6 +187,7 @@ function horn(out, t, midi, dur, g = .08) {
 }
 /* 小号：起音时滤波快速打开，有“嘟”的感觉 */
 function trumpet(out, t, midi, dur, g = .05) {
+  if (SMP.has('tpt')) return SMP.play('tpt', out, t, midi, dur, g, { loop: true, att: .02, rel: .25 });
   const c = E.ctx, f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 2;
   f.frequency.setValueAtTime(600, t); f.frequency.exponentialRampToValueAtTime(3000, t + .05); f.frequency.exponentialRampToValueAtTime(1400, t + .2);
   const a = c.createGain(); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .02); a.gain.setTargetAtTime(0, t + dur, .06);
@@ -164,7 +195,7 @@ function trumpet(out, t, midi, dur, g = .05) {
   const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(midi); o.connect(f); o.start(t); o.stop(t + dur + .5);
 }
 /* 竖琴 */
-function harp(out, t, midi, g = .08) { tone(out, t, midi, .02, { type: 'triangle', gain: g, att: .002, rel: 1.6 }); tone(out, t, midi + 12, .02, { type: 'sine', gain: g * .35, att: .002, rel: 1 }) }
+function harp(out, t, midi, g = .08) { if (SMP.has('harp')) return SMP.play('harp', out, t, midi, 1.8, g, { rel: 1.2 }); tone(out, t, midi, .02, { type: 'triangle', gain: g, att: .002, rel: 1.6 }); tone(out, t, midi + 12, .02, { type: 'sine', gain: g * .35, att: .002, rel: 1 }) }
 /* 定音鼓 */
 function timp(out, t, midi = 43, g = .5, d = 1.2) {
   const c = E.ctx, o = c.createOscillator(), a = c.createGain();
@@ -174,6 +205,7 @@ function timp(out, t, midi = 43, g = .5, d = 1.2) {
 }
 /* 长笛：正弦波加揉音和一点气声 */
 function flute(out, t, midi, dur, g = .08) {
+  if (SMP.has('flute') && !flute.synth) return SMP.play('flute', out, t, midi, dur, g, { loop: true, att: .05, rel: .2 });
   const c = E.ctx, o = c.createOscillator(), a = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
   o.type = 'sine'; o.frequency.value = mtof(midi); lfo.frequency.value = 5.2; lg.gain.value = mtof(midi) * .006; lfo.connect(lg); lg.connect(o.frequency);
   a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(g, t + .06); a.gain.setTargetAtTime(0, t + dur, .08);
@@ -190,6 +222,7 @@ function synthPluck(out, t, midi, g = .04) {
 }
 /* 颤音琴：带颤动的金属感 */
 function vibes(out, t, midi, g = .05) {
+  if (SMP.has('glock')) return SMP.play('glock', out, t, midi, 1.6, g, { rel: .9 });
   const c = E.ctx, a = c.createGain(), trem = c.createOscillator(), tg = c.createGain();
   trem.frequency.value = 5.5; tg.gain.value = .4; trem.connect(tg); tg.connect(a.gain);
   a.gain.setValueAtTime(g, t); a.gain.setTargetAtTime(0, t + .05, .5); a.connect(out);
@@ -231,7 +264,7 @@ const STYLES = {
       { name: 'bass', label: '贝斯', play(st, bar, t, out, s, E) { const c = chordAt(s, bar), n = chordAt(s, bar + 1), b = E.d16() * 4; if (st === 0) tone(out, t, c.r, b * .9, { type: 'triangle', gain: .42, rel: .15, cut: 900 }); if (st === 8) tone(out, t, c.r + 7, b * .8, { type: 'triangle', gain: .36, rel: .15, cut: 900 }); if (st === 14) tone(out, t, n.r - 1, b * .35, { type: 'triangle', gain: .3, rel: .1, cut: 900 }) } },
       { name: 'drums', label: '鼓组', play(st, bar, t, out) { if (st === 0 || st === 10 || (st === 7 && bar % 2)) kick(out, t, .75); if (st === 4 || st === 12) snare(out, t, .22); if (st % 2 === 0) hat(out, t, st % 4 === 2 ? .07 : .04) } },
       { name: 'shaker', label: '沙锤', play(st, bar, t, out) { shaker(out, t, st % 4 === 2 ? .05 : .025) } },
-      { name: 'strings', label: '弦乐', play(st, bar, t, out, s, E) { if (st) return; const c = chordAt(s, bar); c.v.slice(0, 3).forEach(m => strings(out, t, m + 12, E.d16() * 15, .012, { att: .9, cut: 1800 })) } },
+      { name: 'strings', label: '弦乐', play(st, bar, t, out, s, E) { if (st) return; const c = chordAt(s, bar); c.v.slice(0, 3).forEach(m => strings(out, t, m + 12, E.d16() * 15, .02, { att: .6, cut: 2400 })); strings(out, t, c.r + 12, E.d16() * 15, .02, { att: .6, cut: 1600 }) } },
       { name: 'guitar', label: '吉他', play(st, bar, t, out, s) { if (st % 2) return; const c = chordAt(s, bar); guitar(out, t, c.v[(st / 2) % 4] + (st > 7 ? 12 : 0), .055) } },
       { name: 'flute', label: '长笛', play(st, bar, t, out, s, E) { const m = LEAD[bar % 4][st]; if (m == null) return; if (E.mood.orig < .35) tone(out, t, m + 12, E.d16() * 1.5, { type: 'square', gain: .03, att: .002, rel: .05, cut: 2400 }); else flute(out, t, m + 12, E.d16() * 1.6, .06) } },
       { name: 'synth', label: '合成器', play(st, bar, t, out, s) { const pat = [0, 3, 6, 8, 11, 14]; const k = pat.indexOf(st); if (k < 0) return; const c = chordAt(s, bar); synthPluck(out, t, c.v[[0, 2, 1, 3, 2, 1][k]] + 12 + (k === 3 ? 12 : 0), .028) } },
